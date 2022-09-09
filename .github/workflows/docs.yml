@@ -18,10 +18,10 @@ jobs:
         run: |
           go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
           ~/go/bin/gomarkdoc --output doc.md ./pkg/...
-      - name: Commit Changes
-        run: |
-          git config --global user.name 'gomarkdoc'
-          git config --global user.email 'gomarkdoc@no-reply.com'
-          git add doc.md
-          git commit -m "[skip ci] update gomarkdoc"; true
-          git push
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: gomarkdoc
+          author_email: gomarkdoc@example.com
+          message: '[skip ci] Update Documentation'
+          add: 'doc.md'
