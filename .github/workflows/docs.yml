@@ -24,6 +24,6 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           author_name: gomarkdoc
-          author_email: gomarkdoc@example.com
+          author_email: gomarkdoc@no-reply.com
           message: '[skip ci] Update Documentation'
           add: 'doc.md'
