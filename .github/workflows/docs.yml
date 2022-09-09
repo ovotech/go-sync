@@ -1,0 +1,27 @@
+name: docs
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.19
+      - name: gomarkdoc
+        id: gomarkdoc
+        run: |
+          go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
+          ~/go/bin/gomarkdoc --output doc.md ./pkg/...
+      - name: Commit Changes
+        run: |
+          git config --global user.name 'gomarkdoc'
+          git config --global user.email 'gomarkdoc@no-reply.com'
+          git add doc.md
+          git commit -m "[skip ci] update gomarkdoc"; true
+          git push
