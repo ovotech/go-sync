@@ -3,8 +3,8 @@ package github_test
 import (
 	"testing"
 
-	"github.com/ovotech/go_sync/pkg/github"
-	"github.com/ovotech/go_sync/test/httpclient"
+	"github.com/ovotech/go-sync/pkg/github"
+	"github.com/ovotech/go-sync/test/httpclient"
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 )

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="go test" type="GoTestRunConfiguration" factoryName="Go Test">
-    <module name="go_sync" />
+    <module name="go-sync" />
     <working_directory value="$PROJECT_DIR$" />
     <go_parameters value="-i" />
     <kind value="DIRECTORY" />

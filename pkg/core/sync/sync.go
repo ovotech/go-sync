@@ -3,7 +3,7 @@ package sync
 import (
 	"fmt"
 
-	"github.com/ovotech/go_sync/pkg/core/ports"
+	"github.com/ovotech/go-sync/pkg/core/ports"
 )
 
 // action-able function, such as adding or removing users.

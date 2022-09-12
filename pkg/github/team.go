@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/go-github/v47/github"
-	"github.com/ovotech/go_sync/pkg/core/ports"
+	"github.com/ovotech/go-sync/pkg/core/ports"
 )
 
 type Team struct {

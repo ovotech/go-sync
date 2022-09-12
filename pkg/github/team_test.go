@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v47/github"
-	githubsync "github.com/ovotech/go_sync/pkg/github"
-	"github.com/ovotech/go_sync/test/httpclient"
+	githubsync "github.com/ovotech/go-sync/pkg/github"
+	"github.com/ovotech/go-sync/test/httpclient"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
