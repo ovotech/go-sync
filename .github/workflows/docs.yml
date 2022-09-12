@@ -25,5 +25,5 @@ jobs:
         with:
           author_name: gomarkdoc
           author_email: gomarkdoc@no-reply.com
-          message: '[skip ci] Update Documentation'
+          message: 'Update Documentation'
           add: 'doc.md'
