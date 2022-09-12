@@ -3,8 +3,8 @@ package slack_test
 import (
 	"testing"
 
-	slacksync "github.com/ovotech/go_sync/pkg/slack"
-	"github.com/ovotech/go_sync/test/httpclient"
+	slacksync "github.com/ovotech/go-sync/pkg/slack"
+	"github.com/ovotech/go-sync/test/httpclient"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 )

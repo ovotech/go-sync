@@ -3,7 +3,7 @@
 # github
 
 ```go
-import "github.com/ovotech/go_sync/pkg/github"
+import "github.com/ovotech/go-sync/pkg/github"
 ```
 
 Package github provides services for synchronising GitHub resources.
@@ -99,7 +99,7 @@ func (t *Team) Remove(emails ...string) ([]string, []error, error)
 # slack
 
 ```go
-import "github.com/ovotech/go_sync/pkg/slack"
+import "github.com/ovotech/go-sync/pkg/slack"
 ```
 
 Package github provides services for synchronising Slack resources.
@@ -198,10 +198,75 @@ func (u *UserGroup) Remove(emails ...string) ([]string, []error, error)
 
 Remove a list of email addresses from a Slack UserGroup.
 
+# httpclient
+
+```go
+import "github.com/ovotech/go-sync/test/httpclient"
+```
+
+## Index
+
+- [func New(r http.RoundTripper) *http.Client](<#func-new>)
+- [type MockRoundTrip](<#type-mockroundtrip>)
+  - [func (m *MockRoundTrip) AddGitHubRequest(method string, path string, statusCode int, response string)](<#func-mockroundtrip-addgithubrequest>)
+  - [func (m *MockRoundTrip) AddGraphQlRequest(query string, variables map[string]string, response string)](<#func-mockroundtrip-addgraphqlrequest>)
+  - [func (m *MockRoundTrip) AddSlackRequest(path string, body map[string]string, response string)](<#func-mockroundtrip-addslackrequest>)
+  - [func (m *MockRoundTrip) RoundTrip(req *http.Request) (*http.Response, error)](<#func-mockroundtrip-roundtrip>)
+- [type MockSlackRequest](<#type-mockslackrequest>)
+
+
+## func New
+
+```go
+func New(r http.RoundTripper) *http.Client
+```
+
+## type MockRoundTrip
+
+```go
+type MockRoundTrip struct {
+    mock.Mock
+}
+```
+
+### func \(\*MockRoundTrip\) AddGitHubRequest
+
+```go
+func (m *MockRoundTrip) AddGitHubRequest(method string, path string, statusCode int, response string)
+```
+
+AddGitHubRequest adds a mocked request intended for use with the GitHub SDK.
+
+### func \(\*MockRoundTrip\) AddGraphQlRequest
+
+```go
+func (m *MockRoundTrip) AddGraphQlRequest(query string, variables map[string]string, response string)
+```
+
+### func \(\*MockRoundTrip\) AddSlackRequest
+
+```go
+func (m *MockRoundTrip) AddSlackRequest(path string, body map[string]string, response string)
+```
+
+AddSlackRequest adds a mocked request intended for use with the Slack SDK.
+
+### func \(\*MockRoundTrip\) RoundTrip
+
+```go
+func (m *MockRoundTrip) RoundTrip(req *http.Request) (*http.Response, error)
+```
+
+## type MockSlackRequest
+
+```go
+type MockSlackRequest struct{}
+```
+
 # ports
 
 ```go
-import "github.com/ovotech/go_sync/pkg/core/ports"
+import "github.com/ovotech/go-sync/pkg/core/ports"
 ```
 
 Package ports lists the types of ports expected from Sync's standard services.
@@ -238,7 +303,7 @@ type Service interface {
 # sync
 
 ```go
-import "github.com/ovotech/go_sync/pkg/core/sync"
+import "github.com/ovotech/go-sync/pkg/core/sync"
 ```
 
 Package sync provides a way to synchronise membership of arbitrary services.

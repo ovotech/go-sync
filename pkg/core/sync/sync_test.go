@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/ovotech/go_sync/pkg/core/sync"
+	"github.com/ovotech/go-sync/pkg/core/sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
