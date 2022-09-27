@@ -6,10 +6,17 @@ import (
 	"testing"
 
 	"github.com/ovotech/go-sync/mocks"
+	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+func TestImplementsAdapter(t *testing.T) {
+	t.Parallel()
+
+	assert.Implements(t, (*ports.Adapter)(nil), &UserGroup{})
+}
 
 func TestNew(t *testing.T) {
 	t.Parallel()

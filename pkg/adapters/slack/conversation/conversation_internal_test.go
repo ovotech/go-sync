@@ -5,9 +5,16 @@ import (
 	"testing"
 
 	"github.com/ovotech/go-sync/mocks"
+	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestImplementsAdapter(t *testing.T) {
+	t.Parallel()
+
+	assert.Implements(t, (*ports.Adapter)(nil), &Conversation{})
+}
 
 func TestNew(t *testing.T) {
 	t.Parallel()
@@ -86,7 +93,7 @@ func TestConversation_Remove(t *testing.T) {
 	slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(nil)
 	slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(nil)
 
-	err := adapter.Remove(context.TODO(), "foo@email", "bar@email")
+	err := adapter.Remove(context.TODO(), []string{"foo@email", "bar@email"})
 
 	assert.NoError(t, err)
 	assert.Equal(t, map[string]string{}, adapter.cache)
