@@ -124,7 +124,7 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 }
 
 // Remove removes email addresses from a conversation.
-func (c *Conversation) Remove(_ context.Context, emails ...string) error {
+func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	// If the cache hasn't been generated, regenerate it.
 	if len(c.cache) == 0 {
 		return fmt.Errorf("slack.conversation.remove -> %w", ErrCacheEmpty)
