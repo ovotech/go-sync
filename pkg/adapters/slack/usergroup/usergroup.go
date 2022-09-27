@@ -1,6 +1,8 @@
-package slack
+package usergroup
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -8,32 +10,50 @@ import (
 	"github.com/slack-go/slack"
 )
 
+type iSlackUserGroup interface {
+	GetUserGroupMembers(userGroup string) ([]string, error)
+	GetUsersInfo(users ...string) (*[]slack.User, error)
+	GetUserByEmail(email string) (*slack.User, error)
+	UpdateUserGroupMembers(userGroup string, members string) (slack.UserGroup, error)
+	EnableUserGroup(userGroup string) (slack.UserGroup, error)
+	DisableUserGroup(userGroup string) (slack.UserGroup, error)
+}
+
 type UserGroup struct {
-	client        *slack.Client
+	client        iSlackUserGroup
 	userGroupName string
 	cache         map[string]string
 }
 
-// NewUserGroupService instantiates a new Slack UserGroup service.
-func NewUserGroupService(slackClient *slack.Client, userGroup string) *UserGroup {
-	return &UserGroup{
+var ErrCacheEmpty = errors.New("cache is empty - run Get()")
+
+// New instantiates a new Slack UserGroup adapter.
+func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *UserGroup)) *UserGroup {
+	ugAdapter := &UserGroup{
 		client:        slackClient,
 		userGroupName: userGroup,
 		cache:         map[string]string{},
 	}
+
+	for _, fn := range optsFn {
+		fn(ugAdapter)
+	}
+
+	return ugAdapter
 }
 
-func (u *UserGroup) get() ([]string, error) {
+// Get a list of email addresses in a Slack User Group.
+func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 	// Retrieve a plain list of Slack IDs in the user group.
 	groupMembers, err := u.client.GetUserGroupMembers(u.userGroupName)
 	if err != nil {
-		return nil, fmt.Errorf("GetUserGroupMembers -> %w", err)
+		return nil, fmt.Errorf("slack.usergroup.get.getusergroupmembers -> %w", err)
 	}
 
 	// Get the user info for each of the users.
 	users, err := u.client.GetUsersInfo(groupMembers...)
 	if err != nil {
-		return nil, fmt.Errorf("GetUsersInfo -> %w", err)
+		return nil, fmt.Errorf("slack.usergroup.get.getusersinfo -> %w", err)
 	}
 
 	emails := make([]string, 0, len(*users))
@@ -46,26 +66,12 @@ func (u *UserGroup) get() ([]string, error) {
 	return emails, nil
 }
 
-// Get a list of email addresses in a Slack User Group.
-func (u *UserGroup) Get() ([]string, error) {
-	ids, err := u.get()
-	if err != nil {
-		return nil, fmt.Errorf("slack.usergroup.Get -> %w", err)
-	}
-
-	return ids, nil
-}
-
 // Add a list of emails to a Slack UserGroup.
 // Since the Slack API takes all of this as a single request, it either returns a full list of successful emails,
 // or an error.
-func (u *UserGroup) Add(emails ...string) ([]string, []error, error) {
-	// If the cache hasn't been generated, regenerate it.
+func (u *UserGroup) Add(_ context.Context, emails []string) error {
 	if len(u.cache) == 0 {
-		_, err := u.get()
-		if err != nil {
-			return nil, nil, fmt.Errorf("slack.usergroup.Add.get -> %w", err)
-		}
+		return fmt.Errorf("slack.usergroup.add -> %w", ErrCacheEmpty)
 	}
 
 	// The updatedUserGroup is existing users + new users.
@@ -80,7 +86,7 @@ func (u *UserGroup) Add(emails ...string) ([]string, []error, error) {
 	for _, email := range emails {
 		user, err := u.client.GetUserByEmail(email)
 		if err != nil {
-			return nil, nil, fmt.Errorf("slack.usergroup.Add.GetUserByEmail(%s) -> %w", email, err)
+			return fmt.Errorf("slack.usergroup.add.getuserbyemail(%s) -> %w", email, err)
 		}
 		// Add the new email user IDs to the list.
 		updatedUserGroup = append(updatedUserGroup, user.ID)
@@ -99,38 +105,34 @@ func (u *UserGroup) Add(emails ...string) ([]string, []error, error) {
 	if err != nil {
 		u.cache = map[string]string{}
 
-		return nil, nil, fmt.Errorf("slack.usergroup.Add.UpdateUserGroupMembers(%s) -> %w", u.userGroupName, err)
+		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupName, err)
 	}
 
 	// If the group is disabled, re-enable it.
 	if group.DateDelete != 0 {
 		_, err = u.client.EnableUserGroup(u.userGroupName)
 		if err != nil {
-			return nil, nil, fmt.Errorf("slack.usergroup.Add.EnableUserGroup(%s) -> %w", u.userGroupName, err)
+			return fmt.Errorf("slack.usergroup.add.enableusergroup(%s) -> %w", u.userGroupName, err)
 		}
 	}
 
-	return emails, nil, nil
+	return nil
 }
 
 // Remove a list of email addresses from a Slack UserGroup.
-func (u *UserGroup) Remove(emails ...string) ([]string, []error, error) {
-	// If the cache hasn't been generated, regenerate it.
+func (u *UserGroup) Remove(_ context.Context, emails []string) error {
 	if len(u.cache) == 0 {
-		_, err := u.get()
-		if err != nil {
-			return nil, nil, fmt.Errorf("slack.usergroup.Remove.get -> %w", err)
-		}
+		return fmt.Errorf("slack.usergroup.remove -> %w", ErrCacheEmpty)
 	}
 
 	// If this change would remove all users, disable the group instead.
 	if len(u.cache) == len(emails) {
 		_, err := u.client.DisableUserGroup(u.userGroupName)
 		if err != nil {
-			return nil, nil, fmt.Errorf("slack.usergroup.Remove.DisableUserGroup(%s) -> %w", u.userGroupName, err)
+			return fmt.Errorf("slack.usergroup.remove.disableusergroup(%s) -> %w", u.userGroupName, err)
 		}
 
-		return emails, nil, nil
+		return nil
 	}
 
 	// Convert the list of email addresses into a map to efficiently lookup emails to remove.
@@ -156,8 +158,8 @@ func (u *UserGroup) Remove(emails ...string) ([]string, []error, error) {
 
 	_, err := u.client.UpdateUserGroupMembers(u.userGroupName, concatUserList)
 	if err != nil {
-		return nil, nil, fmt.Errorf("slack.usergroup.Remove.UpdateUserGroupMembers(%s, ...) -> %w", u.userGroupName, err)
+		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
 
-	return emails, nil, nil
+	return nil
 }
