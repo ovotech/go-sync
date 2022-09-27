@@ -147,7 +147,7 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
   - [func New(client *slack.Client, channelName string, optsFn ...func(conversation *Conversation)) *Conversation](<#func-new>)
   - [func (c *Conversation) Add(_ context.Context, emails []string) error](<#func-conversation-add>)
   - [func (c *Conversation) Get(_ context.Context) ([]string, error)](<#func-conversation-get>)
-  - [func (c *Conversation) Remove(_ context.Context, emails ...string) error](<#func-conversation-remove>)
+  - [func (c *Conversation) Remove(_ context.Context, emails []string) error](<#func-conversation-remove>)
 
 
 ## Variables
@@ -191,7 +191,7 @@ Get gets a list of emails from a Slack channel.
 ### func \(\*Conversation\) Remove
 
 ```go
-func (c *Conversation) Remove(_ context.Context, emails ...string) error
+func (c *Conversation) Remove(_ context.Context, emails []string) error
 ```
 
 Remove removes email addresses from a conversation.
