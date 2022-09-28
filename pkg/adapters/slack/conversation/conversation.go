@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
+	"github.com/ovotech/go-sync/internal/types"
 	"github.com/slack-go/slack"
 )
 
@@ -21,9 +24,17 @@ type Conversation struct {
 	client           iSlackConversation
 	conversationName string
 	cache            map[string]string // This stores the Slack ID -> email mapping for use with the Remove method.
+	logger           types.Logger
 }
 
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
+
+// OptionLogger can be used to set a custom logger.
+func OptionLogger(logger types.Logger) func(*Conversation) {
+	return func(conversation *Conversation) {
+		conversation.logger = logger
+	}
+}
 
 // New instantiates a new Slack conversation adapter.
 func New(client *slack.Client, channelName string, optsFn ...func(conversation *Conversation)) *Conversation {
@@ -31,6 +42,7 @@ func New(client *slack.Client, channelName string, optsFn ...func(conversation *
 		client:           client,
 		conversationName: channelName,
 		cache:            make(map[string]string),
+		logger:           log.New(os.Stderr, "[go-sync/slack/conversation] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -74,6 +86,8 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 
 // Get gets a list of emails from a Slack channel.
 func (c *Conversation) Get(_ context.Context) ([]string, error) {
+	c.logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
+
 	slackUsers, err := c.getListOfSlackUsernames()
 	if err != nil {
 		return nil, fmt.Errorf("slack.conversation.get.getlistofslackusernames -> %w", err)
@@ -95,11 +109,15 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 		}
 	}
 
+	c.logger.Println("Fetched accounts successfully")
+
 	return emails, nil
 }
 
 // Add adds an email to a conversation.
 func (c *Conversation) Add(_ context.Context, emails []string) error {
+	c.logger.Printf("Adding %s to Slack conversation %s", emails, c.conversationName)
+
 	slackIds := make([]string, len(emails))
 
 	for index, email := range emails {
@@ -120,11 +138,15 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 		return fmt.Errorf("slack.conversation.add.inviteuserstoconversation(%s, ...) -> %w", c.conversationName, err)
 	}
 
+	c.logger.Println("Finished adding accounts successfully")
+
 	return nil
 }
 
 // Remove removes email addresses from a conversation.
 func (c *Conversation) Remove(_ context.Context, emails []string) error {
+	c.logger.Printf("Removing %s from Slack conversation %s", emails, c.conversationName)
+
 	// If the cache hasn't been generated, regenerate it.
 	if len(c.cache) == 0 {
 		return fmt.Errorf("slack.conversation.remove -> %w", ErrCacheEmpty)
@@ -147,6 +169,8 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 		// To prevent rate limiting, sleep for 1 second after each kick.
 		time.Sleep(1 * time.Second)
 	}
+
+	c.logger.Println("Finished removing accounts successfully")
 
 	return nil
 }
