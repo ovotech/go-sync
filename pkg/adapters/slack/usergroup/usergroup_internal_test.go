@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func TestImplementsAdapter(t *testing.T) {
+func TestImplementsInterface(t *testing.T) {
 	t.Parallel()
 
 	assert.Implements(t, (*ports.Adapter)(nil), &UserGroup{})
