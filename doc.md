@@ -11,6 +11,7 @@ Package ports lists the types of methods expected from Sync's standard adapters.
 ## Index
 
 - [type Adapter](<#type-adapter>)
+- [type Sync](<#type-sync>)
 
 
 ## type Adapter
@@ -25,6 +26,16 @@ type Adapter interface {
 }
 ```
 
+## type Sync
+
+Sync interface can be used for downstream services that implement Sync in your own workflow.
+
+```go
+type Sync interface {
+    SyncWith(ctx context.Context, adapter Adapter) error // Sync the source service with this service.
+}
+```
+
 # sync
 
 ```go
@@ -35,10 +46,19 @@ Package sync provides a way to synchronise membership of arbitrary services.
 
 ## Index
 
+- [func OptionLogger(logger types.Logger) func(*Sync)](<#func-optionlogger>)
 - [type Sync](<#type-sync>)
   - [func New(source ports.Adapter, optsFn ...func(*Sync)) *Sync](<#func-new>)
   - [func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error](<#func-sync-syncwith>)
 
+
+## func OptionLogger
+
+```go
+func OptionLogger(logger types.Logger) func(*Sync)
+```
+
+OptionLogger can be used to set a custom logger.
 
 ## type Sync
 
@@ -75,6 +95,7 @@ import "github.com/ovotech/go-sync/pkg/adapters/github/team"
 
 ## Index
 
+- [func OptionLogger(logger types.Logger) func(*Team)](<#func-optionlogger>)
 - [type GitHubDiscovery](<#type-githubdiscovery>)
 - [type Team](<#type-team>)
   - [func New(client *github.Client, discovery GitHubDiscovery, org string, slug string, optsFn ...func(*Team)) *Team](<#func-new>)
@@ -82,6 +103,14 @@ import "github.com/ovotech/go-sync/pkg/adapters/github/team"
   - [func (t *Team) Get(ctx context.Context) ([]string, error)](<#func-team-get>)
   - [func (t *Team) Remove(ctx context.Context, emails []string) error](<#func-team-remove>)
 
+
+## func OptionLogger
+
+```go
+func OptionLogger(logger types.Logger) func(*Team)
+```
+
+OptionLogger can be used to set a custom logger.
 
 ## type GitHubDiscovery
 
@@ -143,6 +172,7 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
 ## Index
 
 - [Variables](<#variables>)
+- [func OptionLogger(logger types.Logger) func(*Conversation)](<#func-optionlogger>)
 - [type Conversation](<#type-conversation>)
   - [func New(client *slack.Client, channelName string, optsFn ...func(conversation *Conversation)) *Conversation](<#func-new>)
   - [func (c *Conversation) Add(_ context.Context, emails []string) error](<#func-conversation-add>)
@@ -155,6 +185,14 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
 ```go
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 ```
+
+## func OptionLogger
+
+```go
+func OptionLogger(logger types.Logger) func(*Conversation)
+```
+
+OptionLogger can be used to set a custom logger.
 
 ## type Conversation
 
@@ -205,6 +243,7 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/usergroup"
 ## Index
 
 - [Variables](<#variables>)
+- [func OptionLogger(logger types.Logger) func(*UserGroup)](<#func-optionlogger>)
 - [type UserGroup](<#type-usergroup>)
   - [func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *UserGroup)) *UserGroup](<#func-new>)
   - [func (u *UserGroup) Add(_ context.Context, emails []string) error](<#func-usergroup-add>)
@@ -217,6 +256,14 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/usergroup"
 ```go
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 ```
+
+## func OptionLogger
+
+```go
+func OptionLogger(logger types.Logger) func(*UserGroup)
+```
+
+OptionLogger can be used to set a custom logger.
 
 ## type UserGroup
 
