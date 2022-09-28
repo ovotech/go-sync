@@ -3,8 +3,11 @@ package team
 import (
 	"context"
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/google/go-github/v47/github"
+	"github.com/ovotech/go-sync/internal/types"
 )
 
 // GitHubDiscovery is required because there are multiple ways to convert a GitHub email into a username.
@@ -42,6 +45,14 @@ type Team struct {
 	org       string            // GitHub organisation.
 	slug      string            // GitHub team slug.
 	cache     map[string]string // Cache of users.
+	logger    types.Logger
+}
+
+// OptionLogger can be used to set a custom logger.
+func OptionLogger(logger types.Logger) func(*Team) {
+	return func(team *Team) {
+		team.logger = logger
+	}
 }
 
 // New instantiates a new GitHub Team adapter.
@@ -52,6 +63,7 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 		org:       org,
 		slug:      slug,
 		cache:     make(map[string]string),
+		logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -63,6 +75,8 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 
 // Get a list of emails in a GitHub team.
 func (t *Team) Get(ctx context.Context) ([]string, error) {
+	t.logger.Printf("Fetching accounts from GitHub team %s/%s", t.org, t.slug)
+
 	var out []string
 
 	opts := &github.TeamListTeamMembersOptions{}
@@ -96,11 +110,15 @@ func (t *Team) Get(ctx context.Context) ([]string, error) {
 		opts.Page = resp.NextPage
 	}
 
+	t.logger.Println("Fetched accounts successfully")
+
 	return out, nil
 }
 
 // Add emails to a GitHub Team.
 func (t *Team) Add(ctx context.Context, emails []string) error {
+	t.logger.Printf("Adding %s to GitHub team %s/%s", emails, t.org, t.slug)
+
 	names, err := t.discovery.GetUsernameFromEmail(ctx, emails)
 	if err != nil {
 		return fmt.Errorf("github.team.add.discovery -> %w", err)
@@ -117,11 +135,15 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 		}
 	}
 
+	t.logger.Println("Finished adding accounts successfully")
+
 	return nil
 }
 
 // Remove a list of emails from a GitHub team.
 func (t *Team) Remove(ctx context.Context, emails []string) error {
+	t.logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
+
 	if len(t.cache) == 0 {
 		if _, err := t.Get(ctx); err != nil {
 			return fmt.Errorf("github.team.remove.get -> %w", err)
@@ -136,6 +158,8 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 			return fmt.Errorf("github.team.remove.removeteammembershipbyslug -> %w", err)
 		}
 	}
+
+	t.logger.Println("Finished removing accounts successfully")
 
 	return nil
 }

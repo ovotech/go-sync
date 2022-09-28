@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"time"
 
+	"github.com/ovotech/go-sync/internal/types"
 	"github.com/slack-go/slack"
 )
 
@@ -23,9 +26,17 @@ type UserGroup struct {
 	client        iSlackUserGroup
 	userGroupName string
 	cache         map[string]string
+	logger        types.Logger
 }
 
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
+
+// OptionLogger can be used to set a custom logger.
+func OptionLogger(logger types.Logger) func(*UserGroup) {
+	return func(userGroup *UserGroup) {
+		userGroup.logger = logger
+	}
+}
 
 // New instantiates a new Slack UserGroup adapter.
 func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *UserGroup)) *UserGroup {
@@ -33,6 +44,7 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 		client:        slackClient,
 		userGroupName: userGroup,
 		cache:         map[string]string{},
+		logger:        log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -44,6 +56,8 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 
 // Get a list of email addresses in a Slack User Group.
 func (u *UserGroup) Get(_ context.Context) ([]string, error) {
+	u.logger.Printf("Fetching accounts from Slack UserGroup %s", u.userGroupName)
+
 	// Retrieve a plain list of Slack IDs in the user group.
 	groupMembers, err := u.client.GetUserGroupMembers(u.userGroupName)
 	if err != nil {
@@ -63,6 +77,8 @@ func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 		u.cache[user.Profile.Email] = user.ID
 	}
 
+	u.logger.Println("Fetched accounts successfully")
+
 	return emails, nil
 }
 
@@ -70,6 +86,8 @@ func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 // Since the Slack API takes all of this as a single request, it either returns a full list of successful emails,
 // or an error.
 func (u *UserGroup) Add(_ context.Context, emails []string) error {
+	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
+
 	if len(u.cache) == 0 {
 		return fmt.Errorf("slack.usergroup.add -> %w", ErrCacheEmpty)
 	}
@@ -116,11 +134,15 @@ func (u *UserGroup) Add(_ context.Context, emails []string) error {
 		}
 	}
 
+	u.logger.Println("Finished adding accounts successfully")
+
 	return nil
 }
 
 // Remove a list of email addresses from a Slack UserGroup.
 func (u *UserGroup) Remove(_ context.Context, emails []string) error {
+	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
+
 	if len(u.cache) == 0 {
 		return fmt.Errorf("slack.usergroup.remove -> %w", ErrCacheEmpty)
 	}
@@ -160,6 +182,8 @@ func (u *UserGroup) Remove(_ context.Context, emails []string) error {
 	if err != nil {
 		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
+
+	u.logger.Println("Finished removing accounts successfully")
 
 	return nil
 }
