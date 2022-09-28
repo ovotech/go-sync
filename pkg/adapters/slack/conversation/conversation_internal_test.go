@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestImplementsAdapter(t *testing.T) {
+func TestImplementsInterface(t *testing.T) {
 	t.Parallel()
 
 	assert.Implements(t, (*ports.Adapter)(nil), &Conversation{})
