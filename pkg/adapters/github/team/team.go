@@ -1,3 +1,8 @@
+// Package team synchronises emails with GitHub teams.
+//
+// You must provide a discovery service in order to use this adapter. This is because converting email addresses to
+// GitHub usernames isn't straightforward. At OVO, we enforce SAML for our GitHub users, and have provided a
+// SAML -> GitHub Username discovery service, but you may need to write your own.
 package team
 
 import (
@@ -17,30 +22,26 @@ type GitHubDiscovery interface {
 	GetEmailFromUsername(context.Context, []string) ([]string, error)
 }
 
+// iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iGitHubTeam interface {
 	ListTeamMembersBySlug(
-		context.Context,
-		string,
-		string,
-		*github.TeamListTeamMembersOptions,
+		ctx context.Context,
+		org,
+		slug string,
+		opts *github.TeamListTeamMembersOptions,
 	) ([]*github.User, *github.Response, error)
 	AddTeamMembershipBySlug(
-		context.Context,
-		string,
-		string,
-		string,
-		*github.TeamAddTeamMembershipOptions,
+		ctx context.Context,
+		org,
+		slug,
+		user string,
+		opts *github.TeamAddTeamMembershipOptions,
 	) (*github.Membership, *github.Response, error)
-	RemoveTeamMembershipBySlug(
-		context.Context,
-		string,
-		string,
-		string,
-	) (*github.Response, error)
+	RemoveTeamMembershipBySlug(ctx context.Context, org, slug, user string) (*github.Response, error)
 }
 
 type Team struct {
-	client    iGitHubTeam       // GitHub v3 REST API client.
+	teams     iGitHubTeam       // GitHub v3 REST API teams.
 	discovery GitHubDiscovery   // Discovery adapter to convert GH users -> emails (and vice versa).
 	org       string            // GitHub organisation.
 	slug      string            // GitHub team slug.
@@ -58,7 +59,7 @@ func OptionLogger(logger types.Logger) func(*Team) {
 // New instantiates a new GitHub Team adapter.
 func New(client *github.Client, discovery GitHubDiscovery, org string, slug string, optsFn ...func(*Team)) *Team {
 	team := &Team{
-		client:    client.Teams,
+		teams:     client.Teams,
 		discovery: discovery,
 		org:       org,
 		slug:      slug,
@@ -73,7 +74,7 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 	return team
 }
 
-// Get a list of emails in a GitHub team.
+// Get emails of users in a GitHub team.
 func (t *Team) Get(ctx context.Context) ([]string, error) {
 	t.logger.Printf("Fetching accounts from GitHub team %s/%s", t.org, t.slug)
 
@@ -82,7 +83,7 @@ func (t *Team) Get(ctx context.Context) ([]string, error) {
 	opts := &github.TeamListTeamMembersOptions{}
 
 	for {
-		users, resp, err := t.client.ListTeamMembersBySlug(ctx, t.org, t.slug, opts)
+		users, resp, err := t.teams.ListTeamMembersBySlug(ctx, t.org, t.slug, opts)
 		if err != nil {
 			return nil, fmt.Errorf("github.team.get.listteammembersbyslug(%s, %s) -> %w", t.org, t.slug, err)
 		}
@@ -129,7 +130,7 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 			Role: "member",
 		}
 
-		_, _, err = t.client.AddTeamMembershipBySlug(ctx, t.org, t.slug, name, opts)
+		_, _, err = t.teams.AddTeamMembershipBySlug(ctx, t.org, t.slug, name, opts)
 		if err != nil {
 			return fmt.Errorf("github.team.add.addteammembershipbyslug(%s, %s, %s) -> %w", t.org, t.slug, name, err)
 		}
@@ -140,7 +141,7 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// Remove a list of emails from a GitHub team.
+// Remove emails from a GitHub team.
 func (t *Team) Remove(ctx context.Context, emails []string) error {
 	t.logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
 
@@ -153,7 +154,7 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 	for _, email := range emails {
 		name := t.cache[email]
 
-		_, err := t.client.RemoveTeamMembershipBySlug(ctx, t.org, t.slug, name)
+		_, err := t.teams.RemoveTeamMembershipBySlug(ctx, t.org, t.slug, name)
 		if err != nil {
 			return fmt.Errorf("github.team.remove.removeteammembershipbyslug -> %w", err)
 		}

@@ -1,3 +1,8 @@
+// Package usergroup synchronises emails with a Slack UserGroup.
+//
+// In order to use this adapter, you'll need an authenticated Slack client and the ID of the usergroup.
+// This isn't particularly easy to find, you'll need to log in to Slack via a web browser, and navigate to
+// `People & User Groups`. Find your User group, and the URL will contain the ID of the group.
 package usergroup
 
 import (
@@ -13,6 +18,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
+// iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
 	GetUserGroupMembers(userGroup string) ([]string, error)
 	GetUsersInfo(users ...string) (*[]slack.User, error)
@@ -29,6 +35,7 @@ type UserGroup struct {
 	logger        types.Logger
 }
 
+// ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 
 // OptionLogger can be used to set a custom logger.
@@ -54,7 +61,7 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 	return ugAdapter
 }
 
-// Get a list of email addresses in a Slack User Group.
+// Get emails of Slack users in a User group.
 func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 	u.logger.Printf("Fetching accounts from Slack UserGroup %s", u.userGroupName)
 
@@ -82,9 +89,7 @@ func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 	return emails, nil
 }
 
-// Add a list of emails to a Slack UserGroup.
-// Since the Slack API takes all of this as a single request, it either returns a full list of successful emails,
-// or an error.
+// Add emails to a Slack User group.
 func (u *UserGroup) Add(_ context.Context, emails []string) error {
 	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
 
@@ -139,7 +144,7 @@ func (u *UserGroup) Add(_ context.Context, emails []string) error {
 	return nil
 }
 
-// Remove a list of email addresses from a Slack UserGroup.
+// Remove emails from a Slack User group.
 func (u *UserGroup) Remove(_ context.Context, emails []string) error {
 	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
 

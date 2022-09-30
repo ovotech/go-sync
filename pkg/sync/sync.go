@@ -1,4 +1,4 @@
-// Package sync provides a way to synchronise membership of arbitrary services.
+// Package sync is the logic that synchronises adapters together, and determines what should be where.
 package sync
 
 import (
@@ -11,15 +11,6 @@ import (
 	"github.com/ovotech/go-sync/pkg/ports"
 )
 
-type Sync struct {
-	DryRun bool            // Flag to indicate if running in dryRun mode.
-	Add    bool            // Flag to indicate if Sync should add accounts.
-	Remove bool            // Flag to indicate if Sync should remove accounts.
-	source ports.Adapter   // The source of truth whose membership will be synced with other services.
-	cache  map[string]bool // cache prevents polling the source more than once.
-	logger types.Logger    // Custom logger.
-}
-
 // generateHashMap takes a list of strings and returns a hashed map of { item => true }.
 func generateHashMap(i []string) map[string]bool {
 	out := map[string]bool{}
@@ -30,45 +21,72 @@ func generateHashMap(i []string) map[string]bool {
 	return out
 }
 
-// getAccountsToAdd takes a list of accounts, and returns a list that aren't in the cache.
-func (s *Sync) getAccountsToAdd(accounts []string) []string {
-	out := make([]string, 0, len(accounts))
-	hashMap := generateHashMap(accounts)
+type Sync struct {
+	DryRun bool            // DryRun mode calculates membership, but doesn't add or remove.
+	Add    bool            // Perform Add operations.
+	Remove bool            // Perform Remove operations.
+	source ports.Adapter   // The source adapter.
+	cache  map[string]bool // cache prevents polling the source more than once.
+	logger types.Logger
+}
 
-	for account := range s.cache {
-		if !hashMap[account] {
-			out = append(out, account)
+// New creates a new Sync service.
+func New(source ports.Adapter, optsFn ...func(*Sync)) *Sync {
+	sync := &Sync{
+		DryRun: false,
+		Add:    true,
+		Remove: true,
+		source: source,
+		cache:  make(map[string]bool),
+		logger: log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	for _, fn := range optsFn {
+		fn(sync)
+	}
+
+	return sync
+}
+
+// getThingsToAdd determines things that should be added to the destination service.
+func (s *Sync) getThingsToAdd(things []string) []string {
+	out := make([]string, 0, len(things))
+	hashMap := generateHashMap(things)
+
+	for thing := range s.cache {
+		if !hashMap[thing] {
+			out = append(out, thing)
 		}
 	}
 
 	return out
 }
 
-// getAccountsToRemove takes a list of accounts, and returns a list that aren't in the cache.
-func (s *Sync) getAccountsToRemove(accounts []string) []string {
+// getThingsToRemove determines things that should be removed from the destination service.
+func (s *Sync) getThingsToRemove(things []string) []string {
 	var out []string
 
-	hashMap := generateHashMap(accounts)
-	for account := range hashMap {
-		if !s.cache[account] {
-			out = append(out, account)
+	hashMap := generateHashMap(things)
+	for thing := range hashMap {
+		if !s.cache[thing] {
+			out = append(out, thing)
 		}
 	}
 
 	return out
 }
 
-// generateCache populates the cache with a hash of accounts in the source for efficient lookup.
+// generateCache populates the cache with a map of things for efficient lookup.
 func (s *Sync) generateCache(ctx context.Context) error {
 	if len(s.cache) == 0 {
-		s.logger.Println("Getting accounts from source adapter")
+		s.logger.Println("Getting things from source adapter")
 
-		accounts, err := s.source.Get(ctx)
+		things, err := s.source.Get(ctx)
 		if err != nil {
 			return fmt.Errorf("get -> %w", err)
 		}
 
-		s.cache = generateHashMap(accounts)
+		s.cache = generateHashMap(things)
 	}
 
 	return nil
@@ -81,63 +99,45 @@ func OptionLogger(logger types.Logger) func(*Sync) {
 	}
 }
 
-// New creates a new Sync service.
-func New(source ports.Adapter, optsFn ...func(*Sync)) *Sync {
-	sync := &Sync{
-		DryRun: false,
-		Add:    true,
-		Remove: true,
-		source: source,
-		cache:  map[string]bool{},
-		logger: log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(sync)
-	}
-
-	return sync
-}
-
-// remove processes removing accounts from a destination service.
-func (s *Sync) remove(ctx context.Context, accounts []string, removeFn func(context.Context, []string) error) error {
-	accountsToAction := s.getAccountsToRemove(accounts)
+// remove processes removing things from a destination service.
+func (s *Sync) remove(ctx context.Context, things []string, removeFn func(context.Context, []string) error) error {
+	thingsToRemove := s.getThingsToRemove(things)
 
 	if s.DryRun || !s.Remove {
-		s.logger.Printf("Would remove %s, but remove is disabled", accountsToAction)
+		s.logger.Printf("Would remove %s, but remove is disabled", thingsToRemove)
 
 		return nil
 	}
 
-	if len(accountsToAction) == 0 {
+	if len(thingsToRemove) == 0 {
 		return nil
 	}
 
-	s.logger.Printf("Removing %s", accountsToAction)
+	s.logger.Printf("Removing %s", thingsToRemove)
 
-	return removeFn(ctx, accountsToAction)
+	return removeFn(ctx, thingsToRemove)
 }
 
-// add processes adding accounts to a destination service.
-func (s *Sync) add(ctx context.Context, accounts []string, removeFn func(context.Context, []string) error) error {
-	accountsToAction := s.getAccountsToAdd(accounts)
+// add processes adding things to a destination service.
+func (s *Sync) add(ctx context.Context, things []string, removeFn func(context.Context, []string) error) error {
+	thingsToAdd := s.getThingsToAdd(things)
 
 	if s.DryRun || !s.Add {
-		s.logger.Printf("Would add %s, but add is disabled", accountsToAction)
+		s.logger.Printf("Would add %s, but add is disabled", thingsToAdd)
 
 		return nil
 	}
 
-	if len(accountsToAction) == 0 {
+	if len(thingsToAdd) == 0 {
 		return nil
 	}
 
-	s.logger.Printf("Adding %s", accountsToAction)
+	s.logger.Printf("Adding %s", thingsToAdd)
 
-	return removeFn(ctx, accountsToAction)
+	return removeFn(ctx, thingsToAdd)
 }
 
-// SyncWith synchronises the requested service with the source service, adding & removing members.
+// SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
 func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error {
 	s.logger.Println("Starting sync")
 
@@ -146,23 +146,23 @@ func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error {
 		return fmt.Errorf("sync.syncwith.generateCache -> %w", err)
 	}
 
-	s.logger.Println("Getting accounts from destination adapter")
+	s.logger.Println("Getting things from destination adapter")
 
-	accounts, err := adapter.Get(ctx)
+	things, err := adapter.Get(ctx)
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.get -> %w", err)
 	}
 
-	s.logger.Println("Processing accounts to remove")
+	s.logger.Println("Processing things to remove")
 
-	err = s.remove(ctx, accounts, adapter.Remove)
+	err = s.remove(ctx, things, adapter.Remove)
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.remove -> %w", err)
 	}
 
-	s.logger.Println("Processing accounts to add")
+	s.logger.Println("Processing things to add")
 
-	err = s.add(ctx, accounts, adapter.Add)
+	err = s.add(ctx, things, adapter.Add)
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.add -> %w", err)
 	}
