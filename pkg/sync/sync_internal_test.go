@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ovotech/go-sync/mocks"
+	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/stretchr/testify/assert"
 )

@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ovotech/go-sync/mocks"
+	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/ovotech/go-sync/pkg/adapters/github/team"
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
