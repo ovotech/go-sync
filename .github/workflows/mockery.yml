@@ -20,7 +20,7 @@ jobs:
         id: mockery
         run: |
           go install github.com/vektra/mockery/v2@latest
-          ~/go/bin/mockery --all --exported --with-expecter
+          ~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
       - name: Commit changes
         uses: EndBug/add-and-commit@v9
         with:

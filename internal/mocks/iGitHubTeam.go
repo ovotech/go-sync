@@ -22,13 +22,13 @@ func (_m *IGitHubTeam) EXPECT() *IGitHubTeam_Expecter {
 	return &IGitHubTeam_Expecter{mock: &_m.Mock}
 }
 
-// AddTeamMembershipBySlug provides a mock function with given fields: _a0, _a1, _a2, _a3, _a4
-func (_m *IGitHubTeam) AddTeamMembershipBySlug(_a0 context.Context, _a1 string, _a2 string, _a3 string, _a4 *github.TeamAddTeamMembershipOptions) (*github.Membership, *github.Response, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3, _a4)
+// AddTeamMembershipBySlug provides a mock function with given fields: ctx, org, slug, user, opts
+func (_m *IGitHubTeam) AddTeamMembershipBySlug(ctx context.Context, org string, slug string, user string, opts *github.TeamAddTeamMembershipOptions) (*github.Membership, *github.Response, error) {
+	ret := _m.Called(ctx, org, slug, user, opts)
 
 	var r0 *github.Membership
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, *github.TeamAddTeamMembershipOptions) *github.Membership); ok {
-		r0 = rf(_a0, _a1, _a2, _a3, _a4)
+		r0 = rf(ctx, org, slug, user, opts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*github.Membership)
@@ -37,7 +37,7 @@ func (_m *IGitHubTeam) AddTeamMembershipBySlug(_a0 context.Context, _a1 string, 
 
 	var r1 *github.Response
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, *github.TeamAddTeamMembershipOptions) *github.Response); ok {
-		r1 = rf(_a0, _a1, _a2, _a3, _a4)
+		r1 = rf(ctx, org, slug, user, opts)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*github.Response)
@@ -46,7 +46,7 @@ func (_m *IGitHubTeam) AddTeamMembershipBySlug(_a0 context.Context, _a1 string, 
 
 	var r2 error
 	if rf, ok := ret.Get(2).(func(context.Context, string, string, string, *github.TeamAddTeamMembershipOptions) error); ok {
-		r2 = rf(_a0, _a1, _a2, _a3, _a4)
+		r2 = rf(ctx, org, slug, user, opts)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -60,16 +60,16 @@ type IGitHubTeam_AddTeamMembershipBySlug_Call struct {
 }
 
 // AddTeamMembershipBySlug is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 string
-//   - _a2 string
-//   - _a3 string
-//   - _a4 *github.TeamAddTeamMembershipOptions
-func (_e *IGitHubTeam_Expecter) AddTeamMembershipBySlug(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}, _a4 interface{}) *IGitHubTeam_AddTeamMembershipBySlug_Call {
-	return &IGitHubTeam_AddTeamMembershipBySlug_Call{Call: _e.mock.On("AddTeamMembershipBySlug", _a0, _a1, _a2, _a3, _a4)}
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - user string
+//   - opts *github.TeamAddTeamMembershipOptions
+func (_e *IGitHubTeam_Expecter) AddTeamMembershipBySlug(ctx interface{}, org interface{}, slug interface{}, user interface{}, opts interface{}) *IGitHubTeam_AddTeamMembershipBySlug_Call {
+	return &IGitHubTeam_AddTeamMembershipBySlug_Call{Call: _e.mock.On("AddTeamMembershipBySlug", ctx, org, slug, user, opts)}
 }
 
-func (_c *IGitHubTeam_AddTeamMembershipBySlug_Call) Run(run func(_a0 context.Context, _a1 string, _a2 string, _a3 string, _a4 *github.TeamAddTeamMembershipOptions)) *IGitHubTeam_AddTeamMembershipBySlug_Call {
+func (_c *IGitHubTeam_AddTeamMembershipBySlug_Call) Run(run func(ctx context.Context, org string, slug string, user string, opts *github.TeamAddTeamMembershipOptions)) *IGitHubTeam_AddTeamMembershipBySlug_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string), args[4].(*github.TeamAddTeamMembershipOptions))
 	})
@@ -81,13 +81,13 @@ func (_c *IGitHubTeam_AddTeamMembershipBySlug_Call) Return(_a0 *github.Membershi
 	return _c
 }
 
-// ListTeamMembersBySlug provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *IGitHubTeam) ListTeamMembersBySlug(_a0 context.Context, _a1 string, _a2 string, _a3 *github.TeamListTeamMembersOptions) ([]*github.User, *github.Response, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// ListTeamMembersBySlug provides a mock function with given fields: ctx, org, slug, opts
+func (_m *IGitHubTeam) ListTeamMembersBySlug(ctx context.Context, org string, slug string, opts *github.TeamListTeamMembersOptions) ([]*github.User, *github.Response, error) {
+	ret := _m.Called(ctx, org, slug, opts)
 
 	var r0 []*github.User
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, *github.TeamListTeamMembersOptions) []*github.User); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(ctx, org, slug, opts)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]*github.User)
@@ -96,7 +96,7 @@ func (_m *IGitHubTeam) ListTeamMembersBySlug(_a0 context.Context, _a1 string, _a
 
 	var r1 *github.Response
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, *github.TeamListTeamMembersOptions) *github.Response); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(ctx, org, slug, opts)
 	} else {
 		if ret.Get(1) != nil {
 			r1 = ret.Get(1).(*github.Response)
@@ -105,7 +105,7 @@ func (_m *IGitHubTeam) ListTeamMembersBySlug(_a0 context.Context, _a1 string, _a
 
 	var r2 error
 	if rf, ok := ret.Get(2).(func(context.Context, string, string, *github.TeamListTeamMembersOptions) error); ok {
-		r2 = rf(_a0, _a1, _a2, _a3)
+		r2 = rf(ctx, org, slug, opts)
 	} else {
 		r2 = ret.Error(2)
 	}
@@ -119,15 +119,15 @@ type IGitHubTeam_ListTeamMembersBySlug_Call struct {
 }
 
 // ListTeamMembersBySlug is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 string
-//   - _a2 string
-//   - _a3 *github.TeamListTeamMembersOptions
-func (_e *IGitHubTeam_Expecter) ListTeamMembersBySlug(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *IGitHubTeam_ListTeamMembersBySlug_Call {
-	return &IGitHubTeam_ListTeamMembersBySlug_Call{Call: _e.mock.On("ListTeamMembersBySlug", _a0, _a1, _a2, _a3)}
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - opts *github.TeamListTeamMembersOptions
+func (_e *IGitHubTeam_Expecter) ListTeamMembersBySlug(ctx interface{}, org interface{}, slug interface{}, opts interface{}) *IGitHubTeam_ListTeamMembersBySlug_Call {
+	return &IGitHubTeam_ListTeamMembersBySlug_Call{Call: _e.mock.On("ListTeamMembersBySlug", ctx, org, slug, opts)}
 }
 
-func (_c *IGitHubTeam_ListTeamMembersBySlug_Call) Run(run func(_a0 context.Context, _a1 string, _a2 string, _a3 *github.TeamListTeamMembersOptions)) *IGitHubTeam_ListTeamMembersBySlug_Call {
+func (_c *IGitHubTeam_ListTeamMembersBySlug_Call) Run(run func(ctx context.Context, org string, slug string, opts *github.TeamListTeamMembersOptions)) *IGitHubTeam_ListTeamMembersBySlug_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(*github.TeamListTeamMembersOptions))
 	})
@@ -139,13 +139,13 @@ func (_c *IGitHubTeam_ListTeamMembersBySlug_Call) Return(_a0 []*github.User, _a1
 	return _c
 }
 
-// RemoveTeamMembershipBySlug provides a mock function with given fields: _a0, _a1, _a2, _a3
-func (_m *IGitHubTeam) RemoveTeamMembershipBySlug(_a0 context.Context, _a1 string, _a2 string, _a3 string) (*github.Response, error) {
-	ret := _m.Called(_a0, _a1, _a2, _a3)
+// RemoveTeamMembershipBySlug provides a mock function with given fields: ctx, org, slug, user
+func (_m *IGitHubTeam) RemoveTeamMembershipBySlug(ctx context.Context, org string, slug string, user string) (*github.Response, error) {
+	ret := _m.Called(ctx, org, slug, user)
 
 	var r0 *github.Response
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *github.Response); ok {
-		r0 = rf(_a0, _a1, _a2, _a3)
+		r0 = rf(ctx, org, slug, user)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*github.Response)
@@ -154,7 +154,7 @@ func (_m *IGitHubTeam) RemoveTeamMembershipBySlug(_a0 context.Context, _a1 strin
 
 	var r1 error
 	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
-		r1 = rf(_a0, _a1, _a2, _a3)
+		r1 = rf(ctx, org, slug, user)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -168,15 +168,15 @@ type IGitHubTeam_RemoveTeamMembershipBySlug_Call struct {
 }
 
 // RemoveTeamMembershipBySlug is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 string
-//   - _a2 string
-//   - _a3 string
-func (_e *IGitHubTeam_Expecter) RemoveTeamMembershipBySlug(_a0 interface{}, _a1 interface{}, _a2 interface{}, _a3 interface{}) *IGitHubTeam_RemoveTeamMembershipBySlug_Call {
-	return &IGitHubTeam_RemoveTeamMembershipBySlug_Call{Call: _e.mock.On("RemoveTeamMembershipBySlug", _a0, _a1, _a2, _a3)}
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - user string
+func (_e *IGitHubTeam_Expecter) RemoveTeamMembershipBySlug(ctx interface{}, org interface{}, slug interface{}, user interface{}) *IGitHubTeam_RemoveTeamMembershipBySlug_Call {
+	return &IGitHubTeam_RemoveTeamMembershipBySlug_Call{Call: _e.mock.On("RemoveTeamMembershipBySlug", ctx, org, slug, user)}
 }
 
-func (_c *IGitHubTeam_RemoveTeamMembershipBySlug_Call) Run(run func(_a0 context.Context, _a1 string, _a2 string, _a3 string)) *IGitHubTeam_RemoveTeamMembershipBySlug_Call {
+func (_c *IGitHubTeam_RemoveTeamMembershipBySlug_Call) Run(run func(ctx context.Context, org string, slug string, user string)) *IGitHubTeam_RemoveTeamMembershipBySlug_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(string), args[2].(string), args[3].(string))
 	})

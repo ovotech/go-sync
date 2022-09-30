@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ovotech/go-sync/mocks"
+	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
