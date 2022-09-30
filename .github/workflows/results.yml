@@ -16,6 +16,8 @@ jobs:
     permissions:
       checks: write
       pull-requests: write
+      contents: read
+      issues: read
       actions: read
     steps:
       - name: Download and Extract Artifacts
