@@ -35,7 +35,7 @@ func TestTeam_Get(t *testing.T) {
 	gitHubClient := mocks.NewIGitHubTeam(t)
 	discovery := mocks.NewGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.client = gitHubClient
+	adapter.teams = gitHubClient
 
 	gitHubClient.
 		EXPECT().
@@ -69,7 +69,7 @@ func TestTeam_Add(t *testing.T) {
 	gitHubClient := mocks.NewIGitHubTeam(t)
 	discovery := mocks.NewGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.client = gitHubClient
+	adapter.teams = gitHubClient
 
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
 		Maybe().Return([]string{"fizz", "buzz"}, nil)
@@ -91,7 +91,7 @@ func TestTeam_Remove(t *testing.T) {
 	gitHubClient := mocks.NewIGitHubTeam(t)
 	discovery := mocks.NewGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.client = gitHubClient
+	adapter.teams = gitHubClient
 	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "foo").Return(nil, nil)

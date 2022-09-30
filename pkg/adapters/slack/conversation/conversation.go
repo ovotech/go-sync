@@ -1,3 +1,7 @@
+// Package conversation synchronises email addresses with Slack conversations.
+//
+// In order to use this adapter, you'll need an authenticated Slack client and for the Slack app to have been added
+// to the conversation.
 package conversation
 
 import (
@@ -12,6 +16,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
+// iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackConversation interface {
 	GetUsersInConversation(params *slack.GetUsersInConversationParameters) ([]string, string, error)
 	GetUsersInfo(users ...string) (*[]slack.User, error)
@@ -27,6 +32,7 @@ type Conversation struct {
 	logger           types.Logger
 }
 
+// ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 
 // OptionLogger can be used to set a custom logger.
@@ -84,7 +90,7 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 	return users, nil
 }
 
-// Get gets a list of emails from a Slack channel.
+// Get emails of Slack users in a conversation.
 func (c *Conversation) Get(_ context.Context) ([]string, error) {
 	c.logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
 
@@ -114,7 +120,7 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 	return emails, nil
 }
 
-// Add adds an email to a conversation.
+// Add emails to a Slack conversation.
 func (c *Conversation) Add(_ context.Context, emails []string) error {
 	c.logger.Printf("Adding %s to Slack conversation %s", emails, c.conversationName)
 
@@ -143,7 +149,7 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 	return nil
 }
 
-// Remove removes email addresses from a conversation.
+// Remove emails from a Slack conversation.
 func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	c.logger.Printf("Removing %s from Slack conversation %s", emails, c.conversationName)
 

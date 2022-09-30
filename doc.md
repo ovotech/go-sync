@@ -6,7 +6,7 @@
 import "github.com/ovotech/go-sync/pkg/ports"
 ```
 
-Package ports lists the types of methods expected from Sync's standard adapters.
+Package ports lists the types of methods expected from Sync's adapters.
 
 ## Index
 
@@ -20,19 +20,19 @@ Adapter interfaces are used to allow Sync to communicate with third party servic
 
 ```go
 type Adapter interface {
-    Get(ctx context.Context) ([]string, error) // Get users in a service.
-    Add(context.Context, []string) error       // Add users to a service.
-    Remove(context.Context, []string) error    // Remove users from a service.
+    Get(ctx context.Context) ([]string, error) // Get things in a service.
+    Add(context.Context, []string) error       // Add things to a service.
+    Remove(context.Context, []string) error    // Remove things from a service.
 }
 ```
 
 ## type Sync
 
-Sync interface can be used for downstream services that implement Sync in your own workflow.
+The Sync interface can be used for downstream services that implement Sync in your own workflow.
 
 ```go
 type Sync interface {
-    SyncWith(ctx context.Context, adapter Adapter) error // Sync the source service with this service.
+    SyncWith(ctx context.Context, adapter Adapter) error // Sync the things in a source service with this service.
 }
 ```
 
@@ -42,7 +42,7 @@ type Sync interface {
 import "github.com/ovotech/go-sync/pkg/sync"
 ```
 
-Package sync provides a way to synchronise membership of arbitrary services.
+Package sync is the logic that synchronises adapters together, and determines what should be where.
 
 ## Index
 
@@ -64,9 +64,9 @@ OptionLogger can be used to set a custom logger.
 
 ```go
 type Sync struct {
-    DryRun bool // Flag to indicate if running in dryRun mode.
-    Add    bool // Flag to indicate if Sync should add accounts.
-    Remove bool // Flag to indicate if Sync should remove accounts.
+    DryRun bool // DryRun mode calculates membership, but doesn't add or remove.
+    Add    bool // Perform Add operations.
+    Remove bool // Perform Remove operations.
     // contains filtered or unexported fields
 }
 ```
@@ -85,13 +85,17 @@ New creates a new Sync service.
 func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error
 ```
 
-SyncWith synchronises the requested service with the source service, adding & removing members.
+SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
 
 # team
 
 ```go
 import "github.com/ovotech/go-sync/pkg/adapters/github/team"
 ```
+
+Package team synchronises emails with GitHub teams.
+
+You must provide a discovery service in order to use this adapter. This is because converting email addresses to GitHub usernames isn't straightforward. At OVO, we enforce SAML for our GitHub users, and have provided a SAML \-\> GitHub Username discovery service, but you may need to write your own.
 
 ## Index
 
@@ -153,7 +157,7 @@ Add emails to a GitHub Team.
 func (t *Team) Get(ctx context.Context) ([]string, error)
 ```
 
-Get a list of emails in a GitHub team.
+Get emails of users in a GitHub team.
 
 ### func \(\*Team\) Remove
 
@@ -161,13 +165,17 @@ Get a list of emails in a GitHub team.
 func (t *Team) Remove(ctx context.Context, emails []string) error
 ```
 
-Remove a list of emails from a GitHub team.
+Remove emails from a GitHub team.
 
 # conversation
 
 ```go
 import "github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
 ```
+
+Package conversation synchronises email addresses with Slack conversations.
+
+In order to use this adapter, you'll need an authenticated Slack client and for the Slack app to have been added to the conversation.
 
 ## Index
 
@@ -181,6 +189,8 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
 
 
 ## Variables
+
+ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 
 ```go
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
@@ -216,7 +226,7 @@ New instantiates a new Slack conversation adapter.
 func (c *Conversation) Add(_ context.Context, emails []string) error
 ```
 
-Add adds an email to a conversation.
+Add emails to a Slack conversation.
 
 ### func \(\*Conversation\) Get
 
@@ -224,7 +234,7 @@ Add adds an email to a conversation.
 func (c *Conversation) Get(_ context.Context) ([]string, error)
 ```
 
-Get gets a list of emails from a Slack channel.
+Get emails of Slack users in a conversation.
 
 ### func \(\*Conversation\) Remove
 
@@ -232,13 +242,17 @@ Get gets a list of emails from a Slack channel.
 func (c *Conversation) Remove(_ context.Context, emails []string) error
 ```
 
-Remove removes email addresses from a conversation.
+Remove emails from a Slack conversation.
 
 # usergroup
 
 ```go
 import "github.com/ovotech/go-sync/pkg/adapters/slack/usergroup"
 ```
+
+Package usergroup synchronises emails with a Slack UserGroup.
+
+In order to use this adapter, you'll need an authenticated Slack client and the ID of the usergroup. This isn't particularly easy to find, you'll need to log in to Slack via a web browser, and navigate to \`People & User Groups\`. Find your User group, and the URL will contain the ID of the group.
 
 ## Index
 
@@ -252,6 +266,8 @@ import "github.com/ovotech/go-sync/pkg/adapters/slack/usergroup"
 
 
 ## Variables
+
+ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 
 ```go
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
@@ -287,7 +303,7 @@ New instantiates a new Slack UserGroup adapter.
 func (u *UserGroup) Add(_ context.Context, emails []string) error
 ```
 
-Add a list of emails to a Slack UserGroup. Since the Slack API takes all of this as a single request, it either returns a full list of successful emails, or an error.
+Add emails to a Slack User group.
 
 ### func \(\*UserGroup\) Get
 
@@ -295,7 +311,7 @@ Add a list of emails to a Slack UserGroup. Since the Slack API takes all of this
 func (u *UserGroup) Get(_ context.Context) ([]string, error)
 ```
 
-Get a list of email addresses in a Slack User Group.
+Get emails of Slack users in a User group.
 
 ### func \(\*UserGroup\) Remove
 
@@ -303,7 +319,7 @@ Get a list of email addresses in a Slack User Group.
 func (u *UserGroup) Remove(_ context.Context, emails []string) error
 ```
 
-Remove a list of email addresses from a Slack UserGroup.
+Remove emails from a Slack User group.
 
 # saml
 
