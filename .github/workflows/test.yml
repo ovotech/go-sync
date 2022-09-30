@@ -5,11 +5,20 @@ on:
     branches:
       - main
 
+permissions:
+  checks: write
+  pull-requests: write
+  contents: read
+  issues: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
@@ -19,10 +28,19 @@ jobs:
           go install github.com/jstemmer/go-junit-report@latest
       - name: Test
         run: go test -v 2>&1 -count=1 ./... | go-junit-report -set-exit-code > report.xml
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+      - name: Upload Test Results
         if: always()
+        uses: actions/upload-artifact@v2
         with:
-          files: "report.xml"
-          pull_request_build: "commit"
-          report_individual_runs: true
+          name: Test Results
+          path: |
+            report.xml
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
