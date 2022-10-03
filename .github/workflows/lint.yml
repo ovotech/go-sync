@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
       - uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
@@ -22,5 +25,13 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
+          args: --fix
           version: v1.49
           only-new-issues: true
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: golangci-lint
+          author_email: golangci-lint@no-reply.com
+          message: 'Update Linting'
+          add: '*'
