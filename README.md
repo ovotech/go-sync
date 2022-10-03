@@ -9,7 +9,7 @@
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ovotech/go-sync)](https://github.com/ovotech/go-sync/releases)
 [![Go Doc](https://img.shields.io/static/v1?label=gomarkdoc&message=doc.md&color=blue)](doc.md)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ovotech/go-sync?style=flat)](https://goreportcard.com/report/github.com/ovotech/go-sync)
-[![Go Reference](https://pkg.go.dev/badge/ovotech/go-sync.svg)](https://pkg.go.dev/ovotech/go-sync)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ovotech/go-sync.svg)](https://pkg.go.dev/github.com/ovotech/go-sync)
 [![Test Status](https://github.com/ovotech/go-sync/actions/workflows/test.yml/badge.svg)](https://github.com/ovotech/go-sync/actions/workflows/test.yml)
 [![GitHub issues](https://img.shields.io/github/issues/ovotech/go-sync?style=flat)](https://github.com/ovotech/go-sync/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/ovotech/go-sync?label=pull+requests&style=flat)](https://github.com/ovotech/go-sync/pull-requests)
