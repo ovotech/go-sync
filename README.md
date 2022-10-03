@@ -26,7 +26,7 @@ _* Doesn't have to be people._
 ## Installation
 
 ```shell
-go get github.com/ovotech/go-sync
+go get github.com/ovotech/go-sync@latest
 ```
 
 You're ready to Go Sync 🎉
