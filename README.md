@@ -1,5 +1,5 @@
-| **⚠️ Go Sync is under heavy development.** |
-|--------------------------------------------|
+| **⚠️ Go Sync is under active development and subject to breaking changes.** |
+|-----------------------------------------------------------------------------|
 
 # Go Sync (all the things)
 
