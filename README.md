@@ -77,7 +77,8 @@ and functionally perform 3 things:
 These things can be anything, but we recommend email addresses. There's no point trying to sync a Slack User ID with a
 GitHub user! 🙅
 
-Read about our [built-in adapters here](pkg/adapters), or [build your own](CONTRIBUTING.md).
+Read about our [built-in adapters here](https://pkg.go.dev/github.com/ovotech/go-sync/pkg/adapters), or 
+[build your own](CONTRIBUTING.md).
 
 | *Made with 💚 by OVO's DevEx team* |
 |------------------------------------|

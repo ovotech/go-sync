@@ -21,7 +21,7 @@ An adapter's basic functionality is to provide a common interface to a third par
 synchronisation simple, Sync only works with strings. For users, we recommend email addresses as these are usually 
 common between services.
 
-[Adapter interface documentation](/doc.md#type-adapter)
+[Adapter interface documentation](https://pkg.go.dev/github.com/ovotech/go-sync/pkg/ports#Adapter)
 
 Following our specification, your adapter will be compatible with Sync.
 
