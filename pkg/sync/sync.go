@@ -1,4 +1,6 @@
-// Package sync is the logic that synchronises adapters together, and determines what should be where.
+/*
+Package sync is the logic that synchronises adapters together, and determines what should be where.
+*/
 package sync
 
 import (

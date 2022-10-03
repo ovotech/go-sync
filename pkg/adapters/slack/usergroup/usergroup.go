@@ -1,8 +1,10 @@
-// Package usergroup synchronises emails with a Slack UserGroup.
-//
-// In order to use this adapter, you'll need an authenticated Slack client and the ID of the usergroup.
-// This isn't particularly easy to find, you'll need to log in to Slack via a web browser, and navigate to
-// `People & User Groups`. Find your User group, and the URL will contain the ID of the group.
+/*
+Package usergroup synchronises emails with a Slack UserGroup.
+
+In order to use this adapter, you'll need an authenticated Slack client and the ID of the usergroup.
+This isn't particularly easy to find, you'll need to log in to Slack via a web browser, and navigate to
+`People & User Groups`. Find your User group, and the URL will contain the ID of the group.
+*/
 package usergroup
 
 import (
