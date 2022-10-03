@@ -21,13 +21,13 @@ func (_m *Adapter) EXPECT() *Adapter_Expecter {
 	return &Adapter_Expecter{mock: &_m.Mock}
 }
 
-// Add provides a mock function with given fields: _a0, _a1
-func (_m *Adapter) Add(_a0 context.Context, _a1 []string) error {
-	ret := _m.Called(_a0, _a1)
+// Add provides a mock function with given fields: ctx, things
+func (_m *Adapter) Add(ctx context.Context, things []string) error {
+	ret := _m.Called(ctx, things)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, things)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -41,13 +41,13 @@ type Adapter_Add_Call struct {
 }
 
 // Add is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 []string
-func (_e *Adapter_Expecter) Add(_a0 interface{}, _a1 interface{}) *Adapter_Add_Call {
-	return &Adapter_Add_Call{Call: _e.mock.On("Add", _a0, _a1)}
+//   - ctx context.Context
+//   - things []string
+func (_e *Adapter_Expecter) Add(ctx interface{}, things interface{}) *Adapter_Add_Call {
+	return &Adapter_Add_Call{Call: _e.mock.On("Add", ctx, things)}
 }
 
-func (_c *Adapter_Add_Call) Run(run func(_a0 context.Context, _a1 []string)) *Adapter_Add_Call {
+func (_c *Adapter_Add_Call) Run(run func(ctx context.Context, things []string)) *Adapter_Add_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].([]string))
 	})
@@ -100,18 +100,18 @@ func (_c *Adapter_Get_Call) Run(run func(ctx context.Context)) *Adapter_Get_Call
 	return _c
 }
 
-func (_c *Adapter_Get_Call) Return(_a0 []string, _a1 error) *Adapter_Get_Call {
-	_c.Call.Return(_a0, _a1)
+func (_c *Adapter_Get_Call) Return(things []string, err error) *Adapter_Get_Call {
+	_c.Call.Return(things, err)
 	return _c
 }
 
-// Remove provides a mock function with given fields: _a0, _a1
-func (_m *Adapter) Remove(_a0 context.Context, _a1 []string) error {
-	ret := _m.Called(_a0, _a1)
+// Remove provides a mock function with given fields: ctx, things
+func (_m *Adapter) Remove(ctx context.Context, things []string) error {
+	ret := _m.Called(ctx, things)
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, things)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -125,13 +125,13 @@ type Adapter_Remove_Call struct {
 }
 
 // Remove is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 []string
-func (_e *Adapter_Expecter) Remove(_a0 interface{}, _a1 interface{}) *Adapter_Remove_Call {
-	return &Adapter_Remove_Call{Call: _e.mock.On("Remove", _a0, _a1)}
+//   - ctx context.Context
+//   - things []string
+func (_e *Adapter_Expecter) Remove(ctx interface{}, things interface{}) *Adapter_Remove_Call {
+	return &Adapter_Remove_Call{Call: _e.mock.On("Remove", ctx, things)}
 }
 
-func (_c *Adapter_Remove_Call) Run(run func(_a0 context.Context, _a1 []string)) *Adapter_Remove_Call {
+func (_c *Adapter_Remove_Call) Run(run func(ctx context.Context, things []string)) *Adapter_Remove_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].([]string))
 	})
