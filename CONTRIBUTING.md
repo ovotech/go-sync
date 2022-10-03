@@ -13,9 +13,8 @@ The version of Go you want can be [found here](https://github.com/ovotech/go-syn
 
 We also run the following tooling to ensure code quality:
 
-1. [gomarkdoc](https://github.com/princjef/gomarkdoc) for documentation.
-2. [golangci-lint](https://golangci-lint.run/) for code quality.
-3. [mockery](https://github.com/vektra/mockery) generates mocks for easy testing.
+1. [golangci-lint](https://golangci-lint.run/) for code quality.
+2. [mockery](https://github.com/vektra/mockery) generates mocks for easy testing.
 
 ## Developing an adapter 🔌
 An adapter's basic functionality is to provide a common interface to a third party service. In order to keep 
