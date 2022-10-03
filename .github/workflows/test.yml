@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
+          cache: true
       - name: Install JUnit Reporter
         run: |
           go install github.com/jstemmer/go-junit-report@latest
