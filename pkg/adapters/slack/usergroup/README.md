@@ -1,6 +1,17 @@
 # Slack UserGroup adapter for Go Sync
 This adapter synchronises email addresses with a Slack User group.
 
+## Requirements
+In order to synchronise with Slack, you'll need to [create a Slack app](https://api.slack.com/authentication/basics)
+with the following OAuth permissions:
+
+| Bot Token Scopes                                                  |
+|-------------------------------------------------------------------|
+| [users:read](https://api.slack.com/scopes/users:read)             |
+| [users:read.email](https://api.slack.com/scopes/users:read.email) |
+| [usergroups:read](https://api.slack.com/scopes/usergroups:read)   |
+| [usergroups:write](https://api.slack.com/scopes/usergroups:write) |
+
 ## Example
 ```go
 
@@ -30,5 +41,3 @@ func main() {
 	}
 }
 ```
-
-[Information on how to obtain a Slack token.](../README.md#requirements)

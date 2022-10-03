@@ -1,4 +1,4 @@
-# Go Sync Adapters
+# Go Sync - Adapters
 These adapters are provided as part of Go Sync.
 
 | Service            |

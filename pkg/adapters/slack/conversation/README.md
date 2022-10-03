@@ -1,6 +1,21 @@
 # Slack Conversation adapter for Go Sync
 This adapter synchronises email addresses with a Slack conversation.
 
+## Requirements
+In order to synchronise with Slack, you'll need to [create a Slack app](https://api.slack.com/authentication/basics)
+with the following OAuth permissions:
+
+| Bot Token Scopes                                                  |
+|-------------------------------------------------------------------|
+| [users:read](https://api.slack.com/scopes/users:read)             |
+| [users:read.email](https://api.slack.com/scopes/users:read.email) |
+| [channels:manage](https://api.slack.com/scopes/channels:manage)   |
+| [channels:read](https://api.slack.com/scopes/channels:read)       |
+| [groups:read](https://api.slack.com/scopes/groups:read)           |
+| [groups:write](https://api.slack.com/scopes/groups:write)         |
+| [im:write](https://api.slack.com/scopes/im:write)                 |
+| [mpim:write](https://api.slack.com/scopes/mpim:write)             |
+
 ## Example
 ```go
 
@@ -30,5 +45,3 @@ func main() {
 	}
 }
 ```
-
-[Information on how to obtain a Slack token.](../README.md#requirements)

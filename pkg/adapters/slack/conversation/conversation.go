@@ -1,7 +1,9 @@
-// Package conversation synchronises email addresses with Slack conversations.
-//
-// In order to use this adapter, you'll need an authenticated Slack client and for the Slack app to have been added
-// to the conversation.
+/*
+Package conversation synchronises email addresses with Slack conversations.
+
+In order to use this adapter, you'll need an authenticated Slack client and for the Slack app to have been added
+to the conversation.
+*/
 package conversation
 
 import (

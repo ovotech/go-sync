@@ -1,8 +1,10 @@
-// Package team synchronises emails with GitHub teams.
-//
-// You must provide a discovery service in order to use this adapter. This is because converting email addresses to
-// GitHub usernames isn't straightforward. At OVO, we enforce SAML for our GitHub users, and have provided a
-// SAML -> GitHub Username discovery service, but you may need to write your own.
+/*
+Package team synchronises emails with GitHub teams.
+
+You must provide a discovery service in order to use this adapter. This is because converting email addresses to
+GitHub usernames isn't straightforward. At OVO, we enforce SAML for our GitHub users, and have provided a
+SAML -> GitHub Username discovery service, but you may need to write your own.
+*/
 package team
 
 import (
