@@ -2,6 +2,7 @@ package conversation
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/ovotech/go-sync/internal/mocks"
@@ -24,6 +25,7 @@ func TestNew(t *testing.T) {
 	adapter.client = slackClient
 
 	assert.Equal(t, "test", adapter.conversationName)
+	assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic)
 	assert.Zero(t, slackClient.Calls)
 }
 
@@ -85,16 +87,49 @@ func TestConversation_Add(t *testing.T) {
 func TestConversation_Remove(t *testing.T) {
 	t.Parallel()
 
-	slackClient := mocks.NewISlackConversation(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
-	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+	ctx := context.TODO()
 
-	slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(nil)
-	slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(nil)
+	t.Run("Success", func(t *testing.T) {
+		t.Parallel()
 
-	err := adapter.Remove(context.TODO(), []string{"foo@email", "bar@email"})
+		slackClient := mocks.NewISlackConversation(t)
+		adapter := New(&slack.Client{}, "test")
+		adapter.client = slackClient
+		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
-	assert.NoError(t, err)
-	assert.Equal(t, map[string]string{}, adapter.cache)
+		slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(nil)
+		slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(nil)
+
+		err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
+
+		assert.NoError(t, err)
+		assert.Equal(t, map[string]string{}, adapter.cache)
+	})
+
+	t.Run("Restricted kick from public conversation", func(t *testing.T) {
+		t.Parallel()
+
+		restrictedAction := errors.New("restricted_action") //nolint:goerr113
+
+		slackClient := mocks.NewISlackConversation(t)
+		adapter := New(&slack.Client{}, "test")
+		adapter.client = slackClient
+		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+		slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(restrictedAction)
+		slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(restrictedAction)
+
+		adapter.MuteRestrictedErrOnKickFromPublic = false
+
+		err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
+
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, restrictedAction)
+
+		adapter.MuteRestrictedErrOnKickFromPublic = true
+
+		err = adapter.Remove(ctx, []string{"foo@email", "bar@email"})
+
+		assert.NoError(t, err)
+	})
 }
