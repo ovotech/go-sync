@@ -116,8 +116,8 @@ func TestConversation_Remove(t *testing.T) {
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
-		slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(restrictedAction)
-		slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(restrictedAction)
+		slackClient.EXPECT().KickUserFromConversation("test", "foo").Maybe().Return(restrictedAction)
+		slackClient.EXPECT().KickUserFromConversation("test", "bar").Maybe().Return(restrictedAction)
 
 		adapter.MuteRestrictedErrOnKickFromPublic = false
 
