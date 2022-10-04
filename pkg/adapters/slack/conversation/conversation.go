@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ovotech/go-sync/internal/types"
@@ -28,10 +29,14 @@ type iSlackConversation interface {
 }
 
 type Conversation struct {
-	client           iSlackConversation
-	conversationName string
-	cache            map[string]string // This stores the Slack ID -> email mapping for use with the Remove method.
-	logger           types.Logger
+	// Slack may be configured to only allow admins to kick from public conversations, which will fail the entire sync
+	// job. Set to true to mute this error and continue synchronisation.
+	MuteRestrictedErrOnKickFromPublic bool
+	client                            iSlackConversation
+	conversationName                  string
+	// cache stores the Slack ID -> email mapping for use with the Remove method.
+	cache  map[string]string
+	logger types.Logger
 }
 
 // ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
@@ -47,10 +52,15 @@ func OptionLogger(logger types.Logger) func(*Conversation) {
 // New instantiates a new Slack conversation adapter.
 func New(client *slack.Client, channelName string, optsFn ...func(conversation *Conversation)) *Conversation {
 	conversation := &Conversation{
-		client:           client,
-		conversationName: channelName,
-		cache:            make(map[string]string),
-		logger:           log.New(os.Stderr, "[go-sync/slack/conversation] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		MuteRestrictedErrOnKickFromPublic: false,
+		client:                            client,
+		conversationName:                  channelName,
+		cache:                             make(map[string]string),
+		logger: log.New(
+			os.Stderr,
+			"[go-sync/slack/conversation] ",
+			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		),
 	}
 
 	for _, fn := range optsFn {
@@ -163,6 +173,12 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	for _, email := range emails {
 		err := c.client.KickUserFromConversation(c.conversationName, c.cache[email])
 		if err != nil {
+			if c.MuteRestrictedErrOnKickFromPublic && strings.Contains(err.Error(), "restricted_action") {
+				c.logger.Println("Cannot kick from public channel, but error is muted by configuration - continuing")
+
+				return nil
+			}
+
 			return fmt.Errorf(
 				"slack.conversation.remove.kickuserfromconversation(%s, %s) -> %w",
 				c.conversationName,
