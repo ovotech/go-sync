@@ -1,4 +1,4 @@
-name: lint
+name: autofix
 
 on:
   push:
@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  golangci:
-    name: lint
+  autofix:
+    name: autofix
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,7 +27,7 @@ jobs:
       - name: mockery
         id: mockery
         run: |
-          rm -f ./internal/mocks
+          rm -rf ./internal/mocks
           go install github.com/vektra/mockery/v2@latest
           ~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
       - name: Commit changes
