@@ -3,23 +3,15 @@ package oncall
 import (
 	"context"
 	"errors"
+	"github.com/ovotech/go-sync/internal/types"
 	"testing"
 	"time"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/ovotech/go-sync/internal/mocks"
-	"github.com/ovotech/go-sync/internal/types"
 	"github.com/stretchr/testify/assert"
 )
-
-type mockClock struct {
-	t time.Time
-}
-
-func (m mockClock) Now() time.Time {
-	return m.t
-}
 
 var errGetOnCall = errors.New("an example error")
 
@@ -59,7 +51,9 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("successful response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t, &mockClock{t: expectedTime})
+		clock := mocks.NewClock(t)
+		clock.On("Now").Return(expectedTime)
+		adapter, scheduleClient := createMockedAdapter(t, clock)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -79,7 +73,9 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t, &mockClock{t: expectedTime})
+		clock := mocks.NewClock(t)
+		clock.On("Now").Return(expectedTime)
+		adapter, scheduleClient := createMockedAdapter(t, clock)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -99,8 +95,8 @@ func TestOnCall_Add(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	expectedTime := time.Date(2022, 10, 6, 12, 0, 0, 0, time.UTC)
-	adapter, scheduleClient := createMockedAdapter(t, &mockClock{t: expectedTime})
+	clock := mocks.NewClock(t)
+	adapter, scheduleClient := createMockedAdapter(t, clock)
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
@@ -112,8 +108,8 @@ func TestOnCall_Remove(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	expectedTime := time.Date(2022, 10, 6, 12, 0, 0, 0, time.UTC)
-	adapter, scheduleClient := createMockedAdapter(t, &mockClock{t: expectedTime})
+	clock := mocks.NewClock(t)
+	adapter, scheduleClient := createMockedAdapter(t, clock)
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
