@@ -71,3 +71,9 @@ if err != nil {
     return fmt.Errorf("some.context.here -> %w", err)	
 }
 ```
+
+### Testing
+<!--
+Notes:
+- Autogenerate mocks using mockery --all --exported --with-expecter --output "./internal/mocks"
+-->
