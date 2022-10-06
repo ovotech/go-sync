@@ -18,6 +18,9 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+      - name: fmt
+        run: |
+          go fmt ./...
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:

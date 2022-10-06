@@ -24,10 +24,9 @@ jobs:
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v11.1
-        if: github.event_name == 'pull_request'
         with:
           files : |
-            ./internal/mocks
+            *
       - name: Fail on changes
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
