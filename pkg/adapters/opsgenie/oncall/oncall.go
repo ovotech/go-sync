@@ -47,7 +47,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 	scheduleClient, err := schedule.NewClient(opsgenieConfig)
 
 	if err != nil {
-		return &OnCall{}, err
+		return nil, fmt.Errorf("error occurred when creating on-call client: %w", err)
 	}
 
 	onCallAdapter := &OnCall{
