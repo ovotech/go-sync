@@ -49,7 +49,7 @@ type ISlackConversation_GetUserByEmail_Call struct {
 }
 
 // GetUserByEmail is a helper method to define mock.On call
-//  - email string
+//   - email string
 func (_e *ISlackConversation_Expecter) GetUserByEmail(email interface{}) *ISlackConversation_GetUserByEmail_Call {
 	return &ISlackConversation_GetUserByEmail_Call{Call: _e.mock.On("GetUserByEmail", email)}
 }
@@ -102,7 +102,7 @@ type ISlackConversation_GetUsersInConversation_Call struct {
 }
 
 // GetUsersInConversation is a helper method to define mock.On call
-//  - params *slack.GetUsersInConversationParameters
+//   - params *slack.GetUsersInConversationParameters
 func (_e *ISlackConversation_Expecter) GetUsersInConversation(params interface{}) *ISlackConversation_GetUsersInConversation_Call {
 	return &ISlackConversation_GetUsersInConversation_Call{Call: _e.mock.On("GetUsersInConversation", params)}
 }
@@ -154,7 +154,7 @@ type ISlackConversation_GetUsersInfo_Call struct {
 }
 
 // GetUsersInfo is a helper method to define mock.On call
-//  - users ...string
+//   - users ...string
 func (_e *ISlackConversation_Expecter) GetUsersInfo(users ...interface{}) *ISlackConversation_GetUsersInfo_Call {
 	return &ISlackConversation_GetUsersInfo_Call{Call: _e.mock.On("GetUsersInfo",
 		append([]interface{}{}, users...)...)}
@@ -214,8 +214,8 @@ type ISlackConversation_InviteUsersToConversation_Call struct {
 }
 
 // InviteUsersToConversation is a helper method to define mock.On call
-//  - channelID string
-//  - users ...string
+//   - channelID string
+//   - users ...string
 func (_e *ISlackConversation_Expecter) InviteUsersToConversation(channelID interface{}, users ...interface{}) *ISlackConversation_InviteUsersToConversation_Call {
 	return &ISlackConversation_InviteUsersToConversation_Call{Call: _e.mock.On("InviteUsersToConversation",
 		append([]interface{}{channelID}, users...)...)}
@@ -259,8 +259,8 @@ type ISlackConversation_KickUserFromConversation_Call struct {
 }
 
 // KickUserFromConversation is a helper method to define mock.On call
-//  - channelID string
-//  - user string
+//   - channelID string
+//   - user string
 func (_e *ISlackConversation_Expecter) KickUserFromConversation(channelID interface{}, user interface{}) *ISlackConversation_KickUserFromConversation_Call {
 	return &ISlackConversation_KickUserFromConversation_Call{Call: _e.mock.On("KickUserFromConversation", channelID, user)}
 }
