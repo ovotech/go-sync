@@ -85,7 +85,7 @@ func TestOnCall_Get(t *testing.T) {
 		emails, err := adapter.Get(ctx)
 
 		assert.Nil(t, emails)
-		assert.Error(t, err, "an example error")
+		assert.ErrorContains(t, err, "an example error")
 	})
 }
 
@@ -97,7 +97,7 @@ func TestOnCall_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
-	assert.Error(t, err, "not implemented")
+	assert.ErrorIs(t, err, ErrNotImplemented)
 	assert.Zero(t, scheduleClient.Calls)
 }
 
@@ -109,6 +109,6 @@ func TestOnCall_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
-	assert.Error(t, err, "not implemented")
+	assert.ErrorIs(t, err, ErrNotImplemented)
 	assert.Zero(t, scheduleClient.Calls)
 }
