@@ -52,8 +52,8 @@ type IOpsgenieSchedule_GetOnCalls_Call struct {
 }
 
 // GetOnCalls is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - request *schedule.GetOnCallsRequest
+//   - _a0 context.Context
+//   - request *schedule.GetOnCallsRequest
 func (_e *IOpsgenieSchedule_Expecter) GetOnCalls(_a0 interface{}, request interface{}) *IOpsgenieSchedule_GetOnCalls_Call {
 	return &IOpsgenieSchedule_GetOnCalls_Call{Call: _e.mock.On("GetOnCalls", _a0, request)}
 }

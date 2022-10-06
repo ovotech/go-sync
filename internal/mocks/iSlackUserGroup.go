@@ -47,7 +47,7 @@ type ISlackUserGroup_DisableUserGroup_Call struct {
 }
 
 // DisableUserGroup is a helper method to define mock.On call
-//  - userGroup string
+//   - userGroup string
 func (_e *ISlackUserGroup_Expecter) DisableUserGroup(userGroup interface{}) *ISlackUserGroup_DisableUserGroup_Call {
 	return &ISlackUserGroup_DisableUserGroup_Call{Call: _e.mock.On("DisableUserGroup", userGroup)}
 }
@@ -91,7 +91,7 @@ type ISlackUserGroup_EnableUserGroup_Call struct {
 }
 
 // EnableUserGroup is a helper method to define mock.On call
-//  - userGroup string
+//   - userGroup string
 func (_e *ISlackUserGroup_Expecter) EnableUserGroup(userGroup interface{}) *ISlackUserGroup_EnableUserGroup_Call {
 	return &ISlackUserGroup_EnableUserGroup_Call{Call: _e.mock.On("EnableUserGroup", userGroup)}
 }
@@ -137,7 +137,7 @@ type ISlackUserGroup_GetUserByEmail_Call struct {
 }
 
 // GetUserByEmail is a helper method to define mock.On call
-//  - email string
+//   - email string
 func (_e *ISlackUserGroup_Expecter) GetUserByEmail(email interface{}) *ISlackUserGroup_GetUserByEmail_Call {
 	return &ISlackUserGroup_GetUserByEmail_Call{Call: _e.mock.On("GetUserByEmail", email)}
 }
@@ -183,7 +183,7 @@ type ISlackUserGroup_GetUserGroupMembers_Call struct {
 }
 
 // GetUserGroupMembers is a helper method to define mock.On call
-//  - userGroup string
+//   - userGroup string
 func (_e *ISlackUserGroup_Expecter) GetUserGroupMembers(userGroup interface{}) *ISlackUserGroup_GetUserGroupMembers_Call {
 	return &ISlackUserGroup_GetUserGroupMembers_Call{Call: _e.mock.On("GetUserGroupMembers", userGroup)}
 }
@@ -235,7 +235,7 @@ type ISlackUserGroup_GetUsersInfo_Call struct {
 }
 
 // GetUsersInfo is a helper method to define mock.On call
-//  - users ...string
+//   - users ...string
 func (_e *ISlackUserGroup_Expecter) GetUsersInfo(users ...interface{}) *ISlackUserGroup_GetUsersInfo_Call {
 	return &ISlackUserGroup_GetUsersInfo_Call{Call: _e.mock.On("GetUsersInfo",
 		append([]interface{}{}, users...)...)}
@@ -286,8 +286,8 @@ type ISlackUserGroup_UpdateUserGroupMembers_Call struct {
 }
 
 // UpdateUserGroupMembers is a helper method to define mock.On call
-//  - userGroup string
-//  - members string
+//   - userGroup string
+//   - members string
 func (_e *ISlackUserGroup_Expecter) UpdateUserGroupMembers(userGroup interface{}, members interface{}) *ISlackUserGroup_UpdateUserGroupMembers_Call {
 	return &ISlackUserGroup_UpdateUserGroupMembers_Call{Call: _e.mock.On("UpdateUserGroupMembers", userGroup, members)}
 }

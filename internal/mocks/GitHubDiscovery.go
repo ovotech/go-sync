@@ -50,8 +50,8 @@ type GitHubDiscovery_GetEmailFromUsername_Call struct {
 }
 
 // GetEmailFromUsername is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - _a1 []string
+//   - _a0 context.Context
+//   - _a1 []string
 func (_e *GitHubDiscovery_Expecter) GetEmailFromUsername(_a0 interface{}, _a1 interface{}) *GitHubDiscovery_GetEmailFromUsername_Call {
 	return &GitHubDiscovery_GetEmailFromUsername_Call{Call: _e.mock.On("GetEmailFromUsername", _a0, _a1)}
 }
@@ -97,8 +97,8 @@ type GitHubDiscovery_GetUsernameFromEmail_Call struct {
 }
 
 // GetUsernameFromEmail is a helper method to define mock.On call
-//  - _a0 context.Context
-//  - _a1 []string
+//   - _a0 context.Context
+//   - _a1 []string
 func (_e *GitHubDiscovery_Expecter) GetUsernameFromEmail(_a0 interface{}, _a1 interface{}) *GitHubDiscovery_GetUsernameFromEmail_Call {
 	return &GitHubDiscovery_GetUsernameFromEmail_Call{Call: _e.mock.On("GetUsernameFromEmail", _a0, _a1)}
 }

@@ -31,8 +31,8 @@ type Logger_Printf_Call struct {
 }
 
 // Printf is a helper method to define mock.On call
-//  - format string
-//  - v ...interface{}
+//   - format string
+//   - v ...interface{}
 func (_e *Logger_Expecter) Printf(format interface{}, v ...interface{}) *Logger_Printf_Call {
 	return &Logger_Printf_Call{Call: _e.mock.On("Printf",
 		append([]interface{}{format}, v...)...)}
@@ -69,7 +69,7 @@ type Logger_Println_Call struct {
 }
 
 // Println is a helper method to define mock.On call
-//  - v ...interface{}
+//   - v ...interface{}
 func (_e *Logger_Expecter) Println(v ...interface{}) *Logger_Println_Call {
 	return &Logger_Println_Call{Call: _e.mock.On("Println",
 		append([]interface{}{}, v...)...)}

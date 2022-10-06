@@ -60,11 +60,11 @@ type IGitHubTeam_AddTeamMembershipBySlug_Call struct {
 }
 
 // AddTeamMembershipBySlug is a helper method to define mock.On call
-//  - ctx context.Context
-//  - org string
-//  - slug string
-//  - user string
-//  - opts *github.TeamAddTeamMembershipOptions
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - user string
+//   - opts *github.TeamAddTeamMembershipOptions
 func (_e *IGitHubTeam_Expecter) AddTeamMembershipBySlug(ctx interface{}, org interface{}, slug interface{}, user interface{}, opts interface{}) *IGitHubTeam_AddTeamMembershipBySlug_Call {
 	return &IGitHubTeam_AddTeamMembershipBySlug_Call{Call: _e.mock.On("AddTeamMembershipBySlug", ctx, org, slug, user, opts)}
 }
@@ -119,10 +119,10 @@ type IGitHubTeam_ListTeamMembersBySlug_Call struct {
 }
 
 // ListTeamMembersBySlug is a helper method to define mock.On call
-//  - ctx context.Context
-//  - org string
-//  - slug string
-//  - opts *github.TeamListTeamMembersOptions
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - opts *github.TeamListTeamMembersOptions
 func (_e *IGitHubTeam_Expecter) ListTeamMembersBySlug(ctx interface{}, org interface{}, slug interface{}, opts interface{}) *IGitHubTeam_ListTeamMembersBySlug_Call {
 	return &IGitHubTeam_ListTeamMembersBySlug_Call{Call: _e.mock.On("ListTeamMembersBySlug", ctx, org, slug, opts)}
 }
@@ -168,10 +168,10 @@ type IGitHubTeam_RemoveTeamMembershipBySlug_Call struct {
 }
 
 // RemoveTeamMembershipBySlug is a helper method to define mock.On call
-//  - ctx context.Context
-//  - org string
-//  - slug string
-//  - user string
+//   - ctx context.Context
+//   - org string
+//   - slug string
+//   - user string
 func (_e *IGitHubTeam_Expecter) RemoveTeamMembershipBySlug(ctx interface{}, org interface{}, slug interface{}, user interface{}) *IGitHubTeam_RemoveTeamMembershipBySlug_Call {
 	return &IGitHubTeam_RemoveTeamMembershipBySlug_Call{Call: _e.mock.On("RemoveTeamMembershipBySlug", ctx, org, slug, user)}
 }
