@@ -37,13 +37,6 @@ type OnCall struct {
 	logger     types.Logger
 }
 
-// OptionLogger can be used to set a custom logger.
-func OptionLogger(logger types.Logger) func(*OnCall) {
-	return func(schedule *OnCall) {
-		schedule.logger = logger
-	}
-}
-
 // New instantiates a new Opsgenie OnCall adapter.
 func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *OnCall)) *OnCall {
 	logger := log.New(os.Stderr, "[go-sync/opsgenie/oncall]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
@@ -70,34 +63,34 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 }
 
 // Get emails of users currently on-call in on-call.
-func (s *OnCall) Get(ctx context.Context) ([]string, error) {
-	s.logger.Printf("Fetching users currently on-call in Opsgenie schedule %s", s.scheduleID)
+func (o *OnCall) Get(ctx context.Context) ([]string, error) {
+	o.logger.Printf("Fetching users currently on-call in Opsgenie schedule %o", o.scheduleID)
 
-	date := s.clock.Now()
+	date := o.clock.Now()
 	flat := true
 	onCallRequest := &schedule.GetOnCallsRequest{
 		Flat:                   &flat,
 		Date:                   &date,
 		ScheduleIdentifierType: schedule.Id,
-		ScheduleIdentifier:     s.scheduleID,
+		ScheduleIdentifier:     o.scheduleID,
 	}
 
-	result, err := s.client.GetOnCalls(ctx, onCallRequest)
+	result, err := o.client.GetOnCalls(ctx, onCallRequest)
 	if err != nil {
 		return nil, fmt.Errorf("opsgenie.oncall.get.GetOnCalls -> %w", err)
 	}
 
-	s.logger.Println("Fetched on-call users successfully")
+	o.logger.Println("Fetched on-call users successfully")
 
 	return result.OnCallRecipients, nil
 }
 
 // Add is not supported, as the on-call is readonly.
-func (s *OnCall) Add(_ context.Context, _ []string) error {
+func (o *OnCall) Add(_ context.Context, _ []string) error {
 	return ErrNotImplemented
 }
 
 // Remove is not supported, as the on-call is readonly.
-func (s *OnCall) Remove(_ context.Context, _ []string) error {
+func (o *OnCall) Remove(_ context.Context, _ []string) error {
 	return ErrNotImplemented
 }
