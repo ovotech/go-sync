@@ -16,7 +16,6 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - name: golangci-lint
-        if: github.event_name == 'push'
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.49
