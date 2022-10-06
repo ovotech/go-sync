@@ -46,7 +46,7 @@ var ErrNotImplemented = errors.New("not implemented")
 type MyAdapter struct{}
 
 func New() *MyAdapter {
-	return &MyAdapter{}
+	return &MyAdapter {}
 }
 
 func (m *MyAdapter) Get() ([]string, error) {
