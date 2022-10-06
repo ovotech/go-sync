@@ -14,7 +14,7 @@ import (
 
 var errGetOnCall = errors.New("an example error")
 
-func createMockedAdapter(t *testing.T, clock clock) (*OnCall, *mocks.IOpsgenieSchedule) {
+func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mocks.IOpsgenieSchedule) {
 	t.Helper()
 
 	scheduleClient := mocks.NewIOpsgenieSchedule(t)
@@ -22,7 +22,9 @@ func createMockedAdapter(t *testing.T, clock clock) (*OnCall, *mocks.IOpsgenieSc
 		ApiKey: "test",
 	}, "test")
 	adapter.client = scheduleClient
-	adapter.clock = clock
+	adapter.getTime = func() time.Time {
+		return mockedTime
+	}
 
 	return adapter, scheduleClient
 }
@@ -51,9 +53,7 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("successful response", func(t *testing.T) {
 		t.Parallel()
 
-		clock := mocks.NewClock(t)
-		clock.On("Now").Return(expectedTime)
-		adapter, scheduleClient := createMockedAdapter(t, clock)
+		adapter, scheduleClient := createMockedAdapter(t, expectedTime)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -73,9 +73,7 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
 
-		clock := mocks.NewClock(t)
-		clock.On("Now").Return(expectedTime)
-		adapter, scheduleClient := createMockedAdapter(t, clock)
+		adapter, scheduleClient := createMockedAdapter(t, expectedTime)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -95,8 +93,7 @@ func TestOnCall_Add(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	clock := mocks.NewClock(t)
-	adapter, scheduleClient := createMockedAdapter(t, clock)
+	adapter, scheduleClient := createMockedAdapter(t, time.Now())
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
@@ -108,8 +105,7 @@ func TestOnCall_Remove(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	clock := mocks.NewClock(t)
-	adapter, scheduleClient := createMockedAdapter(t, clock)
+	adapter, scheduleClient := createMockedAdapter(t, time.Now())
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
