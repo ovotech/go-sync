@@ -3,13 +3,13 @@ package oncall
 import (
 	"context"
 	"errors"
-	"github.com/ovotech/go-sync/internal/types"
 	"testing"
 	"time"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/ovotech/go-sync/internal/mocks"
+	"github.com/ovotech/go-sync/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
