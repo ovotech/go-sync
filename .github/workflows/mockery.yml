@@ -1,12 +1,9 @@
 name: mockery
 
 on:
-  push:
+  pull_request:
     branches:
-      - '*'
-
-permissions:
-  contents: write
+      - main
 
 jobs:
   mockery:
@@ -21,12 +18,17 @@ jobs:
       - name: mockery
         id: mockery
         run: |
+          rm -f ./internal/mocks
           go install github.com/vektra/mockery/v2@latest
           ~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      - name: Check for changes
+        id: check-changed-files
+        uses: tj-actions/verify-changed-files@v11.1
+        if: github.event_name == 'pull_request'
         with:
-          add: 'internal/mocks/*'
-          message: 'Update Mocks'
-          author_name: GitHub Actions
-          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          files : |
+            ./internal/mocks
+      - name: Fail on changes
+        if: steps.check-changed-files.outputs.files_changed == 'true'
+        run: |
+          exit 1
