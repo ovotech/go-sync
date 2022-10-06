@@ -24,21 +24,10 @@ type iOpsgenieSchedule interface {
 	GetOnCalls(context context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)
 }
 
-// clock is a subset of time.Time which allows us to mock the clock in tests.
-type clock interface {
-	Now() time.Time
-}
-
-type realClock struct{}
-
-func (realClock) Now() time.Time {
-	return time.Now()
-}
-
 type OnCall struct {
 	client     iOpsgenieSchedule
 	scheduleID string
-	clock      clock
+	getTime    func() time.Time
 	logger     types.Logger
 }
 
@@ -53,7 +42,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 	onCallAdapter := &OnCall{
 		client:     scheduleClient,
 		scheduleID: scheduleID,
-		clock:      realClock{},
+		getTime:    time.Now,
 		logger:     log.New(os.Stderr, "[go-sync/opsgenie/oncall]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
@@ -68,7 +57,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 func (o *OnCall) Get(ctx context.Context) ([]string, error) {
 	o.logger.Printf("Fetching users currently on-call in Opsgenie schedule %o", o.scheduleID)
 
-	date := o.clock.Now()
+	date := o.getTime()
 	flat := true
 	onCallRequest := &schedule.GetOnCallsRequest{
 		Flat:                   &flat,
