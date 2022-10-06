@@ -24,6 +24,11 @@ type iOpsgenieSchedule interface {
 	GetOnCalls(context context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)
 }
 
+// clock is a subset of time.Time which allows us to mock the clock in tests.
+type clock interface {
+	Now() time.Time
+}
+
 type realClock struct{}
 
 func (realClock) Now() time.Time {
@@ -33,33 +38,30 @@ func (realClock) Now() time.Time {
 type OnCall struct {
 	client     iOpsgenieSchedule
 	scheduleID string
-	clock      types.Clock
+	clock      clock
 	logger     types.Logger
 }
 
 // New instantiates a new Opsgenie OnCall adapter.
-func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *OnCall)) *OnCall {
-	logger := log.New(os.Stderr, "[go-sync/opsgenie/oncall]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix)
+func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *OnCall)) (*OnCall, error) {
 	scheduleClient, err := schedule.NewClient(opsgenieConfig)
 
 	if err != nil {
-		logger.Fatalf("Error occurred when creating on-call client: %s", err)
-
-		return nil
+		return &OnCall{}, err
 	}
 
 	onCallAdapter := &OnCall{
 		client:     scheduleClient,
 		scheduleID: scheduleID,
 		clock:      realClock{},
-		logger:     logger,
+		logger:     log.New(os.Stderr, "[go-sync/opsgenie/oncall]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
 		fn(onCallAdapter)
 	}
 
-	return onCallAdapter
+	return onCallAdapter, nil
 }
 
 // Get emails of users currently on-call in on-call.
@@ -77,7 +79,7 @@ func (o *OnCall) Get(ctx context.Context) ([]string, error) {
 
 	result, err := o.client.GetOnCalls(ctx, onCallRequest)
 	if err != nil {
-		return nil, fmt.Errorf("opsgenie.oncall.get.GetOnCalls -> %w", err)
+		return nil, fmt.Errorf("opsgenie.oncall.get.getoncalls -> %w", err)
 	}
 
 	o.logger.Println("Fetched on-call users successfully")

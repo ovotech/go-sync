@@ -31,14 +31,14 @@ func main() {
 	opsgenieConfig := client.Config{
 		ApiKey: "test",
 	}
-	onCallAdapter := oncall.New(&opsgenieConfig, "opsgenie-schedule-id")
+	onCallAdapter, err := oncall.New(&opsgenieConfig, "opsgenie-schedule-id")
 
 	svc := sync.New(onCallAdapter)
 
 	// Synchronise an on-call list with something else.
 	anotherServiceAdapter := someAdapter.New()
 	
-	err := svc.SyncWith(context.Background(), anotherServiceAdapter)
+	err = svc.SyncWith(context.Background(), anotherServiceAdapter)
 	if err != nil {
 		log.Fatal(err)
 	}
