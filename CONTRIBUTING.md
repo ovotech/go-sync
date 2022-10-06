@@ -35,11 +35,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ovotech/go-sync/pkg/ports"
 )
+
+// Ensure the adapter type fully satisfies the ports.Adapter interface.
+var _ ports.Adapter = &MyAdapter{}
 
 var ErrNotImplemented = errors.New("not implemented")
 
-type MyAdapter struct {}
+type MyAdapter struct{}
 
 func New() *MyAdapter {
 	return &MyAdapter{}
@@ -73,7 +77,9 @@ if err != nil {
 ```
 
 ### Testing
-<!--
-Notes:
-- Autogenerate mocks using mockery --all --exported --with-expecter --output "./internal/mocks"
--->
+
+When writing tests, you can autogenerate the mocked clients using [Mockery](#preparation-):
+
+```sh
+mockery --all --exported --with-expecter --output "./internal/mocks"
+```
