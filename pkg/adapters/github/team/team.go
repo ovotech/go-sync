@@ -12,8 +12,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-
 	"github.com/google/go-github/v47/github"
+	
 	"github.com/ovotech/go-sync/internal/types"
 )
 
