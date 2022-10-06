@@ -9,17 +9,16 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/ovotech/go-sync/internal/mocks"
-	"github.com/ovotech/go-sync/internal/types"
 	"github.com/stretchr/testify/assert"
 )
 
 var errGetOnCall = errors.New("an example error")
 
-func createMockedAdapter(t *testing.T, clock types.Clock) (*OnCall, *mocks.IOpsgenieSchedule) {
+func createMockedAdapter(t *testing.T, clock clock) (*OnCall, *mocks.IOpsgenieSchedule) {
 	t.Helper()
 
 	scheduleClient := mocks.NewIOpsgenieSchedule(t)
-	adapter := New(&client.Config{
+	adapter, _ := New(&client.Config{
 		ApiKey: "test",
 	}, "test")
 	adapter.client = scheduleClient
@@ -32,11 +31,12 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	scheduleClient := mocks.NewIOpsgenieSchedule(t)
-	adapter := New(&client.Config{
+	adapter, err := New(&client.Config{
 		ApiKey: "test",
 	}, "test")
 	adapter.client = scheduleClient
 
+	assert.NoError(t, err)
 	assert.Equal(t, "test", adapter.scheduleID)
 	assert.Zero(t, scheduleClient.Calls)
 }
