@@ -1,0 +1,38 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  golangci:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: --fix
+          version: v1.49
+          only-new-issues: true
+      - name: mockery
+        id: mockery
+        run: |
+          rm -f ./internal/mocks
+          go install github.com/vektra/mockery/v2@latest
+          ~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Fix linting & mocks'
+          author_name: GitHub Actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com

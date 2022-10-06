@@ -1,12 +1,9 @@
 name: lint
 
 on:
-  push:
+  pull_request:
     branches:
-      - '*'
-
-permissions:
-  contents: write
+      - main
 
 jobs:
   golangci:
@@ -19,14 +16,8 @@ jobs:
           go-version-file: 'go.mod'
           cache: true
       - name: golangci-lint
+        if: github.event_name == 'push'
         uses: golangci/golangci-lint-action@v3
         with:
-          args: --fix
           version: v1.49
           only-new-issues: true
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Update Linting'
-          author_name: GitHub Actions
-          author_email: 41898282+github-actions[bot]@users.noreply.github.com
