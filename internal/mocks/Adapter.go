@@ -41,8 +41,8 @@ type Adapter_Add_Call struct {
 }
 
 // Add is a helper method to define mock.On call
-//   - ctx context.Context
-//   - things []string
+//  - ctx context.Context
+//  - things []string
 func (_e *Adapter_Expecter) Add(ctx interface{}, things interface{}) *Adapter_Add_Call {
 	return &Adapter_Add_Call{Call: _e.mock.On("Add", ctx, things)}
 }
@@ -88,7 +88,7 @@ type Adapter_Get_Call struct {
 }
 
 // Get is a helper method to define mock.On call
-//   - ctx context.Context
+//  - ctx context.Context
 func (_e *Adapter_Expecter) Get(ctx interface{}) *Adapter_Get_Call {
 	return &Adapter_Get_Call{Call: _e.mock.On("Get", ctx)}
 }
@@ -125,8 +125,8 @@ type Adapter_Remove_Call struct {
 }
 
 // Remove is a helper method to define mock.On call
-//   - ctx context.Context
-//   - things []string
+//  - ctx context.Context
+//  - things []string
 func (_e *Adapter_Expecter) Remove(ctx interface{}, things interface{}) *Adapter_Remove_Call {
 	return &Adapter_Remove_Call{Call: _e.mock.On("Remove", ctx, things)}
 }
