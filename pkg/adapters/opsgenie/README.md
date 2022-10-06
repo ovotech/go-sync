@@ -1,11 +1,9 @@
 # Go Sync Adapters - Opsgenie
 
-_TODO_
+These adapters synchronise Opsgenie users.
 
-<!--
+| Adapter            | Type  | Summary                                                                           |
+|:-------------------|:------|:----------------------------------------------------------------------------------|
+| [oncall](./oncall) | Email | Synchronise other adapters with emails of those currently on-call for a schedule. |
 
-Requirements:
-- Opsgenie API key
-- Do we need to support both EU and US Opsgenie APIs?
-
--->
+Can't find an adapter you're looking for? [Why not contribute your own! ✨](/CONTRIBUTING.md)
