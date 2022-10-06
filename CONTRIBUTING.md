@@ -15,6 +15,9 @@ We also run the following tooling to ensure code quality:
 
 1. [golangci-lint](https://golangci-lint.run/) for code quality.
 2. [mockery](https://github.com/vektra/mockery) generates mocks for easy testing.
+   ```sh
+   go install github.com/vektra/mockery/v2@latest
+   ```
 
 ## Developing an adapter 🔌
 An adapter's basic functionality is to provide a common interface to a third party service. In order to keep 
@@ -81,5 +84,5 @@ if err != nil {
 When writing tests, you can autogenerate the mocked clients using [Mockery](#preparation-):
 
 ```sh
-mockery --all --exported --with-expecter --output "./internal/mocks"
+~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
 ```
