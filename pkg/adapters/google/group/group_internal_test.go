@@ -67,7 +67,7 @@ func TestGroups_Get(t *testing.T) {
 
 	group := New(&admin.Service{}, "test")
 	group.membersService = mockMembersService
-	group.listCall = mockCall.callList
+	group.callList = mockCall.callList
 
 	emails, err := group.Get(ctx)
 
@@ -89,7 +89,7 @@ func TestGroups_Add(t *testing.T) {
 
 	group := New(&admin.Service{}, "test")
 	group.membersService = mockMembersService
-	group.insertCall = mockCall.callInsert
+	group.callInsert = mockCall.callInsert
 
 	err := group.Add(ctx, []string{"foo@email", "bar@email"})
 
@@ -110,7 +110,7 @@ func TestGroups_Remove(t *testing.T) {
 
 	group := New(&admin.Service{}, "test")
 	group.membersService = mockMembersService
-	group.deleteCall = mockCall.callDelete
+	group.callDelete = mockCall.callDelete
 
 	err := group.Remove(ctx, []string{"foo@email", "bar@email"})
 
