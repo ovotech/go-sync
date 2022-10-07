@@ -41,9 +41,9 @@ type Group struct {
 	name           string
 	logger         types.Logger
 
-	listCall   func(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error)
-	insertCall func(ctx context.Context, call *admin.MembersInsertCall) (*admin.Member, error)
-	deleteCall func(ctx context.Context, call *admin.MembersDeleteCall) error
+	callList   func(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error)
+	callInsert func(ctx context.Context, call *admin.MembersInsertCall) (*admin.Member, error)
+	callDelete func(ctx context.Context, call *admin.MembersDeleteCall) error
 }
 
 // OptionLogger can be used to set a custom logger.
@@ -60,9 +60,9 @@ func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
 		name:           name,
 		logger:         log.New(os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 
-		listCall:   callList,
-		insertCall: callInsert,
-		deleteCall: callDelete,
+		callList:   callList,
+		callInsert: callInsert,
+		callDelete: callDelete,
 	}
 
 	for _, fn := range optsFn {
@@ -82,7 +82,7 @@ func (g *Group) Get(ctx context.Context) ([]string, error) {
 	for {
 		g.logger.Printf("Fetching accounts from Google Group %s", g.name)
 
-		response, err := g.listCall(ctx, g.membersService.List(g.name), pageToken)
+		response, err := g.callList(ctx, g.membersService.List(g.name), pageToken)
 		if err != nil {
 			return nil, fmt.Errorf("google.group.get(%s).list -> %w", g.name, err)
 		}
@@ -108,7 +108,7 @@ func (g *Group) Add(ctx context.Context, emails []string) error {
 	g.logger.Printf("Adding %s to Google Group %s", emails, g.name)
 
 	for _, email := range emails {
-		_, err := g.insertCall(ctx, g.membersService.Insert(g.name, &admin.Member{Email: email}))
+		_, err := g.callInsert(ctx, g.membersService.Insert(g.name, &admin.Member{Email: email}))
 		if err != nil {
 			return fmt.Errorf("google.group.add(%s, %s) -> %w", g.name, email, err)
 		}
@@ -124,7 +124,7 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 	g.logger.Printf("Removing %s from Google Group %s", emails, g.name)
 
 	for _, email := range emails {
-		err := g.deleteCall(ctx, g.membersService.Delete(g.name, email))
+		err := g.callDelete(ctx, g.membersService.Delete(g.name, email))
 		if err != nil {
 			return fmt.Errorf("google.group.remove(%s, %s) -> %w", g.name, email, err)
 		}
