@@ -40,8 +40,8 @@ type UserGroup struct {
 // ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 
-// OptionLogger can be used to set a custom logger.
-func OptionLogger(logger types.Logger) func(*UserGroup) {
+// WithLogger can be used to set a custom logger.
+func WithLogger(logger types.Logger) func(*UserGroup) {
 	return func(userGroup *UserGroup) {
 		userGroup.logger = logger
 	}

@@ -54,8 +54,8 @@ type Group struct {
 	callDelete func(ctx context.Context, call *admin.MembersDeleteCall) error
 }
 
-// OptionLogger can be used to set a custom logger.
-func OptionLogger(logger types.Logger) func(*Group) {
+// WithLogger sets a custom logger.
+func WithLogger(logger types.Logger) func(*Group) {
 	return func(group *Group) {
 		group.logger = logger
 	}

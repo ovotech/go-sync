@@ -51,8 +51,8 @@ type Team struct {
 	logger    types.Logger
 }
 
-// OptionLogger can be used to set a custom logger.
-func OptionLogger(logger types.Logger) func(*Team) {
+// WithLogger can be used to set a custom logger.
+func WithLogger(logger types.Logger) func(*Team) {
 	return func(team *Team) {
 		team.logger = logger
 	}
