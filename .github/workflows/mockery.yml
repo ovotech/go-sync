@@ -31,5 +31,5 @@ jobs:
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
           echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
-          echo "Run \`make generate\` to regenerate Mockery mocks.
+          echo "Run make generate to regenerate Mockery mocks.
           exit 1
