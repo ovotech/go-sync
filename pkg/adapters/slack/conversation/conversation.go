@@ -42,7 +42,7 @@ type Conversation struct {
 // ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 
-// WithLogger can be used to set a custom logger.
+// WithLogger sets a custom logger.
 func WithLogger(logger types.Logger) func(*Conversation) {
 	return func(conversation *Conversation) {
 		conversation.logger = logger

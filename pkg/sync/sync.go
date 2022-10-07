@@ -94,7 +94,7 @@ func (s *Sync) generateCache(ctx context.Context) error {
 	return nil
 }
 
-// WithLogger can be used to set a custom logger.
+// WithLogger sets a custom logger.
 func WithLogger(logger types.Logger) func(*Sync) {
 	return func(sync *Sync) {
 		sync.logger = logger
