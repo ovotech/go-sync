@@ -18,6 +18,10 @@ We also run the following tooling to ensure code quality:
    ```sh
    go install github.com/vektra/mockery/v2@latest
    ```
+3. [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) for consistent imports.
+   ```shell
+   go install golang.org/x/tools/cmd/goimports@latest
+   ```
 
 We run linters to ensure that code being checked in matches our quality standards, and have included a Makefile in this
 repo containing common commands to assist with this. 
