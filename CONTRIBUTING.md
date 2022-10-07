@@ -18,9 +18,9 @@ We also run the following tooling to ensure code quality:
    ```sh
    go install github.com/vektra/mockery/v2@latest
    ```
-3. [goimports](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) for consistent imports.
+3. [gci](https://github.com/daixiang0/gci) for consistent, deterministic imports.
    ```shell
-   go install golang.org/x/tools/cmd/goimports@latest
+   go install github.com/daixiang0/gci@latest
    ```
 
 We run linters to ensure that code being checked in matches our quality standards, and have included a Makefile in this

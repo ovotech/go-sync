@@ -4,26 +4,27 @@ SHELL := bash
 .DELETE_ON_ERROR:
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
+TARGET ?= .
 
 lint/golangci_lint: ## Lint using golangci-lint.
-	golangci-lint run ./...
+	golangci-lint run $(TARGET)/...
 
 lint: ## Lint Go Sync.
 	make lint/golangci_lint
 .PHONY: lint lint/*
 
 fix/gofmt: ## Fix formatting with gofmt.
-	gofmt -w ./..
+	gofmt -w $(TARGET)
 
-fix/goimports: ## Fix imports.
-	goimports -w ./..
+fix/gci: ## Fix imports.
+	gci write $(TARGET)
 
 fix/golangci_lint: ## Fix golangci-lint errors.
-	golangci-lint run --fix ./...
+	golangci-lint run --fix $(TARGET)/...
 
 fix: ## Fix common linter errors.
 	make fix/gofmt
-	make fix/goimports
+	make fix/gci
 	make fix/golangci_lint
 .PHONY: fix fix/*
 
