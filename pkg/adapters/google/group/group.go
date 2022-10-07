@@ -45,6 +45,10 @@ type Group struct {
 	name           string
 	logger         types.Logger
 
+	// Custom configuration for adding emails.
+	deliverySettings string
+	role             string
+
 	callList   func(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error)
 	callInsert func(ctx context.Context, call *admin.MembersInsertCall) (*admin.Member, error)
 	callDelete func(ctx context.Context, call *admin.MembersDeleteCall) error
@@ -54,6 +58,20 @@ type Group struct {
 func OptionLogger(logger types.Logger) func(*Group) {
 	return func(group *Group) {
 		group.logger = logger
+	}
+}
+
+// WithRole sets a custom role for new emails being added.
+func WithRole(role string) func(*Group) {
+	return func(group *Group) {
+		group.role = role
+	}
+}
+
+// WithDeliverySettings sets custom deliver settings when adding emails.
+func WithDeliverySettings(deliverySettings string) func(*Group) {
+	return func(group *Group) {
+		group.deliverySettings = deliverySettings
 	}
 }
 
@@ -112,7 +130,11 @@ func (g *Group) Add(ctx context.Context, emails []string) error {
 	g.logger.Printf("Adding %s to Google Group %s", emails, g.name)
 
 	for _, email := range emails {
-		_, err := g.callInsert(ctx, g.membersService.Insert(g.name, &admin.Member{Email: email}))
+		_, err := g.callInsert(ctx, g.membersService.Insert(g.name, &admin.Member{
+			Email:            email,
+			DeliverySettings: g.deliverySettings,
+			Role:             g.role,
+		}))
 		if err != nil {
 			return fmt.Errorf("google.group.add(%s, %s) -> %w", g.name, email, err)
 		}
