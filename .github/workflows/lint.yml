@@ -1,12 +1,9 @@
 name: lint
 
 on:
-  push:
+  pull_request:
     branches:
-      - '*'
-
-permissions:
-  contents: write
+      - main
 
 jobs:
   golangci:
@@ -21,12 +18,23 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
-          args: --fix
           version: v1.49
           only-new-issues: true
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v9
+      - name: install goimports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+      - name: make fix
+        run: |
+          make fix
+      - name: Check for changes
+        id: check-changed-files
+        uses: tj-actions/verify-changed-files@v11.1
         with:
-          message: 'Update Linting'
-          author_name: GitHub Actions
-          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          files : |
+            *
+      - name: Fail if code needs linting
+        if: steps.check-changed-files.outputs.files_changed == 'true'
+        run: |
+          echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
+          echo "Run `make fix` to attempt to fix linter errors.
+          exit 1
