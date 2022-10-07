@@ -17,8 +17,12 @@ import (
 	"time"
 
 	"github.com/ovotech/go-sync/internal/types"
+	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 )
+
+// Ensure the adapter type fully satisfies the ports.Adapter interface.
+var _ ports.Adapter = &UserGroup{}
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
