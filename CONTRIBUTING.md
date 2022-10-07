@@ -19,6 +19,16 @@ We also run the following tooling to ensure code quality:
    go install github.com/vektra/mockery/v2@latest
    ```
 
+We run linters to ensure that code being checked in matches our quality standards, and have included a Makefile in this
+repo containing common commands to assist with this. 
+
+| Command              | Description                         |
+|----------------------|-------------------------------------|
+| `make` / `make help` | Display list of available commands. |
+| `make lint`          | Lint Go Sync.                       |
+| `make fix`           | Fix some common linter errors.      |
+| `make generate`      | Generate automated code.            |
+
 ## Developing an adapter 🔌
 An adapter's basic functionality is to provide a common interface to a third party service. In order to keep 
 synchronisation simple, Sync only works with strings. For users, we recommend email addresses as these are usually 
@@ -84,5 +94,5 @@ if err != nil {
 When writing tests, you can autogenerate the mocked clients using [Mockery](#preparation-):
 
 ```sh
-~/go/bin/mockery --all --exported --with-expecter --output "./internal/mocks"
+make generate
 ```
