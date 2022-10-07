@@ -4,6 +4,7 @@ These adapters are provided as part of Go Sync.
 | Service                |
 |------------------------|
 | [GitHub](./github)     |
+| [Google](./google)     |
 | [Opsgenie](./opsgenie) |
 | [Slack](./slack)       |
 
