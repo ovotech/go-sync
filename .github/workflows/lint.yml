@@ -15,21 +15,23 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-      - name: fmt
-        run: |
-          go fmt ./...
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
           version: v1.49
           only-new-issues: true
+      - name: make fix
+        run: |
+          make fix
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v11.1
         with:
-          files: |
+          files : |
             *
-      - name: Fail on changes
+      - name: Fail if code needs linting
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
+          echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
+          echo "Run `make fix` to attempt to fix linter errors.
           exit 1
