@@ -24,6 +24,8 @@ type GitHubDiscovery interface {
 	GetEmailFromUsername(context.Context, []string) ([]string, error)
 }
 
+type test interface{}
+
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iGitHubTeam interface {
 	ListTeamMembersBySlug(
