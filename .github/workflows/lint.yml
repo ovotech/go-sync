@@ -20,6 +20,9 @@ jobs:
         with:
           version: v1.49
           only-new-issues: true
+      - name: install goimports
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
       - name: make fix
         run: |
           make fix
