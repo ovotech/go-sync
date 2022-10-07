@@ -31,6 +31,7 @@ fix: ## Fix common linter errors.
 generate/mockery: ## Generate Mockery mocks.
 	rm -rf ./internal/mocks
 	mockery --all --exported --with-expecter --output ./internal/mocks
+	TARGET=./internal/mocks make fix
 
 generate: ## Generate automated code.
 	make generate/mockery
