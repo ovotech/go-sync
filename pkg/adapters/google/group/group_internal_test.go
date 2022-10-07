@@ -116,3 +116,49 @@ func TestGroups_Remove(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestWithRole(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.TODO()
+
+	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService.EXPECT().Insert("test", &admin.Member{
+		Email: "foo@email",
+		Role:  "test-role",
+	}).Return(nil)
+
+	mockCall := new(mockCalls)
+	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
+
+	group := New(&admin.Service{}, "test", WithRole("test-role"))
+	group.membersService = mockMembersService
+	group.callInsert = mockCall.callInsert
+
+	err := group.Add(ctx, []string{"foo@email"})
+
+	assert.NoError(t, err)
+}
+
+func TestWithDeliverySettings(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.TODO()
+
+	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService.EXPECT().Insert("test", &admin.Member{
+		Email:            "foo@email",
+		DeliverySettings: "test-delivery-settings",
+	}).Return(nil)
+
+	mockCall := new(mockCalls)
+	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
+
+	group := New(&admin.Service{}, "test", WithDeliverySettings("test-delivery-settings"))
+	group.membersService = mockMembersService
+	group.callInsert = mockCall.callInsert
+
+	err := group.Add(ctx, []string{"foo@email"})
+
+	assert.NoError(t, err)
+}
