@@ -51,7 +51,7 @@ type Team struct {
 	logger    types.Logger
 }
 
-// WithLogger can be used to set a custom logger.
+// WithLogger sets a custom logger.
 func WithLogger(logger types.Logger) func(*Team) {
 	return func(team *Team) {
 		team.logger = logger
