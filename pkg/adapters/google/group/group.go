@@ -11,12 +11,16 @@ import (
 	admin "google.golang.org/api/admin/directory/v1"
 )
 
+const (
+	maxResults = 200
+)
+
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
 var _ ports.Adapter = &Group{}
 
 // callList allows us to mock the returned struct from the List Google API call.
 func callList(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error) {
-	return call.Context(ctx).PageToken(pageToken).Do() //nolint:wrapcheck
+	return call.Context(ctx).PageToken(pageToken).MaxResults(maxResults).Do() //nolint:wrapcheck
 }
 
 // callInsert allows us to mock the returned struct from the Insert Google API call.
