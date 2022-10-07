@@ -7,17 +7,10 @@ import (
 	"testing"
 
 	"github.com/ovotech/go-sync/internal/mocks"
-	"github.com/ovotech/go-sync/pkg/adapters/github/team"
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-func TestImplementsInterface(t *testing.T) {
-	t.Parallel()
-
-	assert.Implements(t, (*team.GitHubDiscovery)(nil), &Saml{})
-}
 
 func TestNew(t *testing.T) {
 	t.Parallel()

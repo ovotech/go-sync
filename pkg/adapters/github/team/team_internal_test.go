@@ -6,16 +6,9 @@ import (
 
 	"github.com/google/go-github/v47/github"
 	"github.com/ovotech/go-sync/internal/mocks"
-	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
-
-func TestImplementsInterface(t *testing.T) {
-	t.Parallel()
-
-	assert.Implements(t, (*ports.Adapter)(nil), &Team{})
-}
 
 func TestNew(t *testing.T) {
 	t.Parallel()
