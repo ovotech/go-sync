@@ -36,5 +36,5 @@ jobs:
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
           echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
-          echo "Run `make fix` to attempt to fix linter errors.
+          echo "Run make fix to attempt to fix linter errors."
           exit 1
