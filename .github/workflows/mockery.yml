@@ -15,11 +15,13 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
+      - name: install dependencies
+        run: |
+          go install github.com/daixiang0/gci@latest
+          go install github.com/vektra/mockery/v2@latest
       - name: mockery
         id: mockery
         run: |
-          rm -rf ./internal/mocks
-          go install github.com/vektra/mockery/v2@latest
           make generate
       - name: Check for changes
         id: check-changed-files
