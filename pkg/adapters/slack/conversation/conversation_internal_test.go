@@ -74,7 +74,6 @@ func TestConversation_Add(t *testing.T) {
 	err := adapter.Add(context.TODO(), []string{"foo@email", "bar@email"})
 
 	assert.NoError(t, err)
-	assert.Equal(t, map[string]string{"foo@email": "foo", "bar@email": "bar"}, adapter.cache)
 }
 
 func TestConversation_Remove(t *testing.T) {
@@ -96,7 +95,6 @@ func TestConversation_Remove(t *testing.T) {
 		err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, map[string]string{}, adapter.cache)
 	})
 
 	t.Run("Restricted kick from public conversation", func(t *testing.T) {

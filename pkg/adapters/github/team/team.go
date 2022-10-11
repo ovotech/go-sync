@@ -15,6 +15,7 @@ import (
 
 	"github.com/google/go-github/v47/github"
 	"github.com/ovotech/go-sync/internal/types"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/ovotech/go-sync/pkg/ports"
 )
 
@@ -69,7 +70,7 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 		discovery: discovery,
 		org:       org,
 		slug:      slug,
-		cache:     make(map[string]string),
+		cache:     nil,
 		logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
@@ -84,7 +85,10 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 func (t *Team) Get(ctx context.Context) ([]string, error) {
 	t.logger.Printf("Fetching accounts from GitHub team %s/%s", t.org, t.slug)
 
-	var out []string
+	// Initialise the cache.
+	t.cache = make(map[string]string)
+
+	out := make([]string, 0)
 
 	opts := &github.TeamListTeamMembersOptions{}
 
@@ -151,10 +155,8 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 func (t *Team) Remove(ctx context.Context, emails []string) error {
 	t.logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
 
-	if len(t.cache) == 0 {
-		if _, err := t.Get(ctx); err != nil {
-			return fmt.Errorf("github.team.remove.get -> %w", err)
-		}
+	if t.cache == nil {
+		return fmt.Errorf("github.team.remove -> %w", gosyncerrors.ErrCacheEmpty)
 	}
 
 	for _, email := range emails {
@@ -167,6 +169,9 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 	}
 
 	t.logger.Println("Finished removing accounts successfully")
+
+	// Empty the cache to force calling Get between Remove calls.
+	t.cache = nil
 
 	return nil
 }
