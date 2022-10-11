@@ -42,6 +42,8 @@ common between services.
 
 Following our specification, your adapter will be compatible with Sync.
 
+We've built a command-line tool to automatically scaffold a new adapter: https://github.com/ovotech/go-sync-adapter-gen
+
 <details>
 <summary>Example adapter</summary>
 
