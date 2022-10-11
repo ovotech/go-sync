@@ -26,12 +26,10 @@ var _ ports.Adapter = &UserGroup{}
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
-	GetUserGroupMembers(userGroup string) ([]string, error)
-	GetUsersInfo(users ...string) (*[]slack.User, error)
-	GetUserByEmail(email string) (*slack.User, error)
-	UpdateUserGroupMembers(userGroup string, members string) (slack.UserGroup, error)
-	EnableUserGroup(userGroup string) (slack.UserGroup, error)
-	DisableUserGroup(userGroup string) (slack.UserGroup, error)
+	GetUserGroupMembersContext(ctx context.Context, userGroup string) ([]string, error)
+	GetUsersInfoContext(ctx context.Context, users ...string) (*[]slack.User, error)
+	GetUserByEmailContext(ctx context.Context, email string) (*slack.User, error)
+	UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string) (slack.UserGroup, error)
 }
 
 type UserGroup struct {
@@ -39,6 +37,9 @@ type UserGroup struct {
 	userGroupName string
 	cache         map[string]string
 	logger        types.Logger
+
+	// MuteGroupCannotBeEmpty silences errors when removing everyone from a usergroup.
+	MuteGroupCannotBeEmpty bool
 }
 
 // ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
@@ -54,10 +55,11 @@ func WithLogger(logger types.Logger) func(*UserGroup) {
 // New instantiates a new Slack UserGroup adapter.
 func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *UserGroup)) *UserGroup {
 	ugAdapter := &UserGroup{
-		client:        slackClient,
-		userGroupName: userGroup,
-		cache:         map[string]string{},
-		logger:        log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		client:                 slackClient,
+		userGroupName:          userGroup,
+		cache:                  map[string]string{},
+		MuteGroupCannotBeEmpty: false,
+		logger:                 log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -68,17 +70,17 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 }
 
 // Get emails of Slack users in a User group.
-func (u *UserGroup) Get(_ context.Context) ([]string, error) {
+func (u *UserGroup) Get(ctx context.Context) ([]string, error) {
 	u.logger.Printf("Fetching accounts from Slack UserGroup %s", u.userGroupName)
 
 	// Retrieve a plain list of Slack IDs in the user group.
-	groupMembers, err := u.client.GetUserGroupMembers(u.userGroupName)
+	groupMembers, err := u.client.GetUserGroupMembersContext(ctx, u.userGroupName)
 	if err != nil {
 		return nil, fmt.Errorf("slack.usergroup.get.getusergroupmembers -> %w", err)
 	}
 
 	// Get the user info for each of the users.
-	users, err := u.client.GetUsersInfo(groupMembers...)
+	users, err := u.client.GetUsersInfoContext(ctx, groupMembers...)
 	if err != nil {
 		return nil, fmt.Errorf("slack.usergroup.get.getusersinfo -> %w", err)
 	}
@@ -96,7 +98,7 @@ func (u *UserGroup) Get(_ context.Context) ([]string, error) {
 }
 
 // Add emails to a Slack User group.
-func (u *UserGroup) Add(_ context.Context, emails []string) error {
+func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
 
 	if len(u.cache) == 0 {
@@ -113,7 +115,7 @@ func (u *UserGroup) Add(_ context.Context, emails []string) error {
 
 	// Loop over the emails to be added, and retrieve the Slack IDs.
 	for _, email := range emails {
-		user, err := u.client.GetUserByEmail(email)
+		user, err := u.client.GetUserByEmailContext(ctx, email)
 		if err != nil {
 			return fmt.Errorf("slack.usergroup.add.getuserbyemail(%s) -> %w", email, err)
 		}
@@ -130,19 +132,11 @@ func (u *UserGroup) Add(_ context.Context, emails []string) error {
 	// Add the members to the Slack user group.
 	joinedSlackIds := strings.Join(updatedUserGroup, ",")
 
-	group, err := u.client.UpdateUserGroupMembers(u.userGroupName, joinedSlackIds)
+	_, err := u.client.UpdateUserGroupMembersContext(ctx, u.userGroupName, joinedSlackIds)
 	if err != nil {
 		u.cache = map[string]string{}
 
 		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupName, err)
-	}
-
-	// If the group is disabled, re-enable it.
-	if group.DateDelete != 0 {
-		_, err = u.client.EnableUserGroup(u.userGroupName)
-		if err != nil {
-			return fmt.Errorf("slack.usergroup.add.enableusergroup(%s) -> %w", u.userGroupName, err)
-		}
 	}
 
 	u.logger.Println("Finished adding accounts successfully")
@@ -151,21 +145,11 @@ func (u *UserGroup) Add(_ context.Context, emails []string) error {
 }
 
 // Remove emails from a Slack User group.
-func (u *UserGroup) Remove(_ context.Context, emails []string) error {
+func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
 
 	if len(u.cache) == 0 {
 		return fmt.Errorf("slack.usergroup.remove -> %w", ErrCacheEmpty)
-	}
-
-	// If this change would remove all users, disable the group instead.
-	if len(u.cache) == len(emails) {
-		_, err := u.client.DisableUserGroup(u.userGroupName)
-		if err != nil {
-			return fmt.Errorf("slack.usergroup.remove.disableusergroup(%s) -> %w", u.userGroupName, err)
-		}
-
-		return nil
 	}
 
 	// Convert the list of email addresses into a map to efficiently lookup emails to remove.
@@ -189,8 +173,14 @@ func (u *UserGroup) Remove(_ context.Context, emails []string) error {
 	// Update the list of members in the user group.
 	concatUserList := strings.Join(updatedUserGroup, ",")
 
-	_, err := u.client.UpdateUserGroupMembers(u.userGroupName, concatUserList)
+	_, err := u.client.UpdateUserGroupMembersContext(ctx, u.userGroupName, concatUserList)
 	if err != nil {
+		if strings.Contains(err.Error(), "invalid_arguments") && u.MuteGroupCannotBeEmpty {
+			u.logger.Println("Cannot remove all members from usergroup, but error is muted by configuration - continuing")
+
+			return nil
+		}
+
 		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
 

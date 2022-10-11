@@ -2,6 +2,7 @@ package usergroup
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"testing"
 
@@ -19,6 +20,7 @@ func TestNew(t *testing.T) {
 	adapter.client = slackClient
 
 	assert.Equal(t, "test", adapter.userGroupName)
+	assert.False(t, adapter.MuteGroupCannotBeEmpty)
 	assert.Zero(t, slackClient.Calls)
 }
 
@@ -31,12 +33,12 @@ func TestUserGroup_Get(t *testing.T) {
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
-	slackClient.EXPECT().GetUserGroupMembers("test").Return([]string{"foo", "bar"}, nil)
-	slackClient.EXPECT().GetUsersInfo("foo", "bar").Maybe().Return(&[]slack.User{
+	slackClient.EXPECT().GetUserGroupMembersContext(ctx, "test").Return([]string{"foo", "bar"}, nil)
+	slackClient.EXPECT().GetUsersInfoContext(ctx, "foo", "bar").Maybe().Return(&[]slack.User{
 		{ID: "foo", Profile: slack.UserProfile{Email: "foo@email"}},
 		{ID: "bar", Profile: slack.UserProfile{Email: "bar@email"}},
 	}, nil)
-	slackClient.EXPECT().GetUsersInfo("bar", "foo").Maybe().Return(&[]slack.User{
+	slackClient.EXPECT().GetUsersInfoContext(ctx, "bar", "foo").Maybe().Return(&[]slack.User{
 		{ID: "bar", Profile: slack.UserProfile{Email: "bar@email"}},
 		{ID: "foo", Profile: slack.UserProfile{Email: "foo@email"}},
 	}, nil)
@@ -47,7 +49,6 @@ func TestUserGroup_Get(t *testing.T) {
 	assert.Equal(t, []string{"foo@email", "bar@email"}, users)
 }
 
-//nolint:funlen
 func TestUserGroup_Add(t *testing.T) {
 	t.Parallel()
 
@@ -66,23 +67,21 @@ func TestUserGroup_Add(t *testing.T) {
 		assert.ErrorIs(t, err, ErrCacheEmpty)
 	})
 
-	t.Run("Remove accounts", func(t *testing.T) {
+	t.Run("Add accounts", func(t *testing.T) {
 		t.Parallel()
 
 		slackClient := mocks.NewISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 
-		argsMatch := func(userGroup string, members string) {
+		slackClient.EXPECT().GetUserByEmailContext(ctx, "fizz@email").Return(&slack.User{ID: "fizz"}, nil)
+		slackClient.EXPECT().GetUserByEmailContext(ctx, "buzz@email").Return(&slack.User{ID: "buzz"}, nil)
+		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx,
+			"test", mock.Anything,
+		).Run(func(_ context.Context, userGroup string, members string) { //nolint:contextcheck
 			assert.Equal(t, "test", userGroup)
 			assert.ElementsMatch(t, strings.Split(members, ","), []string{"foo", "bar", "fizz", "buzz"})
-		}
-
-		slackClient.EXPECT().GetUserByEmail("fizz@email").Return(&slack.User{ID: "fizz"}, nil)
-		slackClient.EXPECT().GetUserByEmail("buzz@email").Return(&slack.User{ID: "buzz"}, nil)
-		slackClient.EXPECT().UpdateUserGroupMembers(
-			"test", mock.Anything,
-		).Run(argsMatch).Return(slack.UserGroup{DateDelete: 0}, nil)
+		}).Return(slack.UserGroup{DateDelete: 0}, nil)
 
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 		err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
@@ -91,26 +90,6 @@ func TestUserGroup_Add(t *testing.T) {
 		assert.Equal(t, adapter.cache, map[string]string{
 			"foo@email": "foo", "bar@email": "bar", "fizz@email": "fizz", "buzz@email": "buzz",
 		})
-	})
-
-	t.Run("Enable user group if disabled", func(t *testing.T) {
-		t.Parallel()
-
-		slackClient := mocks.NewISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo"}
-
-		slackClient.EXPECT().GetUserByEmail("bar@email").Return(&slack.User{ID: "bar"}, nil)
-		slackClient.EXPECT().UpdateUserGroupMembers("test", "foo,bar").Maybe().
-			Return(slack.UserGroup{DateDelete: 1}, nil)
-		slackClient.EXPECT().UpdateUserGroupMembers("test", "bar,foo").Maybe().
-			Return(slack.UserGroup{DateDelete: 1}, nil)
-		slackClient.EXPECT().EnableUserGroup("test").Return(slack.UserGroup{}, nil)
-
-		err := adapter.Add(ctx, []string{"bar@email"})
-
-		assert.NoError(t, err)
 	})
 }
 
@@ -140,24 +119,36 @@ func TestUserGroup_Remove(t *testing.T) {
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
-		slackClient.EXPECT().UpdateUserGroupMembers("test", "foo").Return(slack.UserGroup{}, nil)
+		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "foo").Return(slack.UserGroup{}, nil)
 
 		err := adapter.Remove(ctx, []string{"bar@email"})
 
 		assert.NoError(t, err)
 	})
 
-	t.Run("Disable Usergroup if membership would be zero", func(t *testing.T) {
+	t.Run("Return/mute error if number of accounts reaches zero", func(t *testing.T) {
 		t.Parallel()
+
+		// Mock the error returned from the Slack API.
+		errInvalidArguments := errors.New("invalid_arguments") //nolint:goerr113
 
 		slackClient := mocks.NewISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo"}
+		adapter.MuteGroupCannotBeEmpty = false
 
-		slackClient.EXPECT().DisableUserGroup("test").Return(slack.UserGroup{}, nil)
+		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "").Return(slack.UserGroup{}, errInvalidArguments)
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
+
+		assert.ErrorIs(t, err, errInvalidArguments)
+
+		// Reset the cache and mute the empty group error.
+		adapter.cache = map[string]string{"foo@email": "foo"}
+		adapter.MuteGroupCannotBeEmpty = true
+
+		err = adapter.Remove(ctx, []string{"foo@email"})
 
 		assert.NoError(t, err)
 	})
