@@ -145,7 +145,6 @@ func TestUserGroup_Remove(t *testing.T) {
 		assert.ErrorIs(t, err, errInvalidArguments)
 
 		// Reset the cache and mute the empty group error.
-		adapter.cache = map[string]string{"foo@email": "foo"}
 		adapter.MuteGroupCannotBeEmpty = true
 
 		err = adapter.Remove(ctx, []string{"foo@email"})
