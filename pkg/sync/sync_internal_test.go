@@ -16,13 +16,13 @@ func TestNew(t *testing.T) {
 	syncService := New(adapter)
 
 	assert.Empty(t, syncService.cache)
-	assert.True(t, syncService.Add)
-	assert.True(t, syncService.Remove)
+	assert.Equal(t, RemoveAdd, syncService.OperatingMode)
 	assert.False(t, syncService.DryRun)
 	assert.Zero(t, adapter.Calls)
 }
 
-func TestSync_SyncWith(t *testing.T) { //nolint:funlen,maintidx
+//nolint:funlen
+func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 	t.Parallel()
 
 	ctx := context.TODO()
@@ -242,47 +242,87 @@ func TestSync_SyncWith(t *testing.T) { //nolint:funlen,maintidx
 		assert.NoError(t, err)
 	})
 
-	t.Run("AddRemove", func(t *testing.T) {
+	t.Run("OperatingMode", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Disable Add", func(t *testing.T) {
+		t.Run("AddOnly", func(t *testing.T) {
 			t.Parallel()
 
 			source := mocks.NewAdapter(t)
 			destination := mocks.NewAdapter(t)
 
 			syncService := New(source)
-			syncService.Add = false
-			syncService.Remove = true
+			syncService.OperatingMode = AddOnly
 
-			source.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
-			destination.EXPECT().Get(ctx).Once().Return([]string{"fizz", "buzz"}, nil)
-			destination.EXPECT().Remove(ctx, []string{"fizz", "buzz"}).Maybe().Return(nil)
-			destination.EXPECT().Remove(ctx, []string{"buzz", "fizz"}).Maybe().Return(nil)
+			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
+			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
+			destination.EXPECT().Add(ctx, []string{"foo"}).Once().Return(nil)
 
 			err := syncService.SyncWith(ctx, destination)
 
 			assert.NoError(t, err)
 		})
 
-		t.Run("Disable Remove", func(t *testing.T) {
+		t.Run("RemoveOnly", func(t *testing.T) {
 			t.Parallel()
 
 			source := mocks.NewAdapter(t)
 			destination := mocks.NewAdapter(t)
 
 			syncService := New(source)
-			syncService.Add = true
-			syncService.Remove = false
+			syncService.OperatingMode = RemoveOnly
 
-			source.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
-			destination.EXPECT().Get(ctx).Once().Return([]string{"fizz", "buzz"}, nil)
-			destination.EXPECT().Add(ctx, []string{"foo", "bar"}).Maybe().Return(nil)
-			destination.EXPECT().Add(ctx, []string{"bar", "foo"}).Maybe().Return(nil)
+			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
+			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
+			destination.EXPECT().Remove(ctx, []string{"bar"}).Once().Return(nil)
 
 			err := syncService.SyncWith(ctx, destination)
 
 			assert.NoError(t, err)
+		})
+
+		t.Run("RemoveAdd", func(t *testing.T) { //nolint:dupl
+			t.Parallel()
+
+			source := mocks.NewAdapter(t)
+			destination := mocks.NewAdapter(t)
+
+			syncService := New(source)
+			syncService.OperatingMode = RemoveAdd
+
+			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
+			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
+			destination.EXPECT().Add(ctx, []string{"foo"}).Once().Return(nil)
+			destination.EXPECT().Remove(ctx, []string{"bar"}).Once().Return(nil)
+
+			err := syncService.SyncWith(ctx, destination)
+
+			assert.NoError(t, err)
+			assert.Equal(t, "Get", destination.Calls[0].Method)
+			assert.Equal(t, "Remove", destination.Calls[1].Method)
+			assert.Equal(t, "Add", destination.Calls[2].Method)
+		})
+
+		t.Run("AddRemove", func(t *testing.T) { //nolint:dupl
+			t.Parallel()
+
+			source := mocks.NewAdapter(t)
+			destination := mocks.NewAdapter(t)
+
+			syncService := New(source)
+			syncService.OperatingMode = AddRemove
+
+			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
+			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
+			destination.EXPECT().Add(ctx, []string{"foo"}).Once().Return(nil)
+			destination.EXPECT().Remove(ctx, []string{"bar"}).Once().Return(nil)
+
+			err := syncService.SyncWith(ctx, destination)
+
+			assert.NoError(t, err)
+			assert.Equal(t, "Get", destination.Calls[0].Method)
+			assert.Equal(t, "Add", destination.Calls[1].Method)
+			assert.Equal(t, "Remove", destination.Calls[2].Method)
 		})
 	})
 }
