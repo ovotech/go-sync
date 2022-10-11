@@ -45,6 +45,15 @@ type UserGroup struct {
 // ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
 var ErrCacheEmpty = errors.New("cache is empty - run Get()")
 
+func copyCache(originalMap map[string]string) map[string]string {
+	newMap := make(map[string]string)
+	for k, v := range originalMap {
+		newMap[k] = v
+	}
+
+	return newMap
+}
+
 // WithLogger sets a custom logger.
 func WithLogger(logger types.Logger) func(*UserGroup) {
 	return func(userGroup *UserGroup) {
@@ -57,7 +66,7 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 	ugAdapter := &UserGroup{
 		client:                 slackClient,
 		userGroupName:          userGroup,
-		cache:                  map[string]string{},
+		cache:                  nil,
 		MuteGroupCannotBeEmpty: false,
 		logger:                 log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
@@ -72,6 +81,9 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 // Get emails of Slack users in a User group.
 func (u *UserGroup) Get(ctx context.Context) ([]string, error) {
 	u.logger.Printf("Fetching accounts from Slack UserGroup %s", u.userGroupName)
+
+	// Initialise the cache.
+	u.cache = make(map[string]string)
 
 	// Retrieve a plain list of Slack IDs in the user group.
 	groupMembers, err := u.client.GetUserGroupMembersContext(ctx, u.userGroupName)
@@ -101,7 +113,7 @@ func (u *UserGroup) Get(ctx context.Context) ([]string, error) {
 func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
 
-	if len(u.cache) == 0 {
+	if u.cache == nil {
 		return fmt.Errorf("slack.usergroup.add -> %w", ErrCacheEmpty)
 	}
 
@@ -113,6 +125,9 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		updatedUserGroup = append(updatedUserGroup, id)
 	}
 
+	// Shallow copy the cache.
+	localCache := copyCache(u.cache)
+
 	// Loop over the emails to be added, and retrieve the Slack IDs.
 	for _, email := range emails {
 		user, err := u.client.GetUserByEmailContext(ctx, email)
@@ -123,7 +138,7 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		updatedUserGroup = append(updatedUserGroup, user.ID)
 
 		// Add the entry to the cache.
-		u.cache[email] = user.ID
+		localCache[email] = user.ID
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
 		time.Sleep(2 * time.Second) //nolint:gomnd
@@ -134,10 +149,11 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 
 	_, err := u.client.UpdateUserGroupMembersContext(ctx, u.userGroupName, joinedSlackIds)
 	if err != nil {
-		u.cache = map[string]string{}
-
 		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupName, err)
 	}
+
+	// Update the cache after successful additions to the usergroup.
+	u.cache = localCache
 
 	u.logger.Println("Finished adding accounts successfully")
 
@@ -148,9 +164,12 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
 
-	if len(u.cache) == 0 {
+	if u.cache == nil {
 		return fmt.Errorf("slack.usergroup.remove -> %w", ErrCacheEmpty)
 	}
+
+	// Shallow copy the cache.
+	localCache := copyCache(u.cache)
 
 	// Convert the list of email addresses into a map to efficiently lookup emails to remove.
 	mapOfEmailsToRemove := map[string]bool{}
@@ -159,14 +178,14 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	}
 
 	// Iterate over the cached map of emails to Slack IDs, and only include those that aren't in the removal map.
-	updatedUserGroup := make([]string, 0, len(u.cache)-len(emails))
+	updatedUserGroup := make([]string, 0, len(localCache)-len(emails))
 
-	for email, slackID := range u.cache {
+	for email, slackID := range localCache {
 		// Only include the Slack ID if it's not in the map of emails to remove.
 		if !mapOfEmailsToRemove[email] {
 			updatedUserGroup = append(updatedUserGroup, slackID)
 		} else {
-			delete(u.cache, email)
+			delete(localCache, email)
 		}
 	}
 
@@ -183,6 +202,9 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 
 		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
+
+	// Update the cache after successful removals from the usergroup.
+	u.cache = localCache
 
 	u.logger.Println("Finished removing accounts successfully")
 
