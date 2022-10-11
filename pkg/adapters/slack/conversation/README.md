@@ -1,6 +1,11 @@
 # Slack Conversation adapter for Go Sync
 This adapter synchronises email addresses with a Slack conversation.
 
+## Warning
+The Slack usergroup API doesn't allow a usergroup to have no members. If this behaviour is expected, we recommend
+setting `adapter.MuteGroupCannotBeEmpty = true` to mute the error. No members will be removed, but Go Sync will continue
+processing.
+
 ## Requirements
 In order to synchronise with Slack, you'll need to [create a Slack app](https://api.slack.com/authentication/basics)
 with the following OAuth permissions:
