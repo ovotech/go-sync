@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ovotech/go-sync/internal/mocks"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -64,7 +65,7 @@ func TestUserGroup_Add(t *testing.T) {
 		err := adapter.Add(ctx, []string{"foo", "bar"})
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, ErrCacheEmpty)
+		assert.ErrorIs(t, err, gosyncerrors.ErrCacheEmpty)
 	})
 
 	t.Run("Add accounts", func(t *testing.T) {
@@ -87,9 +88,6 @@ func TestUserGroup_Add(t *testing.T) {
 		err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
 		assert.NoError(t, err)
-		assert.Equal(t, adapter.cache, map[string]string{
-			"foo@email": "foo", "bar@email": "bar", "fizz@email": "fizz", "buzz@email": "buzz",
-		})
 	})
 }
 
@@ -108,7 +106,7 @@ func TestUserGroup_Remove(t *testing.T) {
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, ErrCacheEmpty)
+		assert.ErrorIs(t, err, gosyncerrors.ErrCacheEmpty)
 	})
 
 	t.Run("Remove accounts", func(t *testing.T) {

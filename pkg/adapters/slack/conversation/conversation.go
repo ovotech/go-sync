@@ -8,7 +8,6 @@ package conversation
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -16,6 +15,7 @@ import (
 	"time"
 
 	"github.com/ovotech/go-sync/internal/types"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 )
@@ -43,9 +43,6 @@ type Conversation struct {
 	logger types.Logger
 }
 
-// ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
-var ErrCacheEmpty = errors.New("cache is empty - run Get()")
-
 // WithLogger sets a custom logger.
 func WithLogger(logger types.Logger) func(*Conversation) {
 	return func(conversation *Conversation) {
@@ -59,7 +56,7 @@ func New(client *slack.Client, channelName string, optsFn ...func(conversation *
 		MuteRestrictedErrOnKickFromPublic: false,
 		client:                            client,
 		conversationName:                  channelName,
-		cache:                             make(map[string]string),
+		cache:                             nil,
 		logger: log.New(
 			os.Stderr,
 			"[go-sync/slack/conversation] ",
@@ -110,6 +107,9 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 func (c *Conversation) Get(_ context.Context) ([]string, error) {
 	c.logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
 
+	// Initialise the cache.
+	c.cache = make(map[string]string)
+
 	slackUsers, err := c.getListOfSlackUsernames()
 	if err != nil {
 		return nil, fmt.Errorf("slack.conversation.get.getlistofslackusernames -> %w", err)
@@ -149,14 +149,10 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 		}
 
 		slackIds[index] = user.ID
-		// Add the user to the cache.
-		c.cache[email] = user.ID
 	}
 
 	_, err := c.client.InviteUsersToConversation(c.conversationName, slackIds...)
 	if err != nil {
-		c.cache = nil
-
 		return fmt.Errorf("slack.conversation.add.inviteuserstoconversation(%s, ...) -> %w", c.conversationName, err)
 	}
 
@@ -170,8 +166,8 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	c.logger.Printf("Removing %s from Slack conversation %s", emails, c.conversationName)
 
 	// If the cache hasn't been generated, regenerate it.
-	if len(c.cache) == 0 {
-		return fmt.Errorf("slack.conversation.remove -> %w", ErrCacheEmpty)
+	if c.cache == nil {
+		return fmt.Errorf("slack.conversation.remove -> %w", gosyncerrors.ErrCacheEmpty)
 	}
 
 	for _, email := range emails {
@@ -191,14 +187,14 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 			)
 		}
 
-		// Delete the entry from the cache.
-		delete(c.cache, email)
-
 		// To prevent rate limiting, sleep for 1 second after each kick.
 		time.Sleep(1 * time.Second)
 	}
 
 	c.logger.Println("Finished removing accounts successfully")
+
+	// Empty the cache to force calling Get between Remove calls.
+	c.cache = nil
 
 	return nil
 }

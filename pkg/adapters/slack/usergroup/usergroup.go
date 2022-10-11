@@ -9,7 +9,6 @@ package usergroup
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -17,6 +16,7 @@ import (
 	"time"
 
 	"github.com/ovotech/go-sync/internal/types"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/ovotech/go-sync/pkg/ports"
 	"github.com/slack-go/slack"
 )
@@ -40,18 +40,6 @@ type UserGroup struct {
 
 	// MuteGroupCannotBeEmpty silences errors when removing everyone from a usergroup.
 	MuteGroupCannotBeEmpty bool
-}
-
-// ErrCacheEmpty shouldn't realistically be raised unless the adapter is being used outside of Go Sync.
-var ErrCacheEmpty = errors.New("cache is empty - run Get()")
-
-func copyCache(originalMap map[string]string) map[string]string {
-	newMap := make(map[string]string)
-	for k, v := range originalMap {
-		newMap[k] = v
-	}
-
-	return newMap
 }
 
 // WithLogger sets a custom logger.
@@ -114,7 +102,7 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
 
 	if u.cache == nil {
-		return fmt.Errorf("slack.usergroup.add -> %w", ErrCacheEmpty)
+		return fmt.Errorf("slack.usergroup.add -> %w", gosyncerrors.ErrCacheEmpty)
 	}
 
 	// The updatedUserGroup is existing users + new users.
@@ -125,9 +113,6 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		updatedUserGroup = append(updatedUserGroup, id)
 	}
 
-	// Shallow copy the cache.
-	localCache := copyCache(u.cache)
-
 	// Loop over the emails to be added, and retrieve the Slack IDs.
 	for _, email := range emails {
 		user, err := u.client.GetUserByEmailContext(ctx, email)
@@ -136,9 +121,6 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		}
 		// Add the new email user IDs to the list.
 		updatedUserGroup = append(updatedUserGroup, user.ID)
-
-		// Add the entry to the cache.
-		localCache[email] = user.ID
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
 		time.Sleep(2 * time.Second) //nolint:gomnd
@@ -152,8 +134,8 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupName, err)
 	}
 
-	// Update the cache after successful additions to the usergroup.
-	u.cache = localCache
+	// Empty the cache to force calling Get between Add/Remove calls.
+	u.cache = nil
 
 	u.logger.Println("Finished adding accounts successfully")
 
@@ -165,11 +147,8 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
 
 	if u.cache == nil {
-		return fmt.Errorf("slack.usergroup.remove -> %w", ErrCacheEmpty)
+		return fmt.Errorf("slack.usergroup.remove -> %w", gosyncerrors.ErrCacheEmpty)
 	}
-
-	// Shallow copy the cache.
-	localCache := copyCache(u.cache)
 
 	// Convert the list of email addresses into a map to efficiently lookup emails to remove.
 	mapOfEmailsToRemove := map[string]bool{}
@@ -178,14 +157,12 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	}
 
 	// Iterate over the cached map of emails to Slack IDs, and only include those that aren't in the removal map.
-	updatedUserGroup := make([]string, 0, len(localCache)-len(emails))
+	updatedUserGroup := make([]string, 0, len(u.cache)-len(emails))
 
-	for email, slackID := range localCache {
+	for email, slackID := range u.cache {
 		// Only include the Slack ID if it's not in the map of emails to remove.
 		if !mapOfEmailsToRemove[email] {
 			updatedUserGroup = append(updatedUserGroup, slackID)
-		} else {
-			delete(localCache, email)
 		}
 	}
 
@@ -203,8 +180,8 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
 
-	// Update the cache after successful removals from the usergroup.
-	u.cache = localCache
+	// Empty the cache to force calling Get between Add/Remove calls.
+	u.cache = nil
 
 	u.logger.Println("Finished removing accounts successfully")
 
