@@ -2,7 +2,6 @@ package oncall
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,14 +10,12 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/ovotech/go-sync/internal/types"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/ovotech/go-sync/pkg/ports"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
 var _ ports.Adapter = &OnCall{}
-
-// ErrNotImplemented is returned if this adapter is used as a destination.
-var ErrNotImplemented = errors.New("not implemented - on-call is readonly")
 
 type iOpsgenieSchedule interface {
 	GetOnCalls(context context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)
@@ -78,10 +75,10 @@ func (o *OnCall) Get(ctx context.Context) ([]string, error) {
 
 // Add is not supported, as the on-call is readonly.
 func (o *OnCall) Add(_ context.Context, _ []string) error {
-	return ErrNotImplemented
+	return gosyncerrors.ErrReadOnly
 }
 
 // Remove is not supported, as the on-call is readonly.
 func (o *OnCall) Remove(_ context.Context, _ []string) error {
-	return ErrNotImplemented
+	return gosyncerrors.ErrReadOnly
 }

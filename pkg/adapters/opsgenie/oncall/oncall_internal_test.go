@@ -9,6 +9,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/ovotech/go-sync/internal/mocks"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -97,7 +98,7 @@ func TestOnCall_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, ErrNotImplemented)
+	assert.ErrorIs(t, err, gosyncerrors.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
 
@@ -109,6 +110,6 @@ func TestOnCall_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, ErrNotImplemented)
+	assert.ErrorIs(t, err, gosyncerrors.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
