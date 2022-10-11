@@ -80,5 +80,15 @@ GitHub user! 🙅
 Read about our [built-in adapters here](https://pkg.go.dev/github.com/ovotech/go-sync/pkg/adapters), or 
 [build your own](CONTRIBUTING.md).
 
-| *Made with 💚 by OVO's DevEx team* |
-|------------------------------------|
+### Made with 💚 by OVO Energy's DevEx team
+
+<div>
+
+![DevEx](./assets/devex.png)
+![Platforms](./assets/platforms.png)
+![Tools](./assets/tools.png)
+![Golden Paths](./assets/golden-paths.png)
+![Guard Rails](./assets/guard-rails.png)
+![For You](./assets/for-you.png)
+
+</div>
