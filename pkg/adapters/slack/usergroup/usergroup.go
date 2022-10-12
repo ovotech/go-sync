@@ -134,9 +134,6 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupName, err)
 	}
 
-	// Empty the cache to force calling Get between Add/Remove calls.
-	u.cache = nil
-
 	u.logger.Println("Finished adding accounts successfully")
 
 	return nil
@@ -179,9 +176,6 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 
 		return fmt.Errorf("slack.usergroup.remove.updateusergroupmembers(%s, ...) -> %w", u.userGroupName, err)
 	}
-
-	// Empty the cache to force calling Get between Add/Remove calls.
-	u.cache = nil
 
 	u.logger.Println("Finished removing accounts successfully")
 
