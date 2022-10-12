@@ -13,6 +13,7 @@ import (
 	"github.com/ovotech/go-sync/pkg/ports"
 )
 
+// operatingMode specifies how Sync operates, which sync operations are run and in what order.
 type operatingMode string
 
 const (
@@ -161,6 +162,8 @@ func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error {
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.get -> %w", err)
 	}
+
+	s.logger.Printf("Running in %s operating mode", s.OperatingMode)
 
 	operations := make([]func() error, 0, 2) //nolint:gomnd
 
