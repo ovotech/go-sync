@@ -193,8 +193,5 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 
 	c.logger.Println("Finished removing accounts successfully")
 
-	// Empty the cache to force calling Get between Remove calls.
-	c.cache = nil
-
 	return nil
 }

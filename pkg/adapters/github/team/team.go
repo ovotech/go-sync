@@ -170,8 +170,5 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 
 	t.logger.Println("Finished removing accounts successfully")
 
-	// Empty the cache to force calling Get between Remove calls.
-	t.cache = nil
-
 	return nil
 }
