@@ -1,16 +1,8 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="go test" type="GoTestRunConfiguration" factoryName="Go Test">
-    <module name="go-sync" />
-    <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-i" />
-    <EXTENSION ID="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.GolandRunConfigurationExtension">
-      <option name="DIRENV_ENABLED" value="false" />
-      <option name="DIRENV_TRUSTED" value="false" />
-    </EXTENSION>
-    <kind value="DIRECTORY" />
-    <directory value="$PROJECT_DIR$" />
-    <filePath value="$PROJECT_DIR$" />
-    <framework value="gotest" />
+  <configuration default="false" name="go test" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+    <makefile filename="$PROJECT_DIR$/Makefile" target="test" workingDirectory="" arguments="">
+      <envs />
+    </makefile>
     <method v="2" />
   </configuration>
 </component>
