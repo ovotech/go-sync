@@ -8,17 +8,16 @@ import (
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	"github.com/ovotech/go-sync/internal/mocks"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
 )
 
 var errGetOnCall = errors.New("an example error")
 
-func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mocks.IOpsgenieSchedule) {
+func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mockIOpsgenieSchedule) {
 	t.Helper()
 
-	scheduleClient := mocks.NewIOpsgenieSchedule(t)
+	scheduleClient := newMockIOpsgenieSchedule(t)
 	adapter, _ := New(&client.Config{
 		ApiKey: "test",
 	}, "test")
@@ -33,7 +32,7 @@ func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mocks.IO
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	scheduleClient := mocks.NewIOpsgenieSchedule(t)
+	scheduleClient := newMockIOpsgenieSchedule(t)
 	adapter, err := New(&client.Config{
 		ApiKey: "test",
 	}, "test")
@@ -98,7 +97,7 @@ func TestOnCall_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, gosyncerrors.ErrReadOnly)
+	assert.ErrorIs(t, err, gosync.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
 
@@ -110,6 +109,6 @@ func TestOnCall_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, gosyncerrors.ErrReadOnly)
+	assert.ErrorIs(t, err, gosync.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }

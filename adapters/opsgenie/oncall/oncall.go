@@ -9,13 +9,11 @@ import (
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	"github.com/ovotech/go-sync/internal/types"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
-	"github.com/ovotech/go-sync/pkg/ports"
+	gosync "github.com/ovotech/go-sync"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &OnCall{}
+var _ gosync.Adapter = &OnCall{}
 
 type iOpsgenieSchedule interface {
 	GetOnCalls(context context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)
@@ -25,7 +23,7 @@ type OnCall struct {
 	client     iOpsgenieSchedule
 	scheduleID string
 	getTime    func() time.Time
-	logger     types.Logger
+	logger     *log.Logger
 }
 
 // New instantiates a new Opsgenie OnCall adapter.
@@ -52,7 +50,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 
 // Get emails of users currently on-call in on-call.
 func (o *OnCall) Get(ctx context.Context) ([]string, error) {
-	o.logger.Printf("Fetching users currently on-call in Opsgenie schedule %o", o.scheduleID)
+	o.logger.Printf("Fetching users currently on-call in Opsgenie schedule %s", o.scheduleID)
 
 	date := o.getTime()
 	flat := true
@@ -75,10 +73,10 @@ func (o *OnCall) Get(ctx context.Context) ([]string, error) {
 
 // Add is not supported, as the on-call is readonly.
 func (o *OnCall) Add(_ context.Context, _ []string) error {
-	return gosyncerrors.ErrReadOnly
+	return gosync.ErrReadOnly
 }
 
 // Remove is not supported, as the on-call is readonly.
 func (o *OnCall) Remove(_ context.Context, _ []string) error {
-	return gosyncerrors.ErrReadOnly
+	return gosync.ErrReadOnly
 }

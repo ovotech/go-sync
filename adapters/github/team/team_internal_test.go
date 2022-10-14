@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v47/github"
-	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -13,7 +12,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	discovery := mocks.NewGitHubDiscovery(t)
+	discovery := NewMockGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
 
 	assert.Equal(t, "org", adapter.org)
@@ -25,8 +24,8 @@ func TestTeam_Get(t *testing.T) {
 
 	ctx := context.TODO()
 
-	gitHubClient := mocks.NewIGitHubTeam(t)
-	discovery := mocks.NewGitHubDiscovery(t)
+	gitHubClient := newMockIGitHubTeam(t)
+	discovery := NewMockGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 
@@ -59,8 +58,8 @@ func TestTeam_Add(t *testing.T) {
 
 	ctx := context.TODO()
 
-	gitHubClient := mocks.NewIGitHubTeam(t)
-	discovery := mocks.NewGitHubDiscovery(t)
+	gitHubClient := newMockIGitHubTeam(t)
+	discovery := NewMockGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 
@@ -81,8 +80,8 @@ func TestTeam_Remove(t *testing.T) {
 
 	ctx := context.TODO()
 
-	gitHubClient := mocks.NewIGitHubTeam(t)
-	discovery := mocks.NewGitHubDiscovery(t)
+	gitHubClient := newMockIGitHubTeam(t)
+	discovery := NewMockGitHubDiscovery(t)
 	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}

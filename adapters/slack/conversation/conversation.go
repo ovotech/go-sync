@@ -14,14 +14,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ovotech/go-sync/internal/types"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
-	"github.com/ovotech/go-sync/pkg/ports"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &Conversation{}
+var _ gosync.Adapter = &Conversation{}
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackConversation interface {
@@ -40,11 +38,11 @@ type Conversation struct {
 	conversationName                  string
 	// cache stores the Slack ID -> email mapping for use with the Remove method.
 	cache  map[string]string
-	logger types.Logger
+	logger *log.Logger
 }
 
 // WithLogger sets a custom logger.
-func WithLogger(logger types.Logger) func(*Conversation) {
+func WithLogger(logger *log.Logger) func(*Conversation) {
 	return func(conversation *Conversation) {
 		conversation.logger = logger
 	}
@@ -167,7 +165,7 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 
 	// If the cache hasn't been generated, regenerate it.
 	if c.cache == nil {
-		return fmt.Errorf("slack.conversation.remove -> %w", gosyncerrors.ErrCacheEmpty)
+		return fmt.Errorf("slack.conversation.remove -> %w", gosync.ErrCacheEmpty)
 	}
 
 	for _, email := range emails {

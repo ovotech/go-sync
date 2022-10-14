@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -15,7 +14,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	gitHubClient := mocks.NewIGitHubV4Saml(t)
+	gitHubClient := newMockIGitHubV4Saml(t)
 	discovery := New(nil, "test")
 	discovery.client = gitHubClient
 
@@ -28,7 +27,7 @@ func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint:dupl
 
 	ctx := context.TODO()
 
-	gitHubClient := mocks.NewIGitHubV4Saml(t)
+	gitHubClient := newMockIGitHubV4Saml(t)
 	discovery := New(nil, "test")
 	discovery.client = gitHubClient
 
@@ -83,7 +82,7 @@ func TestSaml_GetUsernameFromEmail(t *testing.T) { //nolint:dupl
 
 	ctx := context.TODO()
 
-	gitHubClient := mocks.NewIGitHubV4Saml(t)
+	gitHubClient := newMockIGitHubV4Saml(t)
 	discovery := New(nil, "test")
 	discovery.client = gitHubClient
 

@@ -6,8 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ovotech/go-sync/internal/mocks"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -16,7 +15,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	slackClient := mocks.NewISlackUserGroup(t)
+	slackClient := newMockISlackUserGroup(t)
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
@@ -30,7 +29,7 @@ func TestUserGroup_Get(t *testing.T) {
 
 	ctx := context.TODO()
 
-	slackClient := mocks.NewISlackUserGroup(t)
+	slackClient := newMockISlackUserGroup(t)
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
@@ -58,20 +57,20 @@ func TestUserGroup_Add(t *testing.T) {
 	t.Run("No cache", func(t *testing.T) {
 		t.Parallel()
 
-		slackClient := mocks.NewISlackUserGroup(t)
+		slackClient := newMockISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 
 		err := adapter.Add(ctx, []string{"foo", "bar"})
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, gosyncerrors.ErrCacheEmpty)
+		assert.ErrorIs(t, err, gosync.ErrCacheEmpty)
 	})
 
 	t.Run("Add accounts", func(t *testing.T) {
 		t.Parallel()
 
-		slackClient := mocks.NewISlackUserGroup(t)
+		slackClient := newMockISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 
@@ -99,20 +98,20 @@ func TestUserGroup_Remove(t *testing.T) {
 	t.Run("No cache", func(t *testing.T) {
 		t.Parallel()
 
-		slackClient := mocks.NewISlackUserGroup(t)
+		slackClient := newMockISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
 		assert.Error(t, err)
-		assert.ErrorIs(t, err, gosyncerrors.ErrCacheEmpty)
+		assert.ErrorIs(t, err, gosync.ErrCacheEmpty)
 	})
 
 	t.Run("Remove accounts", func(t *testing.T) {
 		t.Parallel()
 
-		slackClient := mocks.NewISlackUserGroup(t)
+		slackClient := newMockISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
@@ -130,7 +129,7 @@ func TestUserGroup_Remove(t *testing.T) {
 		// Mock the error returned from the Slack API.
 		errInvalidArguments := errors.New("invalid_arguments") //nolint:goerr113
 
-		slackClient := mocks.NewISlackUserGroup(t)
+		slackClient := newMockISlackUserGroup(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo"}

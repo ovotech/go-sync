@@ -15,14 +15,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ovotech/go-sync/internal/types"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
-	"github.com/ovotech/go-sync/pkg/ports"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &UserGroup{}
+var _ gosync.Adapter = &UserGroup{}
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
@@ -36,14 +34,14 @@ type UserGroup struct {
 	client        iSlackUserGroup
 	userGroupName string
 	cache         map[string]string
-	logger        types.Logger
+	logger        *log.Logger
 
 	// MuteGroupCannotBeEmpty silences errors when removing everyone from a usergroup.
 	MuteGroupCannotBeEmpty bool
 }
 
 // WithLogger sets a custom logger.
-func WithLogger(logger types.Logger) func(*UserGroup) {
+func WithLogger(logger *log.Logger) func(*UserGroup) {
 	return func(userGroup *UserGroup) {
 		userGroup.logger = logger
 	}
@@ -102,7 +100,7 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	u.logger.Printf("Adding %s to Slack UserGroup %s", emails, u.userGroupName)
 
 	if u.cache == nil {
-		return fmt.Errorf("slack.usergroup.add -> %w", gosyncerrors.ErrCacheEmpty)
+		return fmt.Errorf("slack.usergroup.add -> %w", gosync.ErrCacheEmpty)
 	}
 
 	// The updatedUserGroup is existing users + new users.
@@ -144,7 +142,7 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	u.logger.Printf("Removing %s from Slack UserGroup %s", emails, u.userGroupName)
 
 	if u.cache == nil {
-		return fmt.Errorf("slack.usergroup.remove -> %w", gosyncerrors.ErrCacheEmpty)
+		return fmt.Errorf("slack.usergroup.remove -> %w", gosync.ErrCacheEmpty)
 	}
 
 	// Convert the list of email addresses into a map to efficiently lookup emails to remove.
