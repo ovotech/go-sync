@@ -6,8 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/ovotech/go-sync/internal/types"
-	"github.com/ovotech/go-sync/pkg/ports"
+	gosync "github.com/ovotech/go-sync"
 	admin "google.golang.org/api/admin/directory/v1"
 )
 
@@ -16,7 +15,7 @@ const (
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &Group{}
+var _ gosync.Adapter = &Group{}
 
 // callList allows us to mock the returned struct from the List Google API call.
 func callList(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error) {
@@ -43,7 +42,7 @@ type iMembersService interface {
 type Group struct {
 	membersService iMembersService
 	name           string
-	logger         types.Logger
+	logger         *log.Logger
 
 	// Custom configuration for adding emails.
 	deliverySettings string
@@ -55,7 +54,7 @@ type Group struct {
 }
 
 // WithLogger sets a custom logger.
-func WithLogger(logger types.Logger) func(*Group) {
+func WithLogger(logger *log.Logger) func(*Group) {
 	return func(group *Group) {
 		group.logger = logger
 	}

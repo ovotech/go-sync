@@ -14,13 +14,11 @@ import (
 	"os"
 
 	"github.com/google/go-github/v47/github"
-	"github.com/ovotech/go-sync/internal/types"
-	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
-	"github.com/ovotech/go-sync/pkg/ports"
+	gosync "github.com/ovotech/go-sync"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &Team{}
+var _ gosync.Adapter = &Team{}
 
 // GitHubDiscovery is required because there are multiple ways to convert a GitHub email into a username.
 // At OVO we use SAML, but other organisations may use public emails or another mechanism.
@@ -53,11 +51,11 @@ type Team struct {
 	org       string            // GitHub organisation.
 	slug      string            // GitHub team slug.
 	cache     map[string]string // Cache of users.
-	logger    types.Logger
+	logger    *log.Logger
 }
 
 // WithLogger sets a custom logger.
-func WithLogger(logger types.Logger) func(*Team) {
+func WithLogger(logger *log.Logger) func(*Team) {
 	return func(team *Team) {
 		team.logger = logger
 	}
@@ -156,7 +154,7 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 	t.logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
 
 	if t.cache == nil {
-		return fmt.Errorf("github.team.remove -> %w", gosyncerrors.ErrCacheEmpty)
+		return fmt.Errorf("github.team.remove -> %w", gosync.ErrCacheEmpty)
 	}
 
 	for _, email := range emails {

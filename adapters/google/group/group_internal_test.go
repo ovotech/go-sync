@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	admin "google.golang.org/api/admin/directory/v1"
@@ -49,7 +48,7 @@ func TestGroups_Get(t *testing.T) {
 
 	ctx := context.TODO()
 
-	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService := newMockIMembersService(t)
 	mockMembersService.EXPECT().List("test").Return(nil)
 
 	mockCall := new(mockCalls)
@@ -80,7 +79,7 @@ func TestGroups_Add(t *testing.T) {
 
 	ctx := context.TODO()
 
-	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService := newMockIMembersService(t)
 	mockMembersService.EXPECT().Insert("test", &admin.Member{Email: "foo@email"}).Return(nil)
 	mockMembersService.EXPECT().Insert("test", &admin.Member{Email: "bar@email"}).Return(nil)
 
@@ -101,7 +100,7 @@ func TestGroups_Remove(t *testing.T) {
 
 	ctx := context.TODO()
 
-	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService := newMockIMembersService(t)
 	mockMembersService.EXPECT().Delete("test", "foo@email").Return(nil)
 	mockMembersService.EXPECT().Delete("test", "bar@email").Return(nil)
 
@@ -122,7 +121,7 @@ func TestWithRole(t *testing.T) {
 
 	ctx := context.TODO()
 
-	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService := newMockIMembersService(t)
 	mockMembersService.EXPECT().Insert("test", &admin.Member{
 		Email: "foo@email",
 		Role:  "test-role",
@@ -145,7 +144,7 @@ func TestWithDeliverySettings(t *testing.T) {
 
 	ctx := context.TODO()
 
-	mockMembersService := mocks.NewIMembersService(t)
+	mockMembersService := newMockIMembersService(t)
 	mockMembersService.EXPECT().Insert("test", &admin.Member{
 		Email:            "foo@email",
 		DeliverySettings: "test-delivery-settings",

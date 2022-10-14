@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ovotech/go-sync/pkg/adapters/github/team"
+	"github.com/ovotech/go-sync/adapters/github/team"
 	"github.com/shurcooL/githubv4"
 )
 

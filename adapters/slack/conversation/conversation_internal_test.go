@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 )
@@ -13,7 +12,7 @@ import (
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	slackClient := mocks.NewISlackConversation(t)
+	slackClient := newMockISlackConversation(t)
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
@@ -25,7 +24,7 @@ func TestNew(t *testing.T) {
 func TestConversation_Get(t *testing.T) {
 	t.Parallel()
 
-	slackClient := mocks.NewISlackConversation(t)
+	slackClient := newMockISlackConversation(t)
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
@@ -59,7 +58,7 @@ func TestConversation_Get(t *testing.T) {
 func TestConversation_Add(t *testing.T) {
 	t.Parallel()
 
-	slackClient := mocks.NewISlackConversation(t)
+	slackClient := newMockISlackConversation(t)
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
@@ -84,7 +83,7 @@ func TestConversation_Remove(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		t.Parallel()
 
-		slackClient := mocks.NewISlackConversation(t)
+		slackClient := newMockISlackConversation(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
@@ -102,7 +101,7 @@ func TestConversation_Remove(t *testing.T) {
 
 		restrictedAction := errors.New("restricted_action") //nolint:goerr113
 
-		slackClient := mocks.NewISlackConversation(t)
+		slackClient := newMockISlackConversation(t)
 		adapter := New(&slack.Client{}, "test")
 		adapter.client = slackClient
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
