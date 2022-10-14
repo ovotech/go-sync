@@ -5,22 +5,23 @@ SHELL := bash
 MAKEFLAGS += --warn-undefined-variables
 MAKEFLAGS += --no-builtin-rules
 TARGET ?= .
+ADAPTERS:=$$(ls -d adapters/*/ | sed 's/\(.*\)/.\/\1.../')
 
 lint/golangci_lint: ## Lint using golangci-lint.
-	golangci-lint run $(TARGET)/...
+	golangci-lint run ./... $(ADAPTERS)
 
 lint: ## Lint Go Sync.
 	make lint/golangci_lint
 .PHONY: lint lint/*
 
 fix/gofmt: ## Fix formatting with gofmt.
-	gofmt -w $(TARGET)
+	gofmt -s -w .
 
 fix/gci: ## Fix imports.
-	gci write $(TARGET)
+	gci write .
 
 fix/golangci_lint: ## Fix golangci-lint errors.
-	golangci-lint run --fix $(TARGET)/...
+	golangci-lint run --fix ./... $(ADAPTERS)
 
 fix: ## Fix common linter errors.
 	make fix/gofmt
@@ -28,14 +29,21 @@ fix: ## Fix common linter errors.
 	make fix/golangci_lint
 .PHONY: fix fix/*
 
-generate/mockery: ## Generate Mockery mocks.
-	rm -rf ./internal/mocks
-	mockery --all --exported --with-expecter --output ./internal/mocks
-	TARGET=./internal/mocks make fix
+generate/mockery: ## Generate mocks.
+	mockery --all --with-expecter --inpackage --testonly
 
 generate: ## Generate automated code.
 	make generate/mockery
+	make fix
 .PHONY: generate generate/*
+
+test: ## Test Go Sync and included adapters.
+	go test ./... $(ADAPTERS)
+.PHONY: test
+
+report: ## Test and produce a JUnit report.
+	go test -v 2>&1 -count=1 ./... $(ADAPTERS) | go-junit-report -set-exit-code > report.xml
+.PHONY: report
 
 .DEFAULT_GOAL := help
 help: Makefile ## Display list of available commands.
