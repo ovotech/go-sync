@@ -18,8 +18,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/ovotech/go-sync/pkg/adapters/google/group"
-	"github.com/ovotech/go-sync/pkg/sync"
+	"github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/google/group"
 	admin "google.golang.org/api/admin/directory/v1"
 )
 
@@ -33,7 +33,7 @@ func main() {
 
 	googleGroup := group.New(client, "my-group")
 
-	svc := sync.New(googleGroup)
+	svc := gosync.New(googleGroup)
 
 	// Synchronise a Google Group with something else.
 	anotherServiceAdapter := someAdapter.New()
@@ -43,5 +43,4 @@ func main() {
 		log.Fatal(err)
 	}
 }
-
 ```

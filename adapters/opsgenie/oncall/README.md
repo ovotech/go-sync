@@ -21,10 +21,10 @@ package main
 import (
 	"context"
 	"log"
-	
+
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
-	"github.com/ovotech/go-sync/pkg/adapters/opsgenie/oncall"
-	"github.com/ovotech/go-sync/pkg/sync"
+	"github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/opsgenie/oncall"
 )
 
 func main() {
@@ -33,11 +33,11 @@ func main() {
 	}
 	onCallAdapter, err := oncall.New(&opsgenieConfig, "opsgenie-schedule-id")
 
-	svc := sync.New(onCallAdapter)
+	svc := gosync.New(onCallAdapter)
 
 	// Synchronise an on-call list with something else.
 	anotherServiceAdapter := someAdapter.New()
-	
+
 	err = svc.SyncWith(context.Background(), anotherServiceAdapter)
 	if err != nil {
 		log.Fatal(err)

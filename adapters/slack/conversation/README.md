@@ -23,15 +23,14 @@ with the following OAuth permissions:
 
 ## Example
 ```go
-
 package main
 
 import (
 	"context"
 	"log"
 
-	"github.com/ovotech/go-sync/pkg/adapters/slack/conversation"
-	"github.com/ovotech/go-sync/pkg/sync"
+	"github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/slack/conversation"
 	"github.com/slack-go/slack"
 )
 
@@ -39,7 +38,7 @@ func main() {
 	slackClient := slack.New("my-slack-token")
 	conversationAdapter := conversation.New(slackClient, "UG000123")
 	
-	svc := sync.New(conversationAdapter)
+	svc := gosync.New(conversationAdapter)
 
 	// Synchronise a Slack User group with something else.
 	anotherServiceAdapter := someAdapter.New()

@@ -20,9 +20,9 @@ import (
 	"log"
 
 	"github.com/google/go-github/v47/github"
-	"github.com/ovotech/go-sync/pkg/adapters/github/discovery/saml"
-	"github.com/ovotech/go-sync/pkg/adapters/github/team"
-	"github.com/ovotech/go-sync/pkg/sync"
+	"github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
+	"github.com/ovotech/go-sync/adapters/github/team"
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 )
@@ -43,15 +43,14 @@ func main() {
 
 	ghTeam := team.New(gitHubV3Client, samlClient, "my-org", "my-team-slug")
 
-	svc := sync.New(ghTeam)
+	svc := gosync.New(ghTeam)
 
 	// Synchronise a Slack User group with something else.
 	anotherServiceAdapter := someAdapter.New()
-	
+
 	err := svc.SyncWith(context.Background(), anotherServiceAdapter)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
-
 ```
