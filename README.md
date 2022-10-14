@@ -26,6 +26,9 @@ _* Doesn't have to be people._
 
 ```shell
 go get github.com/ovotech/go-sync@latest
+
+# Then get the adapters you need.
+go get github.com/ovotech/go-sync/adapters/slack@latest
 ```
 
 You're ready to Go Sync 🎉
@@ -66,8 +69,8 @@ Sync is only uni-directional by design. You know where your things are, and wher
 4. Remove the things that shouldn't be there.
 5. Repeat from 2 for further adapters.
 
-## Adapters 🔌
-Adapters provide a common interface to services. Adapters must implement our [Adapter interface](pkg/ports/adapter.go)
+## [Adapters](adapters) 🔌
+Adapters provide a common interface to services. Adapters must implement our [Adapter interface](ports.go)
 and functionally perform 3 things:
 
 1. Get the things.
@@ -77,7 +80,7 @@ and functionally perform 3 things:
 These things can be anything, but we recommend email addresses. There's no point trying to sync a Slack User ID with a
 GitHub user! 🙅
 
-Read about our [built-in adapters here](https://pkg.go.dev/github.com/ovotech/go-sync/pkg/adapters), or 
+Read about our [built-in adapters here](https://pkg.go.dev/github.com/ovotech/adapters), or 
 [build your own](CONTRIBUTING.md).
 
 ### Made with 💚 by OVO Energy's DevEx team
