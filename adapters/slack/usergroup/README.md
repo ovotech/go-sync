@@ -21,8 +21,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/ovotech/go-sync/pkg/adapters/slack/usergroup"
-	"github.com/ovotech/go-sync/pkg/sync"
+	"github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/slack/usergroup"
 	"github.com/slack-go/slack"
 )
 
@@ -30,7 +30,7 @@ func main() {
 	slackClient := slack.New("my-slack-token")
 	userGroupAdapter := usergroup.New(slackClient, "UG000123")
 	
-	svc := sync.New(userGroupAdapter)
+	svc := gosync.New(userGroupAdapter)
 
 	// Synchronise a Slack User group with something else.
 	anotherServiceAdapter := someAdapter.New()
