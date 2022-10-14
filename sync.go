@@ -1,17 +1,14 @@
-/*
-Package sync is the logic that synchronises adapters together, and determines what should be where.
-*/
-package sync
+package gosync
 
 import (
 	"context"
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/ovotech/go-sync/internal/types"
-	"github.com/ovotech/go-sync/pkg/ports"
 )
+
+// Ensure Sync fully satisfies the Service interface.
+var _ Service = &Sync{}
 
 // operatingMode specifies how Sync operates, which sync operations are run and in what order.
 type operatingMode string
@@ -40,13 +37,13 @@ func generateHashMap(i []string) map[string]bool {
 type Sync struct {
 	DryRun        bool            // DryRun mode calculates membership, but doesn't add or remove.
 	OperatingMode operatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
-	source        ports.Adapter   // The source adapter.
+	source        Adapter         // The source adapter.
 	cache         map[string]bool // cache prevents polling the source more than once.
-	logger        types.Logger
+	logger        *log.Logger
 }
 
 // New creates a new Sync service.
-func New(source ports.Adapter, optsFn ...func(*Sync)) *Sync {
+func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 	sync := &Sync{
 		DryRun:        false,
 		OperatingMode: RemoveAdd,
@@ -107,7 +104,7 @@ func (s *Sync) generateCache(ctx context.Context) error {
 }
 
 // WithLogger sets a custom logger.
-func WithLogger(logger types.Logger) func(*Sync) {
+func WithLogger(logger *log.Logger) func(*Sync) {
 	return func(sync *Sync) {
 		sync.logger = logger
 	}
@@ -148,7 +145,7 @@ func (s *Sync) perform(
 }
 
 // SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
-func (s *Sync) SyncWith(ctx context.Context, adapter ports.Adapter) error {
+func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
 	s.logger.Println("Starting sync")
 
 	// Call to populate the cache from the source adapter.
