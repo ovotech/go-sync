@@ -1,18 +1,17 @@
-package sync
+package gosync
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/ovotech/go-sync/internal/mocks"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNew(t *testing.T) {
 	t.Parallel()
 
-	adapter := mocks.NewAdapter(t)
+	adapter := NewMockAdapter(t)
 	syncService := New(adapter)
 
 	assert.Empty(t, syncService.cache)
@@ -33,8 +32,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Add successful", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -51,8 +50,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Add failure", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -72,8 +71,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Add error get", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.cache = map[string]bool{}
@@ -95,8 +94,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Remove successful", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -113,8 +112,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Remove failure", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -134,8 +133,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Remove error get", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -152,8 +151,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Remove error remove", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 
@@ -173,8 +172,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 	t.Run("Simultaneous", func(t *testing.T) {
 		t.Parallel()
 
-		source := mocks.NewAdapter(t)
-		destination := mocks.NewAdapter(t)
+		source := NewMockAdapter(t)
+		destination := NewMockAdapter(t)
 
 		syncService := New(source)
 
@@ -196,8 +195,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Add", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.DryRun = true
@@ -212,8 +211,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("Remove", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.DryRun = true
@@ -229,8 +228,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 	t.Run("Equal", func(t *testing.T) {
 		t.Parallel()
 
-		source := mocks.NewAdapter(t)
-		destination := mocks.NewAdapter(t)
+		source := NewMockAdapter(t)
+		destination := NewMockAdapter(t)
 
 		syncService := New(source)
 
@@ -248,8 +247,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("AddOnly", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.OperatingMode = AddOnly
@@ -266,8 +265,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("RemoveOnly", func(t *testing.T) {
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.OperatingMode = RemoveOnly
@@ -284,8 +283,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("RemoveAdd", func(t *testing.T) { //nolint:dupl
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.OperatingMode = RemoveAdd
@@ -306,8 +305,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		t.Run("AddRemove", func(t *testing.T) { //nolint:dupl
 			t.Parallel()
 
-			source := mocks.NewAdapter(t)
-			destination := mocks.NewAdapter(t)
+			source := NewMockAdapter(t)
+			destination := NewMockAdapter(t)
 
 			syncService := New(source)
 			syncService.OperatingMode = AddRemove

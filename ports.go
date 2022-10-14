@@ -1,8 +1,4 @@
-/*
-Package ports lists the interfaces expected from Go Sync's adapters. All adapters must implement these methods in order
-to be compatible.
-*/
-package ports
+package gosync
 
 import "context"
 
@@ -13,7 +9,7 @@ type Adapter interface {
 	Remove(ctx context.Context, things []string) error    // Remove things from a service.
 }
 
-// The Sync interface can be used for downstream services that implement Sync in your own workflow.
-type Sync interface {
+// Service can be used for downstream services that implement Sync in your own workflow.
+type Service interface {
 	SyncWith(ctx context.Context, adapter Adapter) error // Sync the things in a source service with this service.
 }
