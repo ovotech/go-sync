@@ -111,7 +111,7 @@ func TestNew(t *testing.T) {
 	assert.Zero(t, scheduleClient.Calls)
 }
 
-func TestSchedule_Get(t *testing.T) {
+func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	ctx := context.Background()
@@ -136,7 +136,10 @@ func TestSchedule_Get(t *testing.T) {
 		t.Parallel()
 
 		adapter, scheduleClient := createMockedAdapter(t)
-		expectedResponse := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com", "example3@example.com")
+		expectedResponse := testBuildScheduleGetResult(
+			1,
+			"example1@example.com", "example2@example.com", "example3@example.com",
+		)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedResponse, nil)
 
 		emails, err := adapter.Get(ctx)
@@ -149,7 +152,10 @@ func TestSchedule_Get(t *testing.T) {
 		t.Parallel()
 
 		adapter, scheduleClient := createMockedAdapter(t)
-		expectedResponse := testBuildScheduleGetResult(3, "example1@example.com", "example2@example.com", "example3@example.com")
+		expectedResponse := testBuildScheduleGetResult(
+			3,
+			"example1@example.com", "example2@example.com", "example3@example.com",
+		)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedResponse, nil)
 
 		emails, err := adapter.Get(ctx)
@@ -162,7 +168,10 @@ func TestSchedule_Get(t *testing.T) {
 		t.Parallel()
 
 		adapter, scheduleClient := createMockedAdapter(t)
-		expectedResponse := testBuildScheduleGetResult(2, "example1@example.com", "example2@example.com", "example3@example.com", "example2@example.com")
+		expectedResponse := testBuildScheduleGetResult(
+			2,
+			"example1@example.com", "example2@example.com", "example3@example.com", "example2@example.com",
+		)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedResponse, nil)
 
 		emails, err := adapter.Get(ctx)
@@ -172,7 +181,7 @@ func TestSchedule_Get(t *testing.T) {
 	})
 }
 
-func TestSchedule_Add(t *testing.T) {
+func TestSchedule_Add(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	ctx := context.Background()
@@ -206,7 +215,10 @@ func TestSchedule_Add(t *testing.T) {
 		t.Parallel()
 		adapter, scheduleClient := createMockedAdapter(t)
 
-		expectedScheduleResult := testBuildScheduleGetResult(2, "example1@example.com", "example2@example.com")
+		expectedScheduleResult := testBuildScheduleGetResult(
+			2,
+			"example1@example.com", "example2@example.com",
+		)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
 
 		err := adapter.Add(ctx, []string{"example2@example.com"})
@@ -218,7 +230,10 @@ func TestSchedule_Add(t *testing.T) {
 		t.Parallel()
 		adapter, scheduleClient := createMockedAdapter(t)
 
-		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
+		expectedScheduleResult := testBuildScheduleGetResult(
+			1,
+			"example1@example.com", "example2@example.com",
+		)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
 		scheduleClient.EXPECT().UpdateRotation(
 			ctx,
@@ -247,7 +262,7 @@ func TestSchedule_Add(t *testing.T) {
 	})
 }
 
-func TestSchedule_Remove(t *testing.T) {
+func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
 	ctx := context.Background()
@@ -295,7 +310,10 @@ func TestSchedule_Remove(t *testing.T) {
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
-		scheduleClient.EXPECT().UpdateRotation(ctx, testBuildExpectedUpdateRotationRequest("example1@example.com")).Return(nil, nil)
+		scheduleClient.EXPECT().UpdateRotation(
+			ctx,
+			testBuildExpectedUpdateRotationRequest("example1@example.com"),
+		).Return(nil, nil)
 
 		err := adapter.Remove(ctx, []string{"example2@example.com"})
 
@@ -308,7 +326,10 @@ func TestSchedule_Remove(t *testing.T) {
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
-		scheduleClient.EXPECT().UpdateRotation(ctx, testBuildExpectedUpdateRotationRequest("example1@example.com", "example2@example.com")).Return(nil, nil)
+		scheduleClient.EXPECT().UpdateRotation(
+			ctx,
+			testBuildExpectedUpdateRotationRequest("example1@example.com", "example2@example.com"),
+		).Return(nil, nil)
 
 		err := adapter.Remove(ctx, []string{"example3@example.com"})
 
