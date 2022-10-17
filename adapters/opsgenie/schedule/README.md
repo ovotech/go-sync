@@ -11,7 +11,7 @@ permissions:
 | Access rights |
 |:--------------|
 | Read          |
-| Upgrade       |
+| Update        |
 
 ## Example
 
