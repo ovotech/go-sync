@@ -28,6 +28,7 @@ type iOpsgenieSchedule interface {
 type Schedule struct {
 	client     iOpsgenieSchedule
 	scheduleID string
+	schedule   *ogSchedule.GetResult
 	logger     *log.Logger
 }
 
@@ -44,7 +45,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 	scheduleAdapter := &Schedule{
 		client:     scheduleClient,
 		scheduleID: scheduleID,
-		logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -56,7 +57,7 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 
 // Get fetches a flattened list of all participants, even across multiple rotations.
 func (s *Schedule) Get(ctx context.Context) ([]string, error) {
-	s.logger.Printf("Fetching users in the Opsgenie schedule %s", s.scheduleID)
+	s.logger.Printf("Getting all participants in the Opsgenie schedule %s", s.scheduleID)
 
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
@@ -73,11 +74,15 @@ func (s *Schedule) Get(ctx context.Context) ([]string, error) {
 		}
 	}
 
+	s.logger.Printf("Found %d participants of schedule %s: %s", len(emails), s.scheduleID, emails)
+
 	return emails, nil
 }
 
 // Add lets you add new participants to a rotation, but the schedule must only have 1 rotation defined.
 func (s *Schedule) Add(ctx context.Context, emails []string) error {
+	s.logger.Printf("Adding %d users to schedule %s: %s", len(emails), s.scheduleID, emails)
+
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
 		return fmt.Errorf("opsgenie.schedule.add.fetchschedule -> %w", err)
@@ -114,6 +119,8 @@ func (s *Schedule) Add(ctx context.Context, emails []string) error {
 
 // Remove lets you remove participants from a rotation, but the schedule must only have 1 rotation defined.
 func (s *Schedule) Remove(ctx context.Context, emails []string) error {
+	s.logger.Printf("Removing %d users from schedule %s: %s", len(emails), s.scheduleID, emails)
+
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
 		return fmt.Errorf("opsgenie.schedule.remove.fetchschedule -> %w", err)
@@ -154,17 +161,25 @@ func (s *Schedule) getRotation(result *ogSchedule.GetResult) (*og.Rotation, erro
 }
 
 func (s *Schedule) fetchSchedule(ctx context.Context) (*ogSchedule.GetResult, error) {
-	scheduleRequest := &ogSchedule.GetRequest{
-		IdentifierType:  ogSchedule.Id,
-		IdentifierValue: s.scheduleID,
+	if s.schedule == nil {
+		s.logger.Printf("Fetching schedule %s from Opsgenie", s.scheduleID)
+
+		scheduleRequest := &ogSchedule.GetRequest{
+			IdentifierType:  ogSchedule.Id,
+			IdentifierValue: s.scheduleID,
+		}
+
+		result, err := s.client.Get(ctx, scheduleRequest)
+		if err != nil {
+			return nil, fmt.Errorf("error when fetching schedules: %w", err)
+		}
+
+		s.schedule = result
+	} else {
+		s.logger.Printf("Already have schedule %s cached", s.scheduleID)
 	}
 
-	result, err := s.client.Get(ctx, scheduleRequest)
-	if err != nil {
-		return nil, fmt.Errorf("error when fetching schedules: %w", err)
-	}
-
-	return result, nil
+	return s.schedule, nil
 }
 
 func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation, emails []string) error {
@@ -184,6 +199,8 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 			Participants: participants,
 		},
 	}
+
+	s.logger.Printf("Updating rotation %s of schedule %s with participants: %s", rotation.Id, s.scheduleID, emails)
 
 	_, err := s.client.UpdateRotation(ctx, request)
 	if err != nil {
