@@ -35,7 +35,7 @@ func main() {
 
 	svc := gosync.New(scheduleAdapter)
 
-	// Synchronise an on-call list with something else.
+	// Synchronise the participants of a schedule with something else.
 	anotherServiceAdapter := someAdapter.New()
 
 	err = svc.SyncWith(context.Background(), anotherServiceAdapter)
