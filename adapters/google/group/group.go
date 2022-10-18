@@ -8,14 +8,29 @@ import (
 
 	gosync "github.com/ovotech/go-sync"
 	admin "google.golang.org/api/admin/directory/v1"
+	"google.golang.org/api/option"
 )
 
 const (
 	maxResults = 200
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
+// Ensure the Google Group adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Group{}
+
+// InitKey is the required keys to Init a new adapter.
+type InitKey = string
+
+const (
+	/*
+		Authentication mechanism for Google. More info: https://cloud.google.com/docs/authentication
+
+		Supported options are:
+			`default`	Default Google credentials.
+	*/
+	Authentication InitKey = "google_authentication"
+	Name           InitKey = "google_group_name" // Google Group name.
+)
 
 // callList allows us to mock the returned struct from the List Google API call.
 func callList(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error) {
@@ -91,6 +106,45 @@ func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
 	}
 
 	return group
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new Google Group gosync.Adapter. All InitKey keys are required in config.
+func Init(config map[InitKey]string) (gosync.Adapter, error) {
+	ctx := context.Background()
+
+	for _, key := range []InitKey{Authentication, Name} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	var (
+		client *admin.Service
+		err    error
+	)
+
+	scopes := option.WithScopes(admin.AdminDirectoryGroupMemberScope)
+
+	switch config[Authentication] {
+	case "_testing_":
+		// Only for use in testing in order to prevent failure to fetch default credentials.
+		client, err = admin.NewService(ctx, scopes, option.WithAPIKey("_testing_"))
+		if err != nil {
+			return nil, fmt.Errorf("google.group.init -> %w", err)
+		}
+	case "default":
+		client, err = admin.NewService(ctx, scopes)
+		if err != nil {
+			return nil, fmt.Errorf("google.group.init -> %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[Authentication])
+	}
+
+	return New(client, config[Name]), nil
 }
 
 // Get emails of Google users in a group.

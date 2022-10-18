@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	admin "google.golang.org/api/admin/directory/v1"
@@ -160,4 +161,60 @@ func TestWithDeliverySettings(t *testing.T) {
 	err := group.Add(ctx, []string{"foo@email"})
 
 	assert.NoError(t, err)
+}
+
+//nolint:funlen
+func TestInit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(map[InitKey]string{
+			Authentication: "_testing_",
+			Name:           "name",
+		})
+
+		assert.NoError(t, err)
+		assert.IsType(t, &Group{}, adapter)
+		assert.Equal(t, "name", adapter.(*Group).name)
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("missing authentication", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[InitKey]string{
+				Name: "name",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, Authentication)
+		})
+
+		t.Run("missing name", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[InitKey]string{
+				Authentication: "default",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, Name)
+		})
+	})
+
+	t.Run("invalid config", func(t *testing.T) {
+		t.Parallel()
+
+		_, err := Init(map[InitKey]string{
+			Authentication: "foo",
+			Name:           "name",
+		})
+
+		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
+		assert.ErrorContains(t, err, "foo")
+	})
 }
