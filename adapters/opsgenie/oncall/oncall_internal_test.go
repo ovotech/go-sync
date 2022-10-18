@@ -112,3 +112,46 @@ func TestOnCall_Remove(t *testing.T) {
 	assert.ErrorIs(t, err, gosync.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
+
+func TestInit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(map[gosync.ConfigKey]string{
+			OpsgenieAPIKey:           "test",
+			OpsgenieOnCallScheduleID: "schedule",
+		})
+
+		assert.NoError(t, err)
+		assert.IsType(t, &OnCall{}, adapter)
+		assert.Equal(t, "schedule", adapter.(*OnCall).scheduleID)
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("missing authentication", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				OpsgenieOnCallScheduleID: "schedule",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, OpsgenieAPIKey)
+		})
+
+		t.Run("missing schedule ID", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				OpsgenieAPIKey: "test",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, OpsgenieOnCallScheduleID)
+		})
+	})
+}

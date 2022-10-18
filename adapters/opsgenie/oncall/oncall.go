@@ -12,8 +12,16 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
+// Ensure the Opsgenie OnCall adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &OnCall{}
+
+const (
+	/*
+		API key for authenticating with Opsgenie.
+	*/
+	OpsgenieAPIKey           gosync.ConfigKey = "opsgenie_api_key"            //nolint:gosec
+	OpsgenieOnCallScheduleID gosync.ConfigKey = "opsgenie_oncall_schedule_id" // Schedule ID.
+)
 
 type iOpsgenieSchedule interface {
 	GetOnCalls(context context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)
@@ -46,6 +54,29 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 	}
 
 	return onCallAdapter, nil
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new Opsgenie OnCall gosync.Adapter. All gosync.ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieOnCallScheduleID} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	opsgenieConfig := client.Config{
+		ApiKey: config[OpsgenieAPIKey],
+	}
+
+	adapter, err := New(&opsgenieConfig, config[OpsgenieOnCallScheduleID])
+	if err != nil {
+		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+	}
+
+	return adapter, nil
 }
 
 // Get emails of users currently on-call in on-call.
