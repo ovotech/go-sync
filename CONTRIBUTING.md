@@ -68,7 +68,7 @@ func New() *MyAdapter {
 	return &MyAdapter {}
 }
 
-func (m *MyAdapter) Get() ([]string, error) {
+func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
 	return nil, fmt.Errorf("myadapter.get -> %w", ErrNotImplemented)
 }
 
