@@ -14,8 +14,16 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Ensure the adapter type fully satisfies the gosync.Adapter interface.
+// Ensure the Opsgenie Schedule adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Schedule{}
+
+const (
+	/*
+		API key for authenticating with Opsgenie.
+	*/
+	OpsgenieAPIKey     gosync.ConfigKey = "opsgenie_api_key"     //nolint:gosec
+	OpsgenieScheduleID gosync.ConfigKey = "opsgenie_schedule_id" // Opsgenie Schedule ID.
+)
 
 type iOpsgenieSchedule interface {
 	Get(ctx context.Context, request *ogSchedule.GetRequest) (*ogSchedule.GetResult, error)
@@ -53,6 +61,29 @@ func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedu
 	}
 
 	return scheduleAdapter, nil
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new Opsgenie OnCall gosync.Adapter. All gosync.ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieScheduleID} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	opsgenieConfig := client.Config{
+		ApiKey: config[OpsgenieAPIKey],
+	}
+
+	adapter, err := New(&opsgenieConfig, config[OpsgenieScheduleID])
+	if err != nil {
+		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+	}
+
+	return adapter, nil
 }
 
 // Get fetches a flattened list of all participants, even across multiple rotations.
