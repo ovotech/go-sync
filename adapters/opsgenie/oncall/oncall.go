@@ -19,8 +19,8 @@ const (
 	/*
 		API key for authenticating with Opsgenie.
 	*/
-	OpsgenieAPIKey           gosync.ConfigKey = "opsgenie_api_key"            //nolint:gosec
-	OpsgenieOnCallScheduleID gosync.ConfigKey = "opsgenie_oncall_schedule_id" // Schedule ID.
+	OpsgenieAPIKey     gosync.ConfigKey = "opsgenie_api_key"     //nolint:gosec
+	OpsgenieScheduleID gosync.ConfigKey = "opsgenie_schedule_id" // Opsgenie Schedule ID.
 )
 
 type iOpsgenieSchedule interface {
@@ -61,7 +61,7 @@ var _ gosync.InitFn = Init
 
 // Init a new Opsgenie OnCall gosync.Adapter. All gosync.ConfigKey keys are required in config.
 func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieOnCallScheduleID} {
+	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieScheduleID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -71,7 +71,7 @@ func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 		ApiKey: config[OpsgenieAPIKey],
 	}
 
-	adapter, err := New(&opsgenieConfig, config[OpsgenieOnCallScheduleID])
+	adapter, err := New(&opsgenieConfig, config[OpsgenieScheduleID])
 	if err != nil {
 		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
 	}
