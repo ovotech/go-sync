@@ -20,13 +20,13 @@ var _ gosync.Adapter = &Group{}
 
 const (
 	/*
-		Authentication mechanism for Google. More info: https://cloud.google.com/docs/authentication
+		Set the authentication mechanism for Google. More info: https://cloud.google.com/docs/authentication
 
 		Supported options are:
 			`default`	Default Google credentials.
 	*/
-	Authentication gosync.ConfigKey = "google_authentication"
-	Name           gosync.ConfigKey = "google_group_name" // Google Group name.
+	GoogleAuthenticationMechanism gosync.ConfigKey = "google_authentication"
+	GoogleGroupName               gosync.ConfigKey = "google_group_name" // Google Group name.
 )
 
 // callList allows us to mock the returned struct from the List Google API call.
@@ -112,7 +112,7 @@ var _ gosync.InitFn = Init
 func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 	ctx := context.Background()
 
-	for _, key := range []gosync.ConfigKey{Authentication, Name} {
+	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, GoogleGroupName} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -125,7 +125,7 @@ func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 
 	scopes := option.WithScopes(admin.AdminDirectoryGroupMemberScope)
 
-	switch config[Authentication] {
+	switch config[GoogleAuthenticationMechanism] {
 	case "_testing_":
 		// Only for use in testing in order to prevent failure to fetch default credentials.
 		client, err = admin.NewService(ctx, scopes, option.WithAPIKey("_testing_"))
@@ -138,10 +138,10 @@ func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 			return nil, fmt.Errorf("google.group.init -> %w", err)
 		}
 	default:
-		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[Authentication])
+		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[GoogleAuthenticationMechanism])
 	}
 
-	return New(client, config[Name]), nil
+	return New(client, config[GoogleGroupName]), nil
 }
 
 // Get emails of Google users in a group.
