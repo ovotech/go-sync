@@ -98,7 +98,7 @@ func New(
 // Ensure the Init function fully satisfies the gosync.InitFn type.
 var _ gosync.InitFn = Init
 
-// Init a new GitHub Team gosync.Adapter. All ConfigKey keys are required in config.
+// Init a new GitHub Team gosync.Adapter. All gosync.ConfigKey keys are required in config.
 func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 	ctx := context.Background()
 
