@@ -163,7 +163,6 @@ func TestWithDeliverySettings(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
