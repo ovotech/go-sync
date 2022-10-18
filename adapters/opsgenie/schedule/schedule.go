@@ -32,8 +32,8 @@ type Schedule struct {
 	logger     *log.Logger
 }
 
-var errMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
-var errNoRotations = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
+var ErrMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
+var ErrNoRotations = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
 
 // New instantiates a new Opsgenie Schedule adapter.
 func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *Schedule)) (*Schedule, error) {
@@ -150,11 +150,11 @@ func (s *Schedule) Remove(ctx context.Context, emails []string) error {
 
 func (s *Schedule) getRotation(result *ogSchedule.GetResult) (*og.Rotation, error) {
 	if len(result.Schedule.Rotations) > 1 {
-		return nil, fmt.Errorf("getrotation(%s) -> %w", s.scheduleID, errMultipleRotations)
+		return nil, fmt.Errorf("getrotation(%s) -> %w", s.scheduleID, ErrMultipleRotations)
 	}
 
 	if len(result.Schedule.Rotations) == 0 {
-		return nil, fmt.Errorf("getrotations(%s) -> %w", s.scheduleID, errNoRotations)
+		return nil, fmt.Errorf("getrotations(%s) -> %w", s.scheduleID, ErrNoRotations)
 	}
 
 	return &result.Schedule.Rotations[0], nil
