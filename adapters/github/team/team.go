@@ -15,10 +15,24 @@ import (
 
 	"github.com/google/go-github/v47/github"
 	gosync "github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/github/discovery"
+	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
+	"github.com/shurcooL/githubv4"
+	"golang.org/x/oauth2"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
+// Ensure the GitHub Team adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Team{}
+
+// InitKey is the required keys to Init a new adapter.
+type InitKey = string
+
+const (
+	Token     InitKey = "token"     // GitHub Token.
+	Org       InitKey = "org"       // GitHub Organisation.
+	Slug      InitKey = "slug"      // GitHub Team Slug.
+	Discovery InitKey = "discovery" // GitHub Discovery mechanism. Currently only "saml" is allowed.
+)
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iGitHubTeam interface {
@@ -39,11 +53,11 @@ type iGitHubTeam interface {
 }
 
 type Team struct {
-	teams     iGitHubTeam       // GitHub v3 REST API teams.
-	discovery GitHubDiscovery   // Discovery adapter to convert GH users -> emails (and vice versa).
-	org       string            // GitHub organisation.
-	slug      string            // GitHub team slug.
-	cache     map[string]string // Cache of users.
+	teams     iGitHubTeam               // GitHub v3 REST API teams.
+	discovery discovery.GitHubDiscovery // Discovery adapter to convert GH users -> emails (and vice versa).
+	org       string                    // GitHub organisation.
+	slug      string                    // GitHub team slug.
+	cache     map[string]string         // Cache of users.
 	logger    *log.Logger
 }
 
@@ -55,7 +69,13 @@ func WithLogger(logger *log.Logger) func(*Team) {
 }
 
 // New instantiates a new GitHub Team adapter.
-func New(client *github.Client, discovery GitHubDiscovery, org string, slug string, optsFn ...func(*Team)) *Team {
+func New(
+	client *github.Client,
+	discovery discovery.GitHubDiscovery,
+	org string,
+	slug string,
+	optsFn ...func(*Team),
+) *Team {
 	team := &Team{
 		teams:     client.Teams,
 		discovery: discovery,
@@ -70,6 +90,39 @@ func New(client *github.Client, discovery GitHubDiscovery, org string, slug stri
 	}
 
 	return team
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new GitHub Team gosync.Adapter. All InitKey keys are required in config.
+func Init(config map[InitKey]string) (gosync.Adapter, error) {
+	ctx := context.Background()
+
+	for _, key := range []InitKey{Token, Org, Slug, Discovery} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: config[Token]},
+	))
+
+	var (
+		gitHubV3Client = github.NewClient(oauthClient)
+		gitHubV4Client = githubv4.NewClient(oauthClient)
+		discoverySvc   discovery.GitHubDiscovery
+	)
+
+	switch config[Discovery] {
+	case "saml":
+		discoverySvc = saml.New(gitHubV4Client, config[Org])
+	default:
+		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[Discovery])
+	}
+
+	return New(gitHubV3Client, discoverySvc, config[Org], config[Slug]), nil
 }
 
 // Get emails of users in a GitHub team.
