@@ -5,12 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ovotech/go-sync/adapters/github/team"
+	"github.com/ovotech/go-sync/adapters/github/discovery"
 	"github.com/shurcooL/githubv4"
 )
 
-// Ensure the adapter type fully satisfies the GitHubDiscovery interface.
-var _ team.GitHubDiscovery = &Saml{}
+// Ensure the Saml adapter type fully satisfies the discovery.GitHubDiscovery interface.
+var _ discovery.GitHubDiscovery = &Saml{}
 
 type iGitHubV4Saml interface {
 	Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
