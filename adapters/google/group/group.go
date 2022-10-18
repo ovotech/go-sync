@@ -18,9 +18,6 @@ const (
 // Ensure the Google Group adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Group{}
 
-// InitKey is the required keys to Init a new adapter.
-type InitKey = string
-
 const (
 	/*
 		Authentication mechanism for Google. More info: https://cloud.google.com/docs/authentication
@@ -28,8 +25,8 @@ const (
 		Supported options are:
 			`default`	Default Google credentials.
 	*/
-	Authentication InitKey = "google_authentication"
-	Name           InitKey = "google_group_name" // Google Group name.
+	Authentication gosync.ConfigKey = "google_authentication"
+	Name           gosync.ConfigKey = "google_group_name" // Google Group name.
 )
 
 // callList allows us to mock the returned struct from the List Google API call.
@@ -111,11 +108,11 @@ func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
 // Ensure the Init function fully satisfies the gosync.InitFn type.
 var _ gosync.InitFn = Init
 
-// Init a new Google Group gosync.Adapter. All InitKey keys are required in config.
-func Init(config map[InitKey]string) (gosync.Adapter, error) {
+// Init a new Google Group gosync.Adapter. All ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 	ctx := context.Background()
 
-	for _, key := range []InitKey{Authentication, Name} {
+	for _, key := range []gosync.ConfigKey{Authentication, Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
