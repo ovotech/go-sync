@@ -18,8 +18,16 @@ import (
 	"github.com/slack-go/slack"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
+// Ensure the Slack Conversation adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Conversation{}
+
+const (
+	/*
+		API key for authenticating with Slack.
+	*/
+	SlackAPIKey           gosync.ConfigKey = "slack_api_key"           //nolint:gosec
+	SlackConversationName gosync.ConfigKey = "slack_conversation_name" // Slack conversation name.
+)
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackConversation interface {
@@ -48,12 +56,12 @@ func WithLogger(logger *log.Logger) func(*Conversation) {
 	}
 }
 
-// New instantiates a new Slack conversation adapter.
-func New(client *slack.Client, channelName string, optsFn ...func(conversation *Conversation)) *Conversation {
+// New instantiates a new Slack Conversation adapter.
+func New(client *slack.Client, conversationName string, optsFn ...func(conversation *Conversation)) *Conversation {
 	conversation := &Conversation{
 		MuteRestrictedErrOnKickFromPublic: false,
 		client:                            client,
-		conversationName:                  channelName,
+		conversationName:                  conversationName,
 		cache:                             nil,
 		logger: log.New(
 			os.Stderr,
@@ -67,6 +75,22 @@ func New(client *slack.Client, channelName string, optsFn ...func(conversation *
 	}
 
 	return conversation
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new Slack Conversation gosync.Adapter. All gosync.ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackConversationName} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	client := slack.New(config[SlackAPIKey])
+
+	return New(client, config[SlackConversationName]), nil
 }
 
 // getListOfSlackUsernames gets a list of Slack users in a conversation, and paginates through the results.
