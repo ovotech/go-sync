@@ -1,7 +1,8 @@
 # Opsgenie Schedule adapter for Go Sync
 
-This adapter allows you to synchronise the participants of a schedule. The schedule must only have 1 rotation
-configured, and all participants must have an Opsgenie license allocated.
+This adapter allows you to synchronise the participants of a schedule. Using this as a source supports schedule with
+multiple rotations, however if you wish to use this as a destination adapter the schedule must only have 1 rotation
+configured, and all members of the source adapter must already have an Opsgenie license allocated.
 
 ## Requirements
 
