@@ -43,10 +43,18 @@ Go Sync consists of two fundamental parts:
 As long as your adapters are compatible, you can synchronise anything.
 
 ```go
-var (
-    source      = mySourceAdapter.New("some-token")
-    destination = myDestinationAdapter.New(&myDestinationAdapter.Input{})
-)
+// Create an adapter using the recommended method.
+client := service.New("some-token")
+source := myAdapter.New(client, "some-value")
+
+// Initialise an adapter using an Init function.
+destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
+	myAdapter.Token:     "some-token", 
+	myAdapter.Something: "some-value",
+})
+if err != nil {
+    log.Fatal(err)
+}
 
 syncSvc := sync.New(source)
 
@@ -55,6 +63,11 @@ if err != nil {
     log.Fatal(err)
 }
 ```
+
+### Init
+While we recommend using `New` to create an adapter in most cases, some plugins may provide an`Init` function for
+instantiating them too. Init functions are intended for programmatically creating adapters either via environment
+variables or some other dynamic configuration.
 
 ## Sync 🔄
 Sync is the logic that powers the automation. It accepts a source adapter, and synchronises it with destination
