@@ -15,10 +15,10 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "Org", "Slug")
+	adapter := New(&github.Client{}, discovery, "org", "slug")
 
-	assert.Equal(t, "Org", adapter.org)
-	assert.Equal(t, "Slug", adapter.slug)
+	assert.Equal(t, "org", adapter.org)
+	assert.Equal(t, "slug", adapter.slug)
 }
 
 func TestTeam_Get(t *testing.T) {
@@ -28,18 +28,18 @@ func TestTeam_Get(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "Org", "Slug")
+	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 
 	gitHubClient.
 		EXPECT().
-		ListTeamMembersBySlug(ctx, "Org", "Slug", &github.TeamListTeamMembersOptions{}).
+		ListTeamMembersBySlug(ctx, "org", "slug", &github.TeamListTeamMembersOptions{}).
 		Return([]*github.User{
 			{Login: github.String("foo")},
 		}, &github.Response{NextPage: 1}, nil)
 	gitHubClient.
 		EXPECT().
-		ListTeamMembersBySlug(ctx, "Org", "Slug", &github.TeamListTeamMembersOptions{
+		ListTeamMembersBySlug(ctx, "org", "slug", &github.TeamListTeamMembersOptions{
 			ListOptions: github.ListOptions{Page: 1},
 		}).
 		Return([]*github.User{
@@ -62,15 +62,15 @@ func TestTeam_Add(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "Org", "Slug")
+	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
 		Maybe().Return([]string{"fizz", "buzz"}, nil)
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
 		Maybe().Return([]string{"buzz", "fizz"}, nil)
-	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "Org", "Slug", "fizz", mock.Anything).Return(nil, nil, nil)
-	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "Org", "Slug", "buzz", mock.Anything).Return(nil, nil, nil)
+	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "org", "slug", "fizz", mock.Anything).Return(nil, nil, nil)
+	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "org", "slug", "buzz", mock.Anything).Return(nil, nil, nil)
 
 	err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
@@ -84,12 +84,12 @@ func TestTeam_Remove(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "Org", "Slug")
+	adapter := New(&github.Client{}, discovery, "org", "slug")
 	adapter.teams = gitHubClient
 	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
-	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "Org", "Slug", "foo").Return(nil, nil)
-	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "Org", "Slug", "bar").Return(nil, nil)
+	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "foo").Return(nil, nil)
+	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "bar").Return(nil, nil)
 
 	err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
