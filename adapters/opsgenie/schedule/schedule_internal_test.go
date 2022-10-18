@@ -9,6 +9,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -334,5 +335,48 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 		err := adapter.Remove(ctx, []string{"example3@example.com"})
 
 		assert.Nil(t, err)
+	})
+}
+
+func TestInit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(map[gosync.ConfigKey]string{
+			OpsgenieAPIKey:     "test",
+			OpsgenieScheduleID: "schedule",
+		})
+
+		assert.NoError(t, err)
+		assert.IsType(t, &Schedule{}, adapter)
+		assert.Equal(t, "schedule", adapter.(*Schedule).scheduleID)
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("missing authentication", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				OpsgenieScheduleID: "schedule",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, OpsgenieAPIKey)
+		})
+
+		t.Run("missing schedule ID", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				OpsgenieAPIKey: "test",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, OpsgenieScheduleID)
+		})
 	})
 }
