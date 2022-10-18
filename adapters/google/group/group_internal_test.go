@@ -170,8 +170,8 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(map[gosync.ConfigKey]string{
-			Authentication: "_testing_",
-			Name:           "name",
+			GoogleAuthenticationMechanism: "_testing_",
+			GoogleGroupName:               "name",
 		})
 
 		assert.NoError(t, err)
@@ -186,22 +186,22 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(map[gosync.ConfigKey]string{
-				Name: "name",
+				GoogleGroupName: "name",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, Authentication)
+			assert.ErrorContains(t, err, GoogleAuthenticationMechanism)
 		})
 
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(map[gosync.ConfigKey]string{
-				Authentication: "default",
+				GoogleAuthenticationMechanism: "default",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, Name)
+			assert.ErrorContains(t, err, GoogleGroupName)
 		})
 	})
 
@@ -209,8 +209,8 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		_, err := Init(map[gosync.ConfigKey]string{
-			Authentication: "foo",
-			Name:           "name",
+			GoogleAuthenticationMechanism: "foo",
+			GoogleGroupName:               "name",
 		})
 
 		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
