@@ -13,3 +13,7 @@ type Adapter interface {
 type Service interface {
 	SyncWith(ctx context.Context, adapter Adapter) error // Sync the things in a source service with this service.
 }
+
+// InitFn is an optional adapter function that can initialise a new adapter using a static configuration.
+// This is to make it easier to use an adapter in a CLI or other service that invokes adapters programmatically.
+type InitFn = func(config map[string]string) (Adapter, error)
