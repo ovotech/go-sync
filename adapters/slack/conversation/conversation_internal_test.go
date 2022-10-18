@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 )
@@ -121,5 +122,48 @@ func TestConversation_Remove(t *testing.T) {
 		err = adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
 		assert.NoError(t, err)
+	})
+}
+
+func TestInit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(map[gosync.ConfigKey]string{
+			SlackAPIKey:           "test",
+			SlackConversationName: "conversation",
+		})
+
+		assert.NoError(t, err)
+		assert.IsType(t, &Conversation{}, adapter)
+		assert.Equal(t, "conversation", adapter.(*Conversation).conversationName)
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("missing authentication", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				SlackConversationName: "conversation",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, SlackAPIKey)
+		})
+
+		t.Run("missing name", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				SlackAPIKey: "test",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, SlackConversationName)
+		})
 	})
 }

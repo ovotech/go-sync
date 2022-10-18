@@ -149,3 +149,46 @@ func TestUserGroup_Remove(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
+
+func TestInit(t *testing.T) {
+	t.Parallel()
+
+	t.Run("success", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(map[gosync.ConfigKey]string{
+			SlackAPIKey:        "test",
+			SlackUserGroupName: "usergroup",
+		})
+
+		assert.NoError(t, err)
+		assert.IsType(t, &UserGroup{}, adapter)
+		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupName)
+	})
+
+	t.Run("missing config", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("missing authentication", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				SlackUserGroupName: "usergroup",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, SlackAPIKey)
+		})
+
+		t.Run("missing name", func(t *testing.T) {
+			t.Parallel()
+
+			_, err := Init(map[gosync.ConfigKey]string{
+				SlackAPIKey: "test",
+			})
+
+			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			assert.ErrorContains(t, err, SlackUserGroupName)
+		})
+	})
+}

@@ -19,8 +19,16 @@ import (
 	"github.com/slack-go/slack"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
+// Ensure the Slack UserGroup adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &UserGroup{}
+
+const (
+	/*
+		API key for authenticating with Slack.
+	*/
+	SlackAPIKey        gosync.ConfigKey = "slack_api_key"        //nolint:gosec
+	SlackUserGroupName gosync.ConfigKey = "slack_usergroup_name" // Slack usergroup name.
+)
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
@@ -62,6 +70,22 @@ func New(slackClient *slack.Client, userGroup string, optsFn ...func(group *User
 	}
 
 	return ugAdapter
+}
+
+// Ensure the Init function fully satisfies the gosync.InitFn type.
+var _ gosync.InitFn = Init
+
+// Init a new Slack Conversation gosync.Adapter. All gosync.ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackUserGroupName} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	client := slack.New(config[SlackAPIKey])
+
+	return New(client, config[SlackUserGroupName]), nil
 }
 
 // Get emails of Slack users in a User group.
