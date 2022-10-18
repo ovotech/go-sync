@@ -28,10 +28,16 @@ var _ gosync.Adapter = &Team{}
 type InitKey = string
 
 const (
-	Token     InitKey = "token"     // GitHub Token.
-	Org       InitKey = "org"       // GitHub Organisation.
-	Slug      InitKey = "slug"      // GitHub Team Slug.
-	Discovery InitKey = "discovery" // GitHub Discovery mechanism. Currently only "saml" is allowed.
+	GitHubToken    InitKey = "github_token"     // GitHub token.
+	GitHubOrg      InitKey = "github_org"       // GitHub organisation.
+	GitHubTeamSlug InitKey = "github_team_slug" // GitHub team slug.
+	/*
+		GitHub Discovery mechanism.
+
+		Supported options are:
+			`saml`	Use SAML to discover email -> GH username.
+	*/
+	GitHubDiscovery InitKey = "github_discovery" //
 )
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -54,7 +60,7 @@ type iGitHubTeam interface {
 
 type Team struct {
 	teams     iGitHubTeam               // GitHub v3 REST API teams.
-	discovery discovery.GitHubDiscovery // Discovery adapter to convert GH users -> emails (and vice versa).
+	discovery discovery.GitHubDiscovery // GitHubDiscovery adapter to convert GH users -> emails (and vice versa).
 	org       string                    // GitHub organisation.
 	slug      string                    // GitHub team slug.
 	cache     map[string]string         // Cache of users.
@@ -99,14 +105,14 @@ var _ gosync.InitFn = Init
 func Init(config map[InitKey]string) (gosync.Adapter, error) {
 	ctx := context.Background()
 
-	for _, key := range []InitKey{Token, Org, Slug, Discovery} {
+	for _, key := range []InitKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
 	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config[Token]},
+		&oauth2.Token{AccessToken: config[GitHubToken]},
 	))
 
 	var (
@@ -115,14 +121,14 @@ func Init(config map[InitKey]string) (gosync.Adapter, error) {
 		discoverySvc   discovery.GitHubDiscovery
 	)
 
-	switch config[Discovery] {
+	switch config[GitHubDiscovery] {
 	case "saml":
-		discoverySvc = saml.New(gitHubV4Client, config[Org])
+		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
 	default:
-		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[Discovery])
+		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[GitHubDiscovery])
 	}
 
-	return New(gitHubV3Client, discoverySvc, config[Org], config[Slug]), nil
+	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[GitHubTeamSlug]), nil
 }
 
 // Get emails of users in a GitHub team.
