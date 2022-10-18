@@ -103,7 +103,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[InitKey]string{
+		adapter, err := Init(map[gosync.ConfigKey]string{
 			GitHubToken:     "token",
 			GitHubOrg:       "org",
 			GitHubTeamSlug:  "slug",
@@ -123,7 +123,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing token", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				GitHubOrg:       "org",
 				GitHubTeamSlug:  "slug",
 				GitHubDiscovery: "saml",
@@ -136,7 +136,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing org", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				GitHubToken:     "token",
 				GitHubTeamSlug:  "slug",
 				GitHubDiscovery: "saml",
@@ -149,7 +149,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing slug", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				GitHubToken:     "token",
 				GitHubOrg:       "org",
 				GitHubDiscovery: "saml",
@@ -162,7 +162,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing discovery", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				GitHubToken:    "token",
 				GitHubOrg:      "org",
 				GitHubTeamSlug: "slug",
@@ -176,7 +176,7 @@ func TestInit(t *testing.T) {
 	t.Run("invalid config", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(map[InitKey]string{
+		_, err := Init(map[gosync.ConfigKey]string{
 			GitHubToken:     "token",
 			GitHubOrg:       "org",
 			GitHubTeamSlug:  "slug",

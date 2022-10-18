@@ -24,20 +24,17 @@ import (
 // Ensure the GitHub Team adapter type fully satisfies the gosync.Adapter interface.
 var _ gosync.Adapter = &Team{}
 
-// InitKey is the required keys to Init a new adapter.
-type InitKey = string
-
 const (
-	GitHubToken    InitKey = "github_token"     // GitHub token.
-	GitHubOrg      InitKey = "github_org"       // GitHub organisation.
-	GitHubTeamSlug InitKey = "github_team_slug" // GitHub team slug.
+	GitHubToken    gosync.ConfigKey = "github_token"     // GitHub token.
+	GitHubOrg      gosync.ConfigKey = "github_org"       // GitHub organisation.
+	GitHubTeamSlug gosync.ConfigKey = "github_team_slug" // GitHub team slug.
 	/*
 		GitHub Discovery mechanism.
 
 		Supported options are:
 			`saml`	Use SAML to discover email -> GH username.
 	*/
-	GitHubDiscovery InitKey = "github_discovery" //
+	GitHubDiscovery gosync.ConfigKey = "github_discovery"
 )
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -101,11 +98,11 @@ func New(
 // Ensure the Init function fully satisfies the gosync.InitFn type.
 var _ gosync.InitFn = Init
 
-// Init a new GitHub Team gosync.Adapter. All InitKey keys are required in config.
-func Init(config map[InitKey]string) (gosync.Adapter, error) {
+// Init a new GitHub Team gosync.Adapter. All ConfigKey keys are required in config.
+func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 	ctx := context.Background()
 
-	for _, key := range []InitKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
+	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

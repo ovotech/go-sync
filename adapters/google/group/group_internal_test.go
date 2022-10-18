@@ -169,7 +169,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[InitKey]string{
+		adapter, err := Init(map[gosync.ConfigKey]string{
 			Authentication: "_testing_",
 			Name:           "name",
 		})
@@ -185,7 +185,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				Name: "name",
 			})
 
@@ -196,7 +196,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[InitKey]string{
+			_, err := Init(map[gosync.ConfigKey]string{
 				Authentication: "default",
 			})
 
@@ -208,7 +208,7 @@ func TestInit(t *testing.T) {
 	t.Run("invalid config", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(map[InitKey]string{
+		_, err := Init(map[gosync.ConfigKey]string{
 			Authentication: "foo",
 			Name:           "name",
 		})
