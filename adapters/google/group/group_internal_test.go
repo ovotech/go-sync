@@ -163,13 +163,16 @@ func TestWithDeliverySettings(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.TODO()
 
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "_testing_",
 			GoogleGroupName:               "name",
 		})
@@ -177,6 +180,8 @@ func TestInit(t *testing.T) {
 		assert.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
 		assert.Equal(t, "name", adapter.(*Group).name)
+		assert.Equal(t, "", adapter.(*Group).deliverySettings)
+		assert.Equal(t, "", adapter.(*Group).role)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -185,7 +190,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				GoogleGroupName: "name",
 			})
 
@@ -196,7 +201,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				GoogleAuthenticationMechanism: "default",
 			})
 
@@ -208,12 +213,38 @@ func TestInit(t *testing.T) {
 	t.Run("invalid config", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(map[gosync.ConfigKey]string{
+		_, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "foo",
 			GoogleGroupName:               "name",
 		})
 
 		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
 		assert.ErrorContains(t, err, "foo")
+	})
+
+	t.Run("role", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GoogleAuthenticationMechanism: "_testing_",
+			GoogleGroupName:               "name",
+			GoogleGroupRole:               "role",
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, "role", adapter.(*Group).role)
+	})
+
+	t.Run("delivery settings", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GoogleAuthenticationMechanism: "_testing_",
+			GoogleGroupName:               "name",
+			GoogleGroupDeliverySettings:   "delivery",
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, "delivery", adapter.(*Group).deliverySettings)
 	})
 }

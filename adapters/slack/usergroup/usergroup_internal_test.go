@@ -19,7 +19,7 @@ func TestNew(t *testing.T) {
 	adapter := New(&slack.Client{}, "test")
 	adapter.client = slackClient
 
-	assert.Equal(t, "test", adapter.userGroupName)
+	assert.Equal(t, "test", adapter.userGroupID)
 	assert.False(t, adapter.MuteGroupCannotBeEmpty)
 	assert.Zero(t, slackClient.Calls)
 }
@@ -153,17 +153,19 @@ func TestUserGroup_Remove(t *testing.T) {
 func TestInit(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.TODO()
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[gosync.ConfigKey]string{
-			SlackAPIKey:        "test",
-			SlackUserGroupName: "usergroup",
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			SlackAPIKey:      "test",
+			SlackUserGroupID: "usergroup",
 		})
 
 		assert.NoError(t, err)
 		assert.IsType(t, &UserGroup{}, adapter)
-		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupName)
+		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupID)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -172,8 +174,8 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
-				SlackUserGroupName: "usergroup",
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
+				SlackUserGroupID: "usergroup",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -183,12 +185,12 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				SlackAPIKey: "test",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, SlackUserGroupName)
+			assert.ErrorContains(t, err, SlackUserGroupID)
 		})
 	})
 }

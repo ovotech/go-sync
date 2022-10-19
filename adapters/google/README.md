@@ -1,8 +1,17 @@
 # Go Sync Adapters - Google
-These adapters synchronise Google users.
+These adapters synchronise Google users with [Go Sync](https://github.com/ovotech/go-sync).
 
-| Adapter          | Type  | Summary                                 |
-|------------------|-------|-----------------------------------------|
-| [group](./group) | Email | Synchronise emails with a Google Group. |
+[Read the documentation on pkg.go.dev](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/google)
 
-Can't find an adapter you're looking for? [Why not contribute your own! ✨](/CONTRIBUTING.md)
+## Installation
+```shell
+go get github.com/ovotech/go-sync/adapters/google@latest
+```
+
+## Adapters
+
+| Adapter                                                                      | Type  | Summary                                          |
+|------------------------------------------------------------------------------|-------|--------------------------------------------------|
+| [group](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/google/group) | Email | Synchronise email addresses with a Google Group. |
+
+Can't find an adapter you're looking for? [Why not write your own! ✨](/CONTRIBUTING.md)

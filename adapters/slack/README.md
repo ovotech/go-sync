@@ -1,9 +1,18 @@
 # Go Sync Adapters - Slack
-These adapters synchronise Slack users.
+These adapters synchronise Slack users with [Go Sync](https://github.com/ovotech/go-sync).
 
-| Adapter                        | Type  | Summary                                               |
-|--------------------------------|-------|-------------------------------------------------------|
-| [conversation](./conversation) | Email | Synchronise emails with a Slack channel/conversation. |
-| [usergroup](./usergroup)       | Email | Synchronise emails with a Slack User Group.           |
+[Read the documentation on pkg.go.dev](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/slack)
 
-Can't find an adapter you're looking for? [Why not contribute your own! ✨](/CONTRIBUTING.md)
+## Installation
+```shell
+go get github.com/ovotech/go-sync/adapters/slack@latest
+```
+
+## Adapters
+
+| Adapter                                                                                   | Type  | Summary                                               |
+|-------------------------------------------------------------------------------------------|-------|-------------------------------------------------------|
+| [conversation](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/slack/conversation) | Email | Synchronise emails with a Slack channel/conversation. |
+| [usergroup](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/slack/usergroup)       | Email | Synchronise emails with a Slack User Group.           |
+
+Can't find an adapter you're looking for? [Why not write your own! ✨](/CONTRIBUTING.md)

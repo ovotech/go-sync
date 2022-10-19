@@ -341,10 +341,12 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.TODO()
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			OpsgenieAPIKey:     "test",
 			OpsgenieScheduleID: "schedule",
 		})
@@ -360,7 +362,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				OpsgenieScheduleID: "schedule",
 			})
 
@@ -371,7 +373,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing schedule ID", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				OpsgenieAPIKey: "test",
 			})
 
