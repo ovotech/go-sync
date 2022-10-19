@@ -1,9 +1,24 @@
 /*
-Package team synchronises emails with GitHub teams.
+Package team synchronises email addresses with GitHub teams.
 
-You must provide a discovery service in order to use this adapter. This is because converting email addresses to
+# Discovery
+
+You must provide a [discovery] adapter in order to use this adapter. This is because converting email addresses to
 GitHub usernames isn't straightforward. At OVO, we enforce SAML for our GitHub users, and have provided a
-SAML -> GitHub Username discovery service, but you may need to write your own.
+SAML -> GitHub Username discovery adapter, but you may need to write your own.
+
+# Requirements
+
+In order to synchronise with GitHub, you'll need to create a [Personal Access Token] with the following permissions:
+  - admin:org
+  - write:org
+  - read:org
+
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
+# Examples
+
+See [New] and [Init].
 */
 package team
 
@@ -21,23 +36,48 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Ensure the GitHub Team adapter type fully satisfies the gosync.Adapter interface.
-var _ gosync.Adapter = &Team{}
+/*
+GitHubToken is the token used to authenticate with GitHub.
+See package docs for more information on how to obtain this token.
+*/
+const GitHubToken gosync.ConfigKey = "github_token"
 
-const (
-	GitHubToken    gosync.ConfigKey = "github_token"     // GitHub token.
-	GitHubOrg      gosync.ConfigKey = "github_org"       // GitHub organisation.
-	GitHubTeamSlug gosync.ConfigKey = "github_team_slug" // GitHub team slug.
-	/*
-		GitHub Discovery mechanism.
+/*
+GitHubOrg is the name of your GitHub organisation.
 
-		Supported options are:
-			`saml`	Use SAML to discover email -> GH username.
-	*/
-	GitHubDiscovery gosync.ConfigKey = "github_discovery"
+https://docs.github.com/en/organizations/collaborating-with-groups-in-organizations/about-organizations
+
+For example:
+
+	https://github.com/ovotech/go-sync
+
+`ovotech` is the name of our organisation.
+*/
+const GitHubOrg gosync.ConfigKey = "github_org"
+
+/*
+GitHubTeamSlug is the name of your team slug within your organisation.
+
+For example:
+
+	https://github.com/orgs/ovotech/teams/foobar
+
+`foobar` is the name of our team slug.
+*/
+const GitHubTeamSlug gosync.ConfigKey = "github_team_slug"
+
+/*
+GitHubDiscovery mechanism for converting emails into GitHub users and vice versa. Supported values are:
+  - [saml]
+*/
+const GitHubDiscovery gosync.ConfigKey = "github_discovery"
+
+var (
+	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn  = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
-// iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
+// iSlackConversation is a subset of the Slack Client used to build mocks for easy testing.
 type iGitHubTeam interface {
 	ListTeamMembersBySlug(
 		ctx context.Context,
@@ -61,76 +101,12 @@ type Team struct {
 	org       string                    // GitHub organisation.
 	slug      string                    // GitHub team slug.
 	cache     map[string]string         // Cache of users.
-	logger    *log.Logger
+	Logger    *log.Logger
 }
 
-// WithLogger sets a custom logger.
-func WithLogger(logger *log.Logger) func(*Team) {
-	return func(team *Team) {
-		team.logger = logger
-	}
-}
-
-// New instantiates a new GitHub Team adapter.
-func New(
-	client *github.Client,
-	discovery discovery.GitHubDiscovery,
-	org string,
-	slug string,
-	optsFn ...func(*Team),
-) *Team {
-	team := &Team{
-		teams:     client.Teams,
-		discovery: discovery,
-		org:       org,
-		slug:      slug,
-		cache:     nil,
-		logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(team)
-	}
-
-	return team
-}
-
-// Ensure the Init function fully satisfies the gosync.InitFn type.
-var _ gosync.InitFn = Init
-
-// Init a new GitHub Team gosync.Adapter. All gosync.ConfigKey keys are required in config.
-func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	ctx := context.Background()
-
-	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
-		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
-		}
-	}
-
-	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config[GitHubToken]},
-	))
-
-	var (
-		gitHubV3Client = github.NewClient(oauthClient)
-		gitHubV4Client = githubv4.NewClient(oauthClient)
-		discoverySvc   discovery.GitHubDiscovery
-	)
-
-	switch config[GitHubDiscovery] {
-	case "saml":
-		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
-	default:
-		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[GitHubDiscovery])
-	}
-
-	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[GitHubTeamSlug]), nil
-}
-
-// Get emails of users in a GitHub team.
+// Get email addresses in a GitHub Team.
 func (t *Team) Get(ctx context.Context) ([]string, error) {
-	t.logger.Printf("Fetching accounts from GitHub team %s/%s", t.org, t.slug)
+	t.Logger.Printf("Fetching accounts from GitHub team %s/%s", t.org, t.slug)
 
 	// Initialise the cache.
 	t.cache = make(map[string]string)
@@ -168,14 +144,14 @@ func (t *Team) Get(ctx context.Context) ([]string, error) {
 		opts.Page = resp.NextPage
 	}
 
-	t.logger.Println("Fetched accounts successfully")
+	t.Logger.Println("Fetched accounts successfully")
 
 	return out, nil
 }
 
-// Add emails to a GitHub Team.
+// Add email addresses to a GitHub Team.
 func (t *Team) Add(ctx context.Context, emails []string) error {
-	t.logger.Printf("Adding %s to GitHub team %s/%s", emails, t.org, t.slug)
+	t.Logger.Printf("Adding %s to GitHub team %s/%s", emails, t.org, t.slug)
 
 	names, err := t.discovery.GetUsernameFromEmail(ctx, emails)
 	if err != nil {
@@ -193,14 +169,14 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 		}
 	}
 
-	t.logger.Println("Finished adding accounts successfully")
+	t.Logger.Println("Finished adding accounts successfully")
 
 	return nil
 }
 
-// Remove emails from a GitHub team.
+// Remove email addresses from a GitHub Team.
 func (t *Team) Remove(ctx context.Context, emails []string) error {
-	t.logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
+	t.Logger.Printf("Removing %s from GitHub team %s/%s", emails, t.org, t.slug)
 
 	if t.cache == nil {
 		return fmt.Errorf("github.team.remove -> %w", gosync.ErrCacheEmpty)
@@ -215,7 +191,73 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 		}
 	}
 
-	t.logger.Println("Finished removing accounts successfully")
+	t.Logger.Println("Finished removing accounts successfully")
 
 	return nil
+}
+
+/*
+New GitHub Team [gosync.Adapter].
+
+Recommended reading for parameters:
+  - org: [team.GitHubOrg]
+  - slug: [team.GitHubTeamSlug]
+*/
+func New(
+	client *github.Client,
+	discovery discovery.GitHubDiscovery,
+	org string,
+	slug string,
+	optsFn ...func(*Team),
+) *Team {
+	team := &Team{
+		teams:     client.Teams,
+		discovery: discovery,
+		org:       org,
+		slug:      slug,
+		cache:     nil,
+		Logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	for _, fn := range optsFn {
+		fn(team)
+	}
+
+	return team
+}
+
+/*
+Init a new GitHub Team [gosync.Adapter].
+
+Required config:
+  - [team.GitHubToken]
+  - [team.GitHubOrg]
+  - [team.GitHubTeamSlug]
+  - [team.GitHubDiscovery]
+*/
+func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: config[GitHubToken]},
+	))
+
+	var (
+		gitHubV3Client = github.NewClient(oauthClient)
+		gitHubV4Client = githubv4.NewClient(oauthClient)
+		discoverySvc   discovery.GitHubDiscovery
+	)
+
+	switch config[GitHubDiscovery] {
+	case "saml":
+		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
+	default:
+		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[GitHubDiscovery])
+	}
+
+	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[GitHubTeamSlug]), nil
 }

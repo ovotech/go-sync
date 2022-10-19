@@ -1,3 +1,22 @@
+/*
+Package schedule allows you to synchronise the participants of a schedule.
+
+Using this as a source supports schedule with multiple rotations, however if you wish to use this as a destination
+adapter the schedule must only have 1 rotation configured, and all members of the source adapter must already have an
+Opsgenie license allocated.
+
+# Requirements
+
+You will need to create an [API Key] with the following access rights:
+  - Read
+  - Update
+
+# Examples
+
+See [New] and [Init].
+
+[API Key]: https://support.atlassian.com/opsgenie/docs/api-key-management/
+*/
 package schedule
 
 import (
@@ -14,15 +33,20 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-// Ensure the Opsgenie Schedule adapter type fully satisfies the gosync.Adapter interface.
-var _ gosync.Adapter = &Schedule{}
+/*
+OpsgenieAPIKey is an API key for authenticating with Opsgenie.
+*/
+const OpsgenieAPIKey gosync.ConfigKey = "opsgenie_api_key" //nolint:gosec
 
-const (
-	/*
-		API key for authenticating with Opsgenie.
-	*/
-	OpsgenieAPIKey     gosync.ConfigKey = "opsgenie_api_key"     //nolint:gosec
-	OpsgenieScheduleID gosync.ConfigKey = "opsgenie_schedule_id" // Opsgenie Schedule ID.
+// OpsgenieScheduleID is the name of the Opsgenie Schedule ID.
+const OpsgenieScheduleID gosync.ConfigKey = "opsgenie_schedule_id"
+
+var (
+	_ gosync.Adapter = &Schedule{} // Ensure [schedule.Schedule] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn  = Init        // Ensure the [schedule.Init] function fully satisfies the [gosync.InitFn] type.
+
+	ErrMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
+	ErrNoRotations       = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
 )
 
 type iOpsgenieSchedule interface {
@@ -37,58 +61,12 @@ type Schedule struct {
 	client     iOpsgenieSchedule
 	scheduleID string
 	schedule   *ogSchedule.GetResult
-	logger     *log.Logger
+	Logger     *log.Logger
 }
 
-var ErrMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
-var ErrNoRotations = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
-
-// New instantiates a new Opsgenie Schedule adapter.
-func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *Schedule)) (*Schedule, error) {
-	scheduleClient, err := ogSchedule.NewClient(opsgenieConfig)
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
-	}
-
-	scheduleAdapter := &Schedule{
-		client:     scheduleClient,
-		scheduleID: scheduleID,
-		logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(scheduleAdapter)
-	}
-
-	return scheduleAdapter, nil
-}
-
-// Ensure the Init function fully satisfies the gosync.InitFn type.
-var _ gosync.InitFn = Init
-
-// Init a new Opsgenie OnCall gosync.Adapter. All gosync.ConfigKey keys are required in config.
-func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieScheduleID} {
-		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
-		}
-	}
-
-	opsgenieConfig := client.Config{
-		ApiKey: config[OpsgenieAPIKey],
-	}
-
-	adapter, err := New(&opsgenieConfig, config[OpsgenieScheduleID])
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
-	}
-
-	return adapter, nil
-}
-
-// Get fetches a flattened list of all participants, even across multiple rotations.
+// Get a flattened list of all participants, even across multiple rotations.
 func (s *Schedule) Get(ctx context.Context) ([]string, error) {
-	s.logger.Printf("Getting all participants in the Opsgenie schedule %s", s.scheduleID)
+	s.Logger.Printf("Getting all participants in the Opsgenie schedule %s", s.scheduleID)
 
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
@@ -105,14 +83,14 @@ func (s *Schedule) Get(ctx context.Context) ([]string, error) {
 		}
 	}
 
-	s.logger.Printf("Found %d participants of schedule %s: %s", len(emails), s.scheduleID, emails)
+	s.Logger.Printf("Found %d participants of schedule %s: %s", len(emails), s.scheduleID, emails)
 
 	return emails, nil
 }
 
-// Add lets you add new participants to a rotation, but the schedule must only have 1 rotation defined.
+// Add new participants to a rotation, but the schedule must only have 1 rotation defined.
 func (s *Schedule) Add(ctx context.Context, emails []string) error {
-	s.logger.Printf("Adding %d users to schedule %s: %s", len(emails), s.scheduleID, emails)
+	s.Logger.Printf("Adding %d users to schedule %s: %s", len(emails), s.scheduleID, emails)
 
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
@@ -148,9 +126,9 @@ func (s *Schedule) Add(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// Remove lets you remove participants from a rotation, but the schedule must only have 1 rotation defined.
+// Remove participants from a rotation, but the schedule must only have 1 rotation defined.
 func (s *Schedule) Remove(ctx context.Context, emails []string) error {
-	s.logger.Printf("Removing %d users from schedule %s: %s", len(emails), s.scheduleID, emails)
+	s.Logger.Printf("Removing %d users from schedule %s: %s", len(emails), s.scheduleID, emails)
 
 	result, err := s.fetchSchedule(ctx)
 	if err != nil {
@@ -193,7 +171,7 @@ func (s *Schedule) getRotation(result *ogSchedule.GetResult) (*og.Rotation, erro
 
 func (s *Schedule) fetchSchedule(ctx context.Context) (*ogSchedule.GetResult, error) {
 	if s.schedule == nil {
-		s.logger.Printf("Fetching schedule %s from Opsgenie", s.scheduleID)
+		s.Logger.Printf("Fetching schedule %s from Opsgenie", s.scheduleID)
 
 		scheduleRequest := &ogSchedule.GetRequest{
 			IdentifierType:  ogSchedule.Id,
@@ -207,7 +185,7 @@ func (s *Schedule) fetchSchedule(ctx context.Context) (*ogSchedule.GetResult, er
 
 		s.schedule = result
 	} else {
-		s.logger.Printf("Already have schedule %s cached", s.scheduleID)
+		s.Logger.Printf("Already have schedule %s cached", s.scheduleID)
 	}
 
 	return s.schedule, nil
@@ -231,7 +209,7 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 		},
 	}
 
-	s.logger.Printf("Updating rotation %s of schedule %s with participants: %s", rotation.Id, s.scheduleID, emails)
+	s.Logger.Printf("Updating rotation %s of schedule %s with participants: %s", rotation.Id, s.scheduleID, emails)
 
 	_, err := s.client.UpdateRotation(ctx, request)
 	if err != nil {
@@ -239,4 +217,50 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 	}
 
 	return nil
+}
+
+// New Opsgenie Schedule [gosync.Adapter].
+func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *Schedule)) (*Schedule, error) {
+	scheduleClient, err := ogSchedule.NewClient(opsgenieConfig)
+	if err != nil {
+		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
+	}
+
+	scheduleAdapter := &Schedule{
+		client:     scheduleClient,
+		scheduleID: scheduleID,
+		Logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	for _, fn := range optsFn {
+		fn(scheduleAdapter)
+	}
+
+	return scheduleAdapter, nil
+}
+
+/*
+Init a new Opsgenie Schedule [gosync.Adapter].
+
+Required config:
+  - [schedule.OpsgenieAPIKey]
+  - [schedule.OpsgenieScheduleID]
+*/
+func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, OpsgenieScheduleID} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	opsgenieConfig := client.Config{
+		ApiKey: config[OpsgenieAPIKey],
+	}
+
+	adapter, err := New(&opsgenieConfig, config[OpsgenieScheduleID])
+	if err != nil {
+		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+	}
+
+	return adapter, nil
 }

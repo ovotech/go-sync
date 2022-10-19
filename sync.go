@@ -39,7 +39,7 @@ type Sync struct {
 	OperatingMode operatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
 	source        Adapter         // The source adapter.
 	cache         map[string]bool // cache prevents polling the source more than once.
-	logger        *log.Logger
+	Logger        *log.Logger
 }
 
 // New creates a new Sync service.
@@ -49,7 +49,7 @@ func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 		OperatingMode: RemoveAdd,
 		source:        source,
 		cache:         make(map[string]bool),
-		logger:        log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		Logger:        log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -90,7 +90,7 @@ func (s *Sync) getThingsToRemove(things []string) []string {
 // generateCache populates the cache with a map of things for efficient lookup.
 func (s *Sync) generateCache(ctx context.Context) error {
 	if len(s.cache) == 0 {
-		s.logger.Println("Getting things from source adapter")
+		s.Logger.Println("Getting things from source adapter")
 
 		things, err := s.source.Get(ctx)
 		if err != nil {
@@ -103,13 +103,6 @@ func (s *Sync) generateCache(ctx context.Context) error {
 	return nil
 }
 
-// WithLogger sets a custom logger.
-func WithLogger(logger *log.Logger) func(*Sync) {
-	return func(sync *Sync) {
-		sync.logger = logger
-	}
-}
-
 // perform processes adding/removing things from a destination service.
 func (s *Sync) perform(
 	ctx context.Context,
@@ -119,12 +112,12 @@ func (s *Sync) perform(
 	executeFn func(context.Context, []string) error,
 ) func() error {
 	return func() error {
-		s.logger.Printf("Processing things to %s\n", action)
+		s.Logger.Printf("Processing things to %s\n", action)
 
 		thingsToChange := diffFn(things)
 
 		if s.DryRun {
-			s.logger.Printf("Would %s %s, but running in dry run mode", action, thingsToChange)
+			s.Logger.Printf("Would %s %s, but running in dry run mode", action, thingsToChange)
 
 			return nil
 		}
@@ -133,7 +126,7 @@ func (s *Sync) perform(
 			return nil
 		}
 
-		s.logger.Printf("%s: %s", action, thingsToChange)
+		s.Logger.Printf("%s: %s", action, thingsToChange)
 
 		err := executeFn(ctx, thingsToChange)
 		if err != nil {
@@ -146,21 +139,21 @@ func (s *Sync) perform(
 
 // SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
 func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
-	s.logger.Println("Starting sync")
+	s.Logger.Println("Starting sync")
 
 	// Call to populate the cache from the source adapter.
 	if err := s.generateCache(ctx); err != nil {
 		return fmt.Errorf("sync.syncwith.generateCache -> %w", err)
 	}
 
-	s.logger.Println("Getting things from destination adapter")
+	s.Logger.Println("Getting things from destination adapter")
 
 	things, err := adapter.Get(ctx)
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.get -> %w", err)
 	}
 
-	s.logger.Printf("Running in %s operating mode", s.OperatingMode)
+	s.Logger.Printf("Running in %s operating mode", s.OperatingMode)
 
 	operations := make([]func() error, 0, 2) //nolint:gomnd
 
@@ -192,7 +185,7 @@ func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
 		}
 	}
 
-	s.logger.Println("Finished sync")
+	s.Logger.Println("Finished sync")
 
 	return nil
 }

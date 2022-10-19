@@ -16,7 +16,7 @@ type Service interface {
 
 // InitFn is an optional adapter function that can initialise a new adapter using a static configuration.
 // This is to make it easier to use an adapter in a CLI or other service that invokes adapters programmatically.
-type InitFn = func(config map[string]string) (Adapter, error)
+type InitFn = func(ctx context.Context, config map[string]string) (Adapter, error)
 
 // ConfigKey is a configuration key to Init a new adapter.
 type ConfigKey = string

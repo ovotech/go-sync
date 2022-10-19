@@ -128,10 +128,12 @@ func TestConversation_Remove(t *testing.T) {
 func TestInit(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.TODO()
+
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			SlackAPIKey:           "test",
 			SlackConversationName: "conversation",
 		})
@@ -147,7 +149,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				SlackConversationName: "conversation",
 			})
 
@@ -158,7 +160,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[gosync.ConfigKey]string{
 				SlackAPIKey: "test",
 			})
 

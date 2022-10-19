@@ -38,7 +38,7 @@ You're ready to Go Sync 🎉
 
 Go Sync consists of two fundamental parts:
 1. [Sync](#sync-)
-2. [Adapters ](#adapters-)
+2. [Adapters ](#adaptersadapters-)
 
 As long as your adapters are compatible, you can synchronise anything.
 
@@ -56,9 +56,9 @@ if err != nil {
     log.Fatal(err)
 }
 
-syncSvc := sync.New(source)
+sync := gosync.New(source)
 
-err := syncSvc.SyncWith(context.Background(), destination)
+err := sync.SyncWith(context.Background(), destination)
 if err != nil {
     log.Fatal(err)
 }
@@ -82,8 +82,8 @@ Sync is only uni-directional by design. You know where your things are, and wher
 4. Remove the things that shouldn't be there.
 5. Repeat from 2 for further adapters.
 
-## [Adapters](adapters) 🔌
-Adapters provide a common interface to services. Adapters must implement our [Adapter interface](ports.go)
+## [Adapters](./adapters) 🔌
+Adapters provide a common interface to services. Adapters must implement our [Adapter interface](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter)
 and functionally perform 3 things:
 
 1. Get the things.
@@ -93,8 +93,7 @@ and functionally perform 3 things:
 These things can be anything, but we recommend email addresses. There's no point trying to sync a Slack User ID with a
 GitHub user! 🙅
 
-Read about our [built-in adapters here](https://pkg.go.dev/github.com/ovotech/adapters), or 
-[build your own](CONTRIBUTING.md).
+Can't find an adapter you're looking for? [Why not write your own! ✨](/CONTRIBUTING.md)
 
 ### Made with 💚 by OVO Energy's DevEx team
 

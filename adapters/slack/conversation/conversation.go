@@ -1,8 +1,31 @@
 /*
-Package conversation synchronises email addresses with Slack conversations.
+Package conversation synchronises email addresses with a Slack conversation.
 
-In order to use this adapter, you'll need an authenticated Slack client and for the Slack app to have been added
-to the conversation.
+# Requirements
+
+In order to synchronise with Slack, you'll need to [create a Slack app] with the following OAuth Bot Token permissions:
+  - [users:read]
+  - [users:read.email]
+  - [channels:manage]
+  - [channels:read]
+  - [groups:read]
+  - [groups:write]
+  - [im:write]
+  - [mpim:write]
+
+# Examples
+
+See [New] and [Init].
+
+[create a Slack app]: https://api.slack.com/authentication/basics
+[users:read]: https://api.slack.com/scopes/users:read
+[users:read.email]: https://api.slack.com/scopes/users:read.email
+[channels:manage]: https://api.slack.com/scopes/channels:manage
+[channels:read]: https://api.slack.com/scopes/channels:read
+[groups:read]: https://api.slack.com/scopes/groups:read
+[groups:write]: https://api.slack.com/scopes/groups:write
+[im:write]: https://api.slack.com/scopes/im:write
+[mpim:write]: https://api.slack.com/scopes/mpim:write
 */
 package conversation
 
@@ -18,15 +41,18 @@ import (
 	"github.com/slack-go/slack"
 )
 
-// Ensure the Slack Conversation adapter type fully satisfies the gosync.Adapter interface.
-var _ gosync.Adapter = &Conversation{}
+/*
+SlackAPIKey is an API key for authenticating with Slack.
+*/
+const SlackAPIKey gosync.ConfigKey = "slack_api_key" //nolint:gosec
 
-const (
-	/*
-		API key for authenticating with Slack.
-	*/
-	SlackAPIKey           gosync.ConfigKey = "slack_api_key"           //nolint:gosec
-	SlackConversationName gosync.ConfigKey = "slack_conversation_name" // Slack conversation name.
+// SlackConversationName is the Slack conversation name.
+const SlackConversationName gosync.ConfigKey = "slack_conversation_name"
+
+var (
+	// Ensure [conversation.Conversation] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter = &Conversation{}
+	_ gosync.InitFn  = Init // Ensure the [conversation.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -39,58 +65,16 @@ type iSlackConversation interface {
 }
 
 type Conversation struct {
-	// Slack may be configured to only allow admins to kick from public conversations, which will fail the entire sync
-	// job. Set to true to mute this error and continue synchronisation.
+	/*
+		Slack may be configured to only allow admins to kick from public conversations, which will fail the entire sync
+		job. Set to true to mute this error and continue synchronisation.
+	*/
 	MuteRestrictedErrOnKickFromPublic bool
 	client                            iSlackConversation
 	conversationName                  string
 	// cache stores the Slack ID -> email mapping for use with the Remove method.
 	cache  map[string]string
-	logger *log.Logger
-}
-
-// WithLogger sets a custom logger.
-func WithLogger(logger *log.Logger) func(*Conversation) {
-	return func(conversation *Conversation) {
-		conversation.logger = logger
-	}
-}
-
-// New instantiates a new Slack Conversation adapter.
-func New(client *slack.Client, conversationName string, optsFn ...func(conversation *Conversation)) *Conversation {
-	conversation := &Conversation{
-		MuteRestrictedErrOnKickFromPublic: false,
-		client:                            client,
-		conversationName:                  conversationName,
-		cache:                             nil,
-		logger: log.New(
-			os.Stderr,
-			"[go-sync/slack/conversation] ",
-			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
-	}
-
-	for _, fn := range optsFn {
-		fn(conversation)
-	}
-
-	return conversation
-}
-
-// Ensure the Init function fully satisfies the gosync.InitFn type.
-var _ gosync.InitFn = Init
-
-// Init a new Slack Conversation gosync.Adapter. All gosync.ConfigKey keys are required in config.
-func Init(config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackConversationName} {
-		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
-		}
-	}
-
-	client := slack.New(config[SlackAPIKey])
-
-	return New(client, config[SlackConversationName]), nil
+	Logger *log.Logger
 }
 
 // getListOfSlackUsernames gets a list of Slack users in a conversation, and paginates through the results.
@@ -125,9 +109,9 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 	return users, nil
 }
 
-// Get emails of Slack users in a conversation.
+// Get email addresses in a Slack Conversation.
 func (c *Conversation) Get(_ context.Context) ([]string, error) {
-	c.logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
+	c.Logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
 
 	// Initialise the cache.
 	c.cache = make(map[string]string)
@@ -153,14 +137,14 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 		}
 	}
 
-	c.logger.Println("Fetched accounts successfully")
+	c.Logger.Println("Fetched accounts successfully")
 
 	return emails, nil
 }
 
-// Add emails to a Slack conversation.
+// Add email addresses to a Slack Conversation.
 func (c *Conversation) Add(_ context.Context, emails []string) error {
-	c.logger.Printf("Adding %s to Slack conversation %s", emails, c.conversationName)
+	c.Logger.Printf("Adding %s to Slack conversation %s", emails, c.conversationName)
 
 	slackIds := make([]string, len(emails))
 
@@ -178,14 +162,14 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 		return fmt.Errorf("slack.conversation.add.inviteuserstoconversation(%s, ...) -> %w", c.conversationName, err)
 	}
 
-	c.logger.Println("Finished adding accounts successfully")
+	c.Logger.Println("Finished adding accounts successfully")
 
 	return nil
 }
 
-// Remove emails from a Slack conversation.
+// Remove email addresses from a Slack Conversation.
 func (c *Conversation) Remove(_ context.Context, emails []string) error {
-	c.logger.Printf("Removing %s from Slack conversation %s", emails, c.conversationName)
+	c.Logger.Printf("Removing %s from Slack conversation %s", emails, c.conversationName)
 
 	// If the cache hasn't been generated, regenerate it.
 	if c.cache == nil {
@@ -196,7 +180,7 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 		err := c.client.KickUserFromConversation(c.conversationName, c.cache[email])
 		if err != nil {
 			if c.MuteRestrictedErrOnKickFromPublic && strings.Contains(err.Error(), "restricted_action") {
-				c.logger.Println("Cannot kick from public channel, but error is muted by configuration - continuing")
+				c.Logger.Println("Cannot kick from public channel, but error is muted by configuration - continuing")
 
 				return nil
 			}
@@ -213,7 +197,47 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 		time.Sleep(1 * time.Second)
 	}
 
-	c.logger.Println("Finished removing accounts successfully")
+	c.Logger.Println("Finished removing accounts successfully")
 
 	return nil
+}
+
+// New Slack Conversation [gosync.Adapter].
+func New(client *slack.Client, conversationName string, optsFn ...func(conversation *Conversation)) *Conversation {
+	conversation := &Conversation{
+		MuteRestrictedErrOnKickFromPublic: false,
+		client:                            client,
+		conversationName:                  conversationName,
+		cache:                             nil,
+		Logger: log.New(
+			os.Stderr,
+			"[go-sync/slack/conversation] ",
+			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		),
+	}
+
+	for _, fn := range optsFn {
+		fn(conversation)
+	}
+
+	return conversation
+}
+
+/*
+Init a new Slack Conversation [gosync.Adapter].
+
+Required config:
+  - [conversation.SlackAPIKey]
+  - [conversation.SlackConversationName]
+*/
+func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackConversationName} {
+		if _, ok := config[key]; !ok {
+			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
+		}
+	}
+
+	client := slack.New(config[SlackAPIKey])
+
+	return New(client, config[SlackConversationName]), nil
 }
