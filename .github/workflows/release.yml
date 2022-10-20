@@ -31,5 +31,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag and push release for adapters
         run: |
-          make ci/tag_adapters
+          make ci/tag-adapters
           git push origin --tags
