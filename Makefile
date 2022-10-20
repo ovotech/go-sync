@@ -45,6 +45,9 @@ report: ## Test and produce a JUnit report.
 	go test -v 2>&1 -count=1 ./... $(ADAPTERS) | go-junit-report -set-exit-code > report.xml
 .PHONY: report
 
+ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
+	for adapter in $(shell ls -d adapters/*); do git tag $${adapter}/$$RELEASE_VERSION; done
+
 .DEFAULT_GOAL := help
 help: Makefile ## Display list of available commands.
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}' | sed -e 's/\[32m##/[33m/'
