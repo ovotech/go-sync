@@ -122,8 +122,8 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			OpsgenieAPIKey:     "test",
-			OpsgenieScheduleID: "schedule",
+			OpsgenieAPIKey: "test",
+			ScheduleID:     "schedule",
 		})
 
 		assert.NoError(t, err)
@@ -138,7 +138,7 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				OpsgenieScheduleID: "schedule",
+				ScheduleID: "schedule",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -153,7 +153,7 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, OpsgenieScheduleID)
+			assert.ErrorContains(t, err, ScheduleID)
 		})
 	})
 }

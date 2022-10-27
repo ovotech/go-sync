@@ -21,8 +21,8 @@ func ExampleInit() {
 	ctx := context.Background()
 
 	adapter, err := usergroup.Init(ctx, map[gosync.ConfigKey]string{
-		usergroup.SlackAPIKey:      "my-slack-token",
-		usergroup.SlackUserGroupID: "S0123ABC456",
+		usergroup.SlackAPIKey: "my-slack-token",
+		usergroup.UserGroupID: "S0123ABC456",
 	})
 	if err != nil {
 		log.Fatal(err)

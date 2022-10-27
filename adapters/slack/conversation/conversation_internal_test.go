@@ -125,6 +125,7 @@ func TestConversation_Remove(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -134,13 +135,14 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			SlackAPIKey:           "test",
-			SlackConversationName: "conversation",
+			SlackAPIKey: "test",
+			Name:        "conversation",
 		})
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Conversation{}, adapter)
 		assert.Equal(t, "conversation", adapter.(*Conversation).conversationName)
+		assert.False(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -150,7 +152,7 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				SlackConversationName: "conversation",
+				Name: "conversation",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -165,7 +167,33 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, SlackConversationName)
+			assert.ErrorContains(t, err, Name)
+		})
+
+		t.Run("MuteRestrictedErrOnKickFromPublic", func(t *testing.T) {
+			t.Parallel()
+
+			for _, test := range []string{"", "false", "FALSE", "False", "foobar", "test"} {
+				adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+					SlackAPIKey:                       "test",
+					Name:                              "conversation",
+					MuteRestrictedErrOnKickFromPublic: test,
+				})
+
+				assert.NoError(t, err)
+				assert.False(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic, test)
+			}
+
+			for _, test := range []string{"true", "True", "TRUE"} {
+				adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+					SlackAPIKey:                       "test",
+					Name:                              "conversation",
+					MuteRestrictedErrOnKickFromPublic: test,
+				})
+
+				assert.NoError(t, err)
+				assert.True(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic, test)
+			}
 		})
 	})
 }
