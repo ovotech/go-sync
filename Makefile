@@ -51,7 +51,7 @@ ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable.
 tidy: ## Run go mod tidy in all adapters.
 	go mod tidy
 	for adapter in $(shell ls -d adapters/*); do sh -c "cd $${adapter} && go mod tidy"; done
-
+.PHONY: tidy
 
 .DEFAULT_GOAL := help
 help: Makefile ## Display list of available commands.
