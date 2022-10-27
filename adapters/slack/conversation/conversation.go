@@ -46,8 +46,14 @@ SlackAPIKey is an API key for authenticating with Slack.
 */
 const SlackAPIKey gosync.ConfigKey = "slack_api_key" //nolint:gosec
 
-// SlackConversationName is the Slack conversation name.
-const SlackConversationName gosync.ConfigKey = "slack_conversation_name"
+// Name is the Slack conversation name.
+const Name gosync.ConfigKey = "name"
+
+/*
+MuteRestrictedErrOnKickFromPublic mutes an error that occurs when Slack is configured to prevent kicking users from
+public conversations. Set this to true to mute this error and continue syncing.
+*/
+const MuteRestrictedErrOnKickFromPublic gosync.ConfigKey = "mute_restricted_err_kick_from_public"
 
 var (
 	// Ensure [conversation.Conversation] fully satisfies the [gosync.Adapter] interface.
@@ -65,11 +71,7 @@ type iSlackConversation interface {
 }
 
 type Conversation struct {
-	/*
-		Slack may be configured to only allow admins to kick from public conversations, which will fail the entire sync
-		job. Set to true to mute this error and continue synchronisation.
-	*/
-	MuteRestrictedErrOnKickFromPublic bool
+	MuteRestrictedErrOnKickFromPublic bool // See [conversation.MuteRestrictedErrOnKickFromPublic]
 	client                            iSlackConversation
 	conversationName                  string
 	// cache stores the Slack ID -> email mapping for use with the Remove method.
@@ -119,6 +121,12 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 	slackUsers, err := c.getListOfSlackUsernames()
 	if err != nil {
 		return nil, fmt.Errorf("slack.conversation.get.getlistofslackusernames -> %w", err)
+	}
+
+	if len(slackUsers) == 0 {
+		c.Logger.Println("Fetched no accounts from conversation")
+
+		return []string{}, nil
 	}
 
 	users, err := c.client.GetUsersInfo(slackUsers...)
@@ -228,10 +236,10 @@ Init a new Slack Conversation [gosync.Adapter].
 
 Required config:
   - [conversation.SlackAPIKey]
-  - [conversation.SlackConversationName]
+  - [conversation.Name]
 */
 func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackConversationName} {
+	for _, key := range []gosync.ConfigKey{SlackAPIKey, Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -239,5 +247,11 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 
 	client := slack.New(config[SlackAPIKey])
 
-	return New(client, config[SlackConversationName]), nil
+	adapter := New(client, config[Name])
+
+	if val, ok := config[MuteRestrictedErrOnKickFromPublic]; ok {
+		adapter.MuteRestrictedErrOnKickFromPublic = strings.ToLower(val) == "true"
+	}
+
+	return adapter, nil
 }

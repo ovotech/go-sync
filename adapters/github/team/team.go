@@ -56,7 +56,7 @@ For example:
 const GitHubOrg gosync.ConfigKey = "github_org"
 
 /*
-GitHubTeamSlug is the name of your team slug within your organisation.
+TeamSlug is the name of your team slug within your organisation.
 
 For example:
 
@@ -64,13 +64,13 @@ For example:
 
 `foobar` is the name of our team slug.
 */
-const GitHubTeamSlug gosync.ConfigKey = "github_team_slug"
+const TeamSlug gosync.ConfigKey = "team_slug"
 
 /*
-GitHubDiscovery mechanism for converting emails into GitHub users and vice versa. Supported values are:
+DiscoveryMechanism for converting emails into GitHub users and vice versa. Supported values are:
   - [saml]
 */
-const GitHubDiscovery gosync.ConfigKey = "github_discovery"
+const DiscoveryMechanism gosync.ConfigKey = "discovery_mechanism"
 
 var (
 	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
@@ -97,7 +97,7 @@ type iGitHubTeam interface {
 
 type Team struct {
 	teams     iGitHubTeam               // GitHub v3 REST API teams.
-	discovery discovery.GitHubDiscovery // GitHubDiscovery adapter to convert GH users -> emails (and vice versa).
+	discovery discovery.GitHubDiscovery // DiscoveryMechanism adapter to convert GH users -> emails (and vice versa).
 	org       string                    // GitHub organisation.
 	slug      string                    // GitHub team slug.
 	cache     map[string]string         // Cache of users.
@@ -201,7 +201,7 @@ New GitHub Team [gosync.Adapter].
 
 Recommended reading for parameters:
   - org: [team.GitHubOrg]
-  - slug: [team.GitHubTeamSlug]
+  - slug: [team.TeamSlug]
 */
 func New(
 	client *github.Client,
@@ -232,11 +232,11 @@ Init a new GitHub Team [gosync.Adapter].
 Required config:
   - [team.GitHubToken]
   - [team.GitHubOrg]
-  - [team.GitHubTeamSlug]
-  - [team.GitHubDiscovery]
+  - [team.TeamSlug]
+  - [team.DiscoveryMechanism]
 */
 func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, GitHubTeamSlug, GitHubDiscovery} {
+	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, TeamSlug, DiscoveryMechanism} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -252,12 +252,12 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 		discoverySvc   discovery.GitHubDiscovery
 	)
 
-	switch config[GitHubDiscovery] {
+	switch config[DiscoveryMechanism] {
 	case "saml":
 		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
 	default:
-		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[GitHubDiscovery])
+		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[DiscoveryMechanism])
 	}
 
-	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[GitHubTeamSlug]), nil
+	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[TeamSlug]), nil
 }

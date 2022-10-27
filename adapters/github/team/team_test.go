@@ -38,10 +38,10 @@ func ExampleInit() {
 	ctx := context.Background()
 
 	adapter, err := team.Init(ctx, map[gosync.ConfigKey]string{
-		team.GitHubToken:     "my-github-token",
-		team.GitHubOrg:       "my-org",
-		team.GitHubTeamSlug:  "my-team-slug",
-		team.GitHubDiscovery: "saml",
+		team.GitHubToken:        "my-github-token",
+		team.GitHubOrg:          "my-org",
+		team.TeamSlug:           "my-team-slug",
+		team.DiscoveryMechanism: "saml",
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -27,7 +27,7 @@ func ExampleInit() {
 
 	adapter, err := group.Init(ctx, map[gosync.ConfigKey]string{
 		group.GoogleAuthenticationMechanism: "default",
-		group.GoogleGroupName:               "my-group",
+		group.Name:                          "my-group",
 	})
 	if err != nil {
 		log.Fatal(err)

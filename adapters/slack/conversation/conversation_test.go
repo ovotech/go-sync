@@ -21,8 +21,8 @@ func ExampleInit() {
 	ctx := context.Background()
 
 	adapter, err := conversation.Init(ctx, map[gosync.ConfigKey]string{
-		conversation.SlackAPIKey:           "my-slack-token",
-		conversation.SlackConversationName: "C0123ABC456",
+		conversation.SlackAPIKey: "my-slack-token",
+		conversation.Name:        "C0123ABC456",
 	})
 	if err != nil {
 		log.Fatal(err)

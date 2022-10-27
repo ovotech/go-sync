@@ -56,8 +56,11 @@ SlackAPIKey is an API key for authenticating with Slack.
 */
 const SlackAPIKey gosync.ConfigKey = "slack_api_key" //nolint:gosec
 
-// SlackUserGroupID is the Slack UserGroup ID.
-const SlackUserGroupID gosync.ConfigKey = "slack_usergroup_id"
+// UserGroupID is the Slack UserGroup ID.
+const UserGroupID gosync.ConfigKey = "usergroup_id"
+
+// MuteGroupCannotBeEmpty silences errors when removing all users from a UserGroup.
+const MuteGroupCannotBeEmpty gosync.ConfigKey = "mute_group_cannot_be_empty"
 
 var (
 	_ gosync.Adapter = &UserGroup{} // Ensure [usergroup.UserGroup] fully satisfies the [gosync.Adapter] interface.
@@ -78,8 +81,7 @@ type UserGroup struct {
 	cache       map[string]string
 	Logger      *log.Logger
 
-	// MuteGroupCannotBeEmpty silences errors when removing all users from a UserGroup.
-	MuteGroupCannotBeEmpty bool
+	MuteGroupCannotBeEmpty bool // See [usergroup.MuteGroupCannotBeEmpty]
 }
 
 // Get email addresses in a Slack UserGroup.
@@ -220,10 +222,10 @@ Init a new Slack UserGroup [gosync.Adapter].
 
 Required config:
   - [usergroup.SlackAPIKey]
-  - [usergroup.SlackUserGroupID]
+  - [usergroup.UserGroupID]
 */
 func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, SlackUserGroupID} {
+	for _, key := range []gosync.ConfigKey{SlackAPIKey, UserGroupID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -231,5 +233,11 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 
 	client := slack.New(config[SlackAPIKey])
 
-	return New(client, config[SlackUserGroupID]), nil
+	adapter := New(client, config[UserGroupID])
+
+	if val, ok := config[MuteGroupCannotBeEmpty]; ok {
+		adapter.MuteGroupCannotBeEmpty = strings.ToLower(val) == "true"
+	}
+
+	return adapter, nil
 }

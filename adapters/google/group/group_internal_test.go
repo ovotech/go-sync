@@ -117,7 +117,7 @@ func TestGroups_Remove(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWithRole(t *testing.T) {
+func TestRole(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
@@ -131,7 +131,9 @@ func TestWithRole(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
 
-	group := New(&admin.Service{}, "test", WithRole("test-role"))
+	group := New(&admin.Service{}, "test")
+	group.Role = "test-role"
+
 	group.membersService = mockMembersService
 	group.callInsert = mockCall.callInsert
 
@@ -140,7 +142,7 @@ func TestWithRole(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestWithDeliverySettings(t *testing.T) {
+func TestDeliverySettings(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
@@ -154,7 +156,9 @@ func TestWithDeliverySettings(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
 
-	group := New(&admin.Service{}, "test", WithDeliverySettings("test-delivery-settings"))
+	group := New(&admin.Service{}, "test")
+	group.DeliverySettings = "test-delivery-settings"
+
 	group.membersService = mockMembersService
 	group.callInsert = mockCall.callInsert
 
@@ -174,14 +178,14 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "_testing_",
-			GoogleGroupName:               "name",
+			Name:                          "name",
 		})
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
 		assert.Equal(t, "name", adapter.(*Group).name)
-		assert.Equal(t, "", adapter.(*Group).deliverySettings)
-		assert.Equal(t, "", adapter.(*Group).role)
+		assert.Equal(t, "", adapter.(*Group).DeliverySettings)
+		assert.Equal(t, "", adapter.(*Group).Role)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -191,7 +195,7 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GoogleGroupName: "name",
+				Name: "name",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -206,7 +210,7 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GoogleGroupName)
+			assert.ErrorContains(t, err, Name)
 		})
 	})
 
@@ -215,7 +219,7 @@ func TestInit(t *testing.T) {
 
 		_, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "foo",
-			GoogleGroupName:               "name",
+			Name:                          "name",
 		})
 
 		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
@@ -227,12 +231,12 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "_testing_",
-			GoogleGroupName:               "name",
-			GoogleGroupRole:               "role",
+			Name:                          "name",
+			Role:                          "role",
 		})
 
 		assert.NoError(t, err)
-		assert.Equal(t, "role", adapter.(*Group).role)
+		assert.Equal(t, "role", adapter.(*Group).Role)
 	})
 
 	t.Run("delivery settings", func(t *testing.T) {
@@ -240,11 +244,11 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			GoogleAuthenticationMechanism: "_testing_",
-			GoogleGroupName:               "name",
-			GoogleGroupDeliverySettings:   "delivery",
+			Name:                          "name",
+			DeliverySettings:              "delivery",
 		})
 
 		assert.NoError(t, err)
-		assert.Equal(t, "delivery", adapter.(*Group).deliverySettings)
+		assert.Equal(t, "delivery", adapter.(*Group).DeliverySettings)
 	})
 }

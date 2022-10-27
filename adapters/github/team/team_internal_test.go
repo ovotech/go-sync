@@ -106,10 +106,10 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			GitHubToken:     "token",
-			GitHubOrg:       "org",
-			GitHubTeamSlug:  "slug",
-			GitHubDiscovery: "saml",
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "saml",
 		})
 
 		assert.NoError(t, err)
@@ -126,9 +126,9 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubOrg:       "org",
-				GitHubTeamSlug:  "slug",
-				GitHubDiscovery: "saml",
+				GitHubOrg:          "org",
+				TeamSlug:           "slug",
+				DiscoveryMechanism: "saml",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -139,9 +139,9 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubToken:     "token",
-				GitHubTeamSlug:  "slug",
-				GitHubDiscovery: "saml",
+				GitHubToken:        "token",
+				TeamSlug:           "slug",
+				DiscoveryMechanism: "saml",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -152,26 +152,26 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubToken:     "token",
-				GitHubOrg:       "org",
-				GitHubDiscovery: "saml",
+				GitHubToken:        "token",
+				GitHubOrg:          "org",
+				DiscoveryMechanism: "saml",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GitHubTeamSlug)
+			assert.ErrorContains(t, err, TeamSlug)
 		})
 
 		t.Run("missing discovery", func(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubToken:    "token",
-				GitHubOrg:      "org",
-				GitHubTeamSlug: "slug",
+				GitHubToken: "token",
+				GitHubOrg:   "org",
+				TeamSlug:    "slug",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GitHubDiscovery)
+			assert.ErrorContains(t, err, DiscoveryMechanism)
 		})
 	})
 
@@ -179,10 +179,10 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		_, err := Init(ctx, map[gosync.ConfigKey]string{
-			GitHubToken:     "token",
-			GitHubOrg:       "org",
-			GitHubTeamSlug:  "slug",
-			GitHubDiscovery: "foo",
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "foo",
 		})
 
 		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)

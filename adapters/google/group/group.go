@@ -32,13 +32,13 @@ Supported options are:
 
 [default]: https://cloud.google.com/docs/authentication/application-default-credentials
 */
-const GoogleAuthenticationMechanism gosync.ConfigKey = "google_authentication"
+const GoogleAuthenticationMechanism gosync.ConfigKey = "google_authentication_mechanism"
 
-// GoogleGroupName is the name of your Google group.
-const GoogleGroupName gosync.ConfigKey = "google_group_name"
+// Name is the name of your Google group.
+const Name gosync.ConfigKey = "name"
 
 /*
-GoogleGroupRole sets the role for new users being added to a group.
+Role sets the role for new users being added to a group.
 
 Acceptable values:
   - MANAGER
@@ -49,10 +49,10 @@ See `role` field in [reference] for more information.
 
 [reference]: https://developers.google.com/admin-sdk/directory/reference/rest/v1/members#resource:-member
 */
-const GoogleGroupRole gosync.ConfigKey = "google_group_role"
+const Role gosync.ConfigKey = "role"
 
 /*
-GoogleGroupDeliverySettings sets the delivery settings.
+DeliverySettings sets the delivery settings.
 
 Acceptable values:
   - ALL_MAIL
@@ -65,7 +65,7 @@ See `delivery_settings` field in [reference] for more information.
 
 [reference]: https://developers.google.com/admin-sdk/directory/reference/rest/v1/members#resource:-member
 */
-const GoogleGroupDeliverySettings gosync.ConfigKey = "google_group_delivery_settings"
+const DeliverySettings gosync.ConfigKey = "delivery_settings"
 
 var (
 	_ gosync.Adapter = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
@@ -99,9 +99,8 @@ type Group struct {
 	name           string
 	Logger         *log.Logger
 
-	// Custom configuration for adding emails.
-	deliverySettings string
-	role             string
+	DeliverySettings string // See [group.DeliverySettings].
+	Role             string // See [group.Role].
 
 	callList   func(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error)
 	callInsert func(ctx context.Context, call *admin.MembersInsertCall) (*admin.Member, error)
@@ -146,8 +145,8 @@ func (g *Group) Add(ctx context.Context, emails []string) error {
 	for _, email := range emails {
 		_, err := g.callInsert(ctx, g.membersService.Insert(g.name, &admin.Member{
 			Email:            email,
-			DeliverySettings: g.deliverySettings,
-			Role:             g.role,
+			DeliverySettings: g.DeliverySettings,
+			Role:             g.Role,
 		}))
 		if err != nil {
 			return fmt.Errorf("google.group.add(%s, %s) -> %w", g.name, email, err)
@@ -176,32 +175,10 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 }
 
 /*
-WithRole sets a custom role for new emails being added.
-
-See [group.GoogleGroupRole].
-*/
-func WithRole(role string) func(*Group) {
-	return func(group *Group) {
-		group.role = role
-	}
-}
-
-/*
-WithDeliverySettings sets custom deliver settings when adding emails.
-
-See [group.GoogleGroupDeliverySettings].
-*/
-func WithDeliverySettings(deliverySettings string) func(*Group) {
-	return func(group *Group) {
-		group.deliverySettings = deliverySettings
-	}
-}
-
-/*
 New Google Group [gosync.Adapter].
 
 Recommended reading for parameters:
-  - name: [group.GoogleGroupName]
+  - name: [group.Name]
 */
 func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
 	group := &Group{
@@ -226,10 +203,10 @@ Init a new Google Group [gosync.Adapter].
 
 Required config:
   - [group.GoogleAuthenticationMechanism]
-  - [group.GoogleGroupName]
+  - [group.Name]
 */
 func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, GoogleGroupName} {
+	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
@@ -258,15 +235,15 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[GoogleAuthenticationMechanism])
 	}
 
-	withFns := make([]func(*Group), 0)
+	adapter := New(client, config[Name])
 
-	if val, ok := config[GoogleGroupRole]; ok {
-		withFns = append(withFns, WithRole(val))
+	if val, ok := config[Role]; ok {
+		adapter.Role = val
 	}
 
-	if val, ok := config[GoogleGroupDeliverySettings]; ok {
-		withFns = append(withFns, WithDeliverySettings(val))
+	if val, ok := config[DeliverySettings]; ok {
+		adapter.DeliverySettings = val
 	}
 
-	return New(client, config[GoogleGroupName], withFns...), nil
+	return adapter, nil
 }

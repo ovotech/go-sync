@@ -150,6 +150,7 @@ func TestUserGroup_Remove(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -159,13 +160,14 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			SlackAPIKey:      "test",
-			SlackUserGroupID: "usergroup",
+			SlackAPIKey: "test",
+			UserGroupID: "usergroup",
 		})
 
 		assert.NoError(t, err)
 		assert.IsType(t, &UserGroup{}, adapter)
 		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupID)
+		assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -175,7 +177,7 @@ func TestInit(t *testing.T) {
 			t.Parallel()
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				SlackUserGroupID: "usergroup",
+				UserGroupID: "usergroup",
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
@@ -190,7 +192,33 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, SlackUserGroupID)
+			assert.ErrorContains(t, err, UserGroupID)
 		})
+	})
+
+	t.Run("MuteRestrictedErrOnKickFromPublic", func(t *testing.T) {
+		t.Parallel()
+
+		for _, test := range []string{"", "false", "FALSE", "False", "foobar", "test"} {
+			adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+				SlackAPIKey:            "test",
+				UserGroupID:            "usergroup",
+				MuteGroupCannotBeEmpty: test,
+			})
+
+			assert.NoError(t, err)
+			assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+		}
+
+		for _, test := range []string{"true", "True", "TRUE"} {
+			adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+				SlackAPIKey:            "test",
+				UserGroupID:            "usergroup",
+				MuteGroupCannotBeEmpty: test,
+			})
+
+			assert.NoError(t, err)
+			assert.True(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+		}
 	})
 }

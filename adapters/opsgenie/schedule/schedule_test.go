@@ -26,8 +26,8 @@ func ExampleInit() {
 	ctx := context.Background()
 
 	adapter, err := schedule.Init(ctx, map[gosync.ConfigKey]string{
-		schedule.OpsgenieAPIKey:     "default",
-		schedule.OpsgenieScheduleID: "opsgenie-schedule-id",
+		schedule.OpsgenieAPIKey: "default",
+		schedule.ScheduleID:     "opsgenie-schedule-id",
 	})
 	if err != nil {
 		log.Fatal(err)
