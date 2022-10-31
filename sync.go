@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 // Ensure Sync fully satisfies the Service interface.
@@ -24,19 +25,10 @@ const (
 	AddRemove operatingMode = "AddRemove"
 )
 
-// generateHashMap takes a list of strings and returns a hashed map of { item => true }.
-func generateHashMap(i []string) map[string]bool {
-	out := map[string]bool{}
-	for _, str := range i {
-		out[str] = true
-	}
-
-	return out
-}
-
 type Sync struct {
 	DryRun        bool            // DryRun mode calculates membership, but doesn't add or remove.
-	OperatingMode operatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
+	OperatingMode OperatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
+	CaseSensitive bool            // CaseSensitive sets if Go Sync is case-sensitive. Default is true.
 	source        Adapter         // The source adapter.
 	cache         map[string]bool // cache prevents polling the source more than once.
 	Logger        *log.Logger
@@ -47,6 +39,7 @@ func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 	sync := &Sync{
 		DryRun:        false,
 		OperatingMode: RemoveAdd,
+		CaseSensitive: true,
 		source:        source,
 		cache:         make(map[string]bool),
 		Logger:        log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
@@ -59,10 +52,25 @@ func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 	return sync
 }
 
+// generateHashMap takes a list of strings and returns a hashed map of { item => true }.
+func (s *Sync) generateHashMap(i []string) map[string]bool {
+	out := map[string]bool{}
+	for _, str := range i {
+		if s.CaseSensitive {
+			out[str] = true
+		} else {
+			out[strings.ToLower(str)] = true
+		}
+
+	}
+
+	return out
+}
+
 // getThingsToAdd determines things that should be added to the destination service.
 func (s *Sync) getThingsToAdd(things []string) []string {
 	out := make([]string, 0, len(things))
-	hashMap := generateHashMap(things)
+	hashMap := s.generateHashMap(things)
 
 	for thing := range s.cache {
 		if !hashMap[thing] {
@@ -77,7 +85,7 @@ func (s *Sync) getThingsToAdd(things []string) []string {
 func (s *Sync) getThingsToRemove(things []string) []string {
 	var out []string
 
-	hashMap := generateHashMap(things)
+	hashMap := s.generateHashMap(things)
 	for thing := range hashMap {
 		if !s.cache[thing] {
 			out = append(out, thing)
@@ -97,7 +105,7 @@ func (s *Sync) generateCache(ctx context.Context) error {
 			return fmt.Errorf("get -> %w", err)
 		}
 
-		s.cache = generateHashMap(things)
+		s.cache = s.generateHashMap(things)
 	}
 
 	return nil

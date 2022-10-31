@@ -324,4 +324,54 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			assert.Equal(t, "Remove", destination.Calls[2].Method)
 		})
 	})
+
+	t.Run("CaseSensitive", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("default", func(t *testing.T) {
+			t.Parallel()
+
+			source := NewMockAdapter(t)
+			syncService := New(source)
+
+			assert.True(t, syncService.CaseSensitive)
+		})
+
+		t.Run("true", func(t *testing.T) {
+			t.Parallel()
+
+			source := NewMockAdapter(t)
+			source.EXPECT().Get(ctx).Return([]string{"FOO"}, nil)
+
+			destination := NewMockAdapter(t)
+			destination.EXPECT().Get(ctx).Return([]string{"foo"}, nil)
+			destination.EXPECT().Add(ctx, []string{"FOO"}).Return(nil)
+			destination.EXPECT().Remove(ctx, []string{"foo"}).Return(nil)
+
+			syncService := New(source)
+			syncService.CaseSensitive = true
+
+			err := syncService.SyncWith(ctx, destination)
+
+			assert.NoError(t, err)
+		})
+
+		t.Run("false", func(t *testing.T) {
+			t.Parallel()
+
+			source := NewMockAdapter(t)
+			source.EXPECT().Get(ctx).Return([]string{"FOO", "BAR"}, nil)
+
+			destination := NewMockAdapter(t)
+			destination.EXPECT().Get(ctx).Return([]string{"foo"}, nil)
+			destination.EXPECT().Add(ctx, []string{"bar"}).Return(nil)
+
+			syncService := New(source)
+			syncService.CaseSensitive = false
+
+			err := syncService.SyncWith(ctx, destination)
+
+			assert.NoError(t, err)
+		})
+	})
 }
