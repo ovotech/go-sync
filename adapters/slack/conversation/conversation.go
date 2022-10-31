@@ -33,6 +33,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -111,6 +112,47 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 	return users, nil
 }
 
+// paginateUsersInfo requests.
+func (c *Conversation) paginateUsersInfo(slackUsers []string) (*[]slack.User, error) {
+	currentPage := 0
+	pageSize := 30
+	out := make([]slack.User, 0, cap(slackUsers))
+	totalPages := math.Floor(float64(len(slackUsers)) / float64(pageSize))
+
+	for {
+		c.Logger.Printf("Calling GetUsersInfo page %v of %v", currentPage+1, totalPages+1)
+
+		start := currentPage * pageSize
+		end := (currentPage * pageSize) + pageSize
+
+		if end > cap(slackUsers) {
+			end = cap(slackUsers)
+		}
+
+		// Get a page of slackUsers to send up to the API.
+		page := slackUsers[start:end]
+
+		// Request only the page of users.
+		users, err := c.client.GetUsersInfo(page...)
+		if err != nil {
+			return nil, fmt.Errorf("paginateusersinfo -> %w", err)
+		}
+
+		// Append the results to combined output.
+		out = append(out, *users...)
+
+		// When the output matches the number of input slack users, end the loop.
+		if len(out) == len(slackUsers) {
+			break
+		}
+
+		// Increment the current page.
+		currentPage++
+	}
+
+	return &out, nil
+}
+
 // Get email addresses in a Slack Conversation.
 func (c *Conversation) Get(_ context.Context) ([]string, error) {
 	c.Logger.Printf("Fetching accounts from Slack conversation %s", c.conversationName)
@@ -129,7 +171,7 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 		return []string{}, nil
 	}
 
-	users, err := c.client.GetUsersInfo(slackUsers...)
+	users, err := c.paginateUsersInfo(slackUsers)
 	if err != nil {
 		return nil, fmt.Errorf("slack.conversation.get.getusersinfo -> %w", err)
 	}

@@ -3,6 +3,7 @@ package conversation
 import (
 	"context"
 	"errors"
+	"fmt"
 	"testing"
 
 	gosync "github.com/ovotech/go-sync"
@@ -54,6 +55,49 @@ func TestConversation_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.ElementsMatch(t, accounts, []string{"foo@email", "bar@email"})
 	assert.Equal(t, map[string]string{"foo@email": "foo", "bar@email": "bar"}, adapter.cache)
+}
+
+func TestConversation_Get_Pagination(t *testing.T) {
+	t.Parallel()
+
+	slackClient := newMockISlackConversation(t)
+	adapter := New(&slack.Client{}, "test")
+	adapter.client = slackClient
+
+	incrementingSlice := make([]string, 60)
+	firstPage := make([]interface{}, 30)
+	secondPage := make([]interface{}, 30)
+	firstResponse := make([]slack.User, 30)
+	secondResponse := make([]slack.User, 30)
+
+	for idx := range incrementingSlice {
+		incrementingSlice[idx] = fmt.Sprint(idx)
+
+		if idx < 30 {
+			firstPage[idx] = fmt.Sprint(idx)
+			firstResponse[idx] = slack.User{
+				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+			}
+		} else {
+			secondPage[idx-30] = fmt.Sprint(idx)
+			secondResponse[idx-30] = slack.User{
+				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+			}
+		}
+	}
+
+	slackClient.EXPECT().GetUsersInConversation(&slack.GetUsersInConversationParameters{
+		ChannelID: "test",
+		Cursor:    "",
+		Limit:     50,
+	}).Return(incrementingSlice, "", nil)
+
+	slackClient.EXPECT().GetUsersInfo(firstPage...).Return(&firstResponse, nil)
+	slackClient.EXPECT().GetUsersInfo(secondPage...).Return(&secondResponse, nil)
+
+	_, err := adapter.Get(context.TODO())
+
+	assert.NoError(t, err)
 }
 
 func TestConversation_Add(t *testing.T) {
