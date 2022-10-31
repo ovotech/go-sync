@@ -55,13 +55,13 @@ func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 // generateHashMap takes a list of strings and returns a hashed map of { item => true }.
 func (s *Sync) generateHashMap(i []string) map[string]bool {
 	out := map[string]bool{}
+
 	for _, str := range i {
 		if s.CaseSensitive {
 			out[str] = true
 		} else {
 			out[strings.ToLower(str)] = true
 		}
-
 	}
 
 	return out
