@@ -11,18 +11,18 @@ import (
 // Ensure Sync fully satisfies the Service interface.
 var _ Service = &Sync{}
 
-// operatingMode specifies how Sync operates, which sync operations are run and in what order.
-type operatingMode string
+// OperatingMode specifies how Sync operates, which sync operations are run and in what order.
+type OperatingMode string
 
 const (
 	// AddOnly only runs add operations.
-	AddOnly operatingMode = "Add"
+	AddOnly OperatingMode = "Add"
 	// RemoveOnly only runs remove operations.
-	RemoveOnly operatingMode = "Remove"
+	RemoveOnly OperatingMode = "Remove"
 	// RemoveAdd first removes things, then adds them.
-	RemoveAdd operatingMode = "RemoveAdd"
+	RemoveAdd OperatingMode = "RemoveAdd"
 	// AddRemove first adds things, then removes them.
-	AddRemove operatingMode = "AddRemove"
+	AddRemove OperatingMode = "AddRemove"
 )
 
 type Sync struct {
