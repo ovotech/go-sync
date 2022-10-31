@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/google
 go 1.18
 
 require (
-	github.com/ovotech/go-sync v0.7.0
+	github.com/ovotech/go-sync v0.8.0
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/api v0.101.0
 )
@@ -16,7 +16,6 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.0 // indirect
 	github.com/googleapis/gax-go/v2 v2.6.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/objx v0.5.0 // indirect
 	go.opencensus.io v0.23.0 // indirect
