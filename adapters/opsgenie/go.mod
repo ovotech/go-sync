@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.13
-	github.com/ovotech/go-sync v0.8.0
+	github.com/ovotech/go-sync v0.9.1
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 )
