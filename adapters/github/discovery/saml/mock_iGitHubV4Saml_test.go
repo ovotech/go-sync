@@ -41,9 +41,9 @@ type mockIGitHubV4Saml_Query_Call struct {
 }
 
 // Query is a helper method to define mock.On call
-//  - ctx context.Context
-//  - q interface{}
-//  - variables map[string]interface{}
+//   - ctx context.Context
+//   - q interface{}
+//   - variables map[string]interface{}
 func (_e *mockIGitHubV4Saml_Expecter) Query(ctx interface{}, q interface{}, variables interface{}) *mockIGitHubV4Saml_Query_Call {
 	return &mockIGitHubV4Saml_Query_Call{Call: _e.mock.On("Query", ctx, q, variables)}
 }

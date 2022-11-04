@@ -51,8 +51,8 @@ type mockIOpsgenieSchedule_Get_Call struct {
 }
 
 // Get is a helper method to define mock.On call
-//  - ctx context.Context
-//  - request *opsgenie_go_sdk_v2schedule.GetRequest
+//   - ctx context.Context
+//   - request *opsgenie_go_sdk_v2schedule.GetRequest
 func (_e *mockIOpsgenieSchedule_Expecter) Get(ctx interface{}, request interface{}) *mockIOpsgenieSchedule_Get_Call {
 	return &mockIOpsgenieSchedule_Get_Call{Call: _e.mock.On("Get", ctx, request)}
 }
@@ -98,8 +98,8 @@ type mockIOpsgenieSchedule_UpdateRotation_Call struct {
 }
 
 // UpdateRotation is a helper method to define mock.On call
-//  - ctx context.Context
-//  - request *opsgenie_go_sdk_v2schedule.UpdateRotationRequest
+//   - ctx context.Context
+//   - request *opsgenie_go_sdk_v2schedule.UpdateRotationRequest
 func (_e *mockIOpsgenieSchedule_Expecter) UpdateRotation(ctx interface{}, request interface{}) *mockIOpsgenieSchedule_UpdateRotation_Call {
 	return &mockIOpsgenieSchedule_UpdateRotation_Call{Call: _e.mock.On("UpdateRotation", ctx, request)}
 }

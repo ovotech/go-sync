@@ -63,11 +63,13 @@ func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint:dupl
 	}
 
 	gitHubClient.EXPECT().Query(ctx, mock.Anything, map[string]interface{}{
-		"login": githubv4.String("foo"), "org": githubv4.String("test")},
+		"login": githubv4.String("foo"), "org": githubv4.String("test"),
+	},
 	).Run(queryFn("foo@email")).
 		Return(nil)
 	gitHubClient.EXPECT().Query(ctx, mock.Anything, map[string]interface{}{
-		"login": githubv4.String("bar"), "org": githubv4.String("test")},
+		"login": githubv4.String("bar"), "org": githubv4.String("test"),
+	},
 	).Run(queryFn("bar@email")).
 		Return(nil)
 
@@ -118,10 +120,12 @@ func TestSaml_GetUsernameFromEmail(t *testing.T) { //nolint:dupl
 	}
 
 	gitHubClient.EXPECT().Query(ctx, mock.Anything, map[string]interface{}{
-		"email": githubv4.String("foo@email"), "org": githubv4.String("test")},
+		"email": githubv4.String("foo@email"), "org": githubv4.String("test"),
+	},
 	).Run(queryFn("foo")).Return(nil)
 	gitHubClient.EXPECT().Query(ctx, mock.Anything, map[string]interface{}{
-		"email": githubv4.String("bar@email"), "org": githubv4.String("test")},
+		"email": githubv4.String("bar@email"), "org": githubv4.String("test"),
+	},
 	).Run(queryFn("bar")).
 		Return(nil)
 

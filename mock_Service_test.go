@@ -41,8 +41,8 @@ type MockService_SyncWith_Call struct {
 }
 
 // SyncWith is a helper method to define mock.On call
-//  - ctx context.Context
-//  - adapter Adapter
+//   - ctx context.Context
+//   - adapter Adapter
 func (_e *MockService_Expecter) SyncWith(ctx interface{}, adapter interface{}) *MockService_SyncWith_Call {
 	return &MockService_SyncWith_Call{Call: _e.mock.On("SyncWith", ctx, adapter)}
 }
