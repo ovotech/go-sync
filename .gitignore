@@ -1,3 +1,14 @@
+# macOS metadata
 .DS_Store
 
-go.work.sum
+# Go workspace - checksums for necessary leftover modules
+/go.work.sum
+
+# Binaries
+/hack/bin/
+
+# Makefile things
+/tmp/
+
+# Output from 'go-junit-report'
+/report.xml
