@@ -51,10 +51,10 @@ We've built a command-line tool to automatically scaffold a new adapter: <https:
 package myadapter
 
 import (
- "context"
- "errors"
- "fmt"
- "github.com/ovotech/go-sync/pkg/ports"
+	"context"
+	"errors"
+	"fmt"
+	"github.com/ovotech/go-sync/pkg/ports"
 )
 
 // Ensure the adapter type fully satisfies the ports.Adapter interface.
@@ -65,19 +65,19 @@ var ErrNotImplemented = errors.New("not implemented")
 type MyAdapter struct{}
 
 func New() *MyAdapter {
- return &MyAdapter {}
+	return &MyAdapter {}
 }
 
 func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
- return nil, fmt.Errorf("myadapter.get -> %w", ErrNotImplemented)
+	return nil, fmt.Errorf("myadapter.get -> %w", ErrNotImplemented)
 }
 
 func (m *MyAdapter) Add(_ context.Context, _ []string) error {
- return fmt.Errorf("myadapter.add -> %w", ErrNotImplemented)
+	return fmt.Errorf("myadapter.add -> %w", ErrNotImplemented)
 }
 
 func (m *MyAdapter) Remove(_ context.Context, _ []string) error {
- return fmt.Errorf("myadapter.remove -> %w", ErrNotImplemented)
+	return fmt.Errorf("myadapter.remove -> %w", ErrNotImplemented)
 }
 ```
 
@@ -95,7 +95,7 @@ Go Sync's error handling convention is to wrap all errors:
 
 ```go
 if err != nil {
-    return fmt.Errorf("some.context.here -> %w", err)
+	return fmt.Errorf("some.context.here -> %w", err)
 }
 ```
 

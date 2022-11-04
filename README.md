@@ -51,18 +51,18 @@ source := myAdapter.New(client, "some-value")
 
 // Initialise an adapter using an Init function.
 destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
- myAdapter.Token:     "some-token",
- myAdapter.Something: "some-value",
+	myAdapter.Token:     "some-token",
+	myAdapter.Something: "some-value",
 })
 if err != nil {
-    log.Fatal(err)
+	log.Fatal(err)
 }
 
 sync := gosync.New(source)
 
 err := sync.SyncWith(context.Background(), destination)
 if err != nil {
-    log.Fatal(err)
+	log.Fatal(err)
 }
 ```
 
