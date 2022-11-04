@@ -93,11 +93,7 @@ hack/bin/mockery:
 
 hack/bin/yq:
 > mkdir -p $(@D)
-> os="$(shell uname -s | tr '[:upper:]' '[:lower:]')"
-> arch="$(shell uname -m)"
-> curl --fail --location --output $@ --remove-on-error --show-error --silent \
-  "https://github.com/mikefarah/yq/releases/latest/download/yq_$${os}_$${arch}"
-> chmod +x $@
+> GOBIN=$(CURDIR)/hack/bin go install github.com/mikefarah/yq/v4@latest
 
 # Tests look for sentinel files to determine whether or not they need to be run again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a retest.
