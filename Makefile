@@ -45,7 +45,7 @@ MAKEFLAGS += --jobs
 ADAPTERS := $(shell find adapters -depth 1 -type d | awk '{ print "./"$$1"/..." }')
 
 # Configure an 'all' target to cover the bases.
-all: test lint build ## Test and lint and build.
+all: generate test lint build ## Generate and test and lint and build.
 .PHONY: all
 
 help: Makefile ## Display list of available commands.
@@ -97,19 +97,19 @@ hack/bin/yq:
 
 # Tests look for sentinel files to determine whether or not they need to be run again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a retest.
-test: tmp/.tests-passed.sentinel ## Run tests.
-test-cover: tmp/.cover-tests-passed.sentinel ## Run all tests with the race detector and output a coverage profile.
+test: tmp/.tests-passed.sentinel ## Run tests. Will also generate.
+test-cover: tmp/.cover-tests-passed.sentinel ## Run all tests with the race detector, and output a coverage profile.
 bench: tmp/.benchmarks-ran.sentinel ## Run enough iterations of each benchmark to take ten seconds each.
 report: tmp/.report-ran.sentinel ## Test and produce a JUnit report.
 .PHONY: test test-cover bench report
 
 # Linter checks look for sentinel files to determine whether or not they need to check again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a rerun.
-lint: tmp/.linted.sentinel ## Lint all of the Go code. Will also test.
+lint: tmp/.linted.sentinel ## Lint all of the Go code. Will also generate and test.
 .PHONY: lint
 
 # If any Go code file has been changed since the binary was last built, it will trigger a rebuild.
-build: tmp/.built.sentinel ## Build the library. Will also test and lint.
+build: tmp/.built.sentinel ## Build the library. Will also generate, test, and lint.
 .PHONY: build
 
 clean: ## Clean up Go's output (if any), test coverage data, Go workspace checksums, and output and temp sub-directories.
@@ -125,7 +125,7 @@ clean-all: clean clean-hack ## Clean all of the things.
 .PHONY: clean-all
 
 # Tests - re-run if any Go files have changes since 'tmp/.tests-passed.sentinel' was last touched.
-tmp/.tests-passed.sentinel: $(GO_FILES)
+tmp/.tests-passed.sentinel: generate $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v ./... $(ADAPTERS)
 > touch $@
