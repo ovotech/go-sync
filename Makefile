@@ -48,7 +48,7 @@ ADAPTERS := $(shell find adapters -depth 1 -type d | awk '{ print "./"$$1"/..." 
 all: generate test lint build ## Generate and test and lint and build.
 .PHONY: all
 
-help: Makefile ## Display list of available commands.
+help: Makefile ## Display this list of available Make targets.
 > @grep -E '(^[a-zA-Z/_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) | sort | awk 'BEGIN { FS = ":.*?## " }; { printf "\033[32m%-30s\033[0m %s\n", $$1, $$2 }' | sed -e 's/\[32m##/[33m/'
 .PHONY: help
 
@@ -100,7 +100,7 @@ hack/bin/yq:
 test: tmp/.tests-passed.sentinel ## Run tests. Will also generate.
 test-cover: tmp/.cover-tests-passed.sentinel ## Run all tests with the race detector, and output a coverage profile.
 bench: tmp/.benchmarks-ran.sentinel ## Run enough iterations of each benchmark to take ten seconds each.
-report: tmp/.report-ran.sentinel ## Test and produce a JUnit report.
+report: tmp/.report-ran.sentinel ## Run tests, and produce a JUnit report.
 .PHONY: test test-cover bench report
 
 # Linter checks look for sentinel files to determine whether or not they need to check again.
