@@ -6,10 +6,11 @@ import (
 	"strings"
 	"testing"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 func TestNew(t *testing.T) {

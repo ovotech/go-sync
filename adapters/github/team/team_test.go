@@ -5,11 +5,12 @@ import (
 	"log"
 
 	"github.com/google/go-github/v47/github"
+	"github.com/shurcooL/githubv4"
+	"golang.org/x/oauth2"
+
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 	"github.com/ovotech/go-sync/adapters/github/team"
-	"github.com/shurcooL/githubv4"
-	"golang.org/x/oauth2"
 )
 
 func ExampleNew() {

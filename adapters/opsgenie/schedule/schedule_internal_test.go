@@ -9,9 +9,10 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 var errResponse = errors.New("an example error")

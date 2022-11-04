@@ -4,9 +4,10 @@ import (
 	"context"
 	"log"
 
+	"github.com/slack-go/slack"
+
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/slack/usergroup"
-	"github.com/slack-go/slack"
 )
 
 func ExampleNew() {

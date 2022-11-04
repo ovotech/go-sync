@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/google/go-github/v47/github"
-	gosync "github.com/ovotech/go-sync"
-	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	gosync "github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 )
 
 func TestNew(t *testing.T) {

@@ -8,8 +8,9 @@ import (
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 var errGetOnCall = errors.New("an example error")
