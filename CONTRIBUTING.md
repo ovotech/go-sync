@@ -15,23 +15,21 @@ We also run the following tooling to ensure code quality:
 
 1. [golangci-lint](https://golangci-lint.run/) for code quality.
 2. [mockery](https://github.com/vektra/mockery) generates mocks for easy testing.
-   ```sh
-   go install github.com/vektra/mockery/v2@latest
-   ```
 3. [gci](https://github.com/daixiang0/gci) for consistent, deterministic imports.
-   ```shell
-   go install github.com/daixiang0/gci@latest
-   ```
 
 We run linters to ensure that code being checked in matches our quality standards, and have included a Makefile in this
-repo containing common commands to assist with this. 
+repo containing common commands to assist with this.
+All tools necessary to action the various Makefile targets will be automatically installed on-demand under the
+`hack/bin/` sub-directory within this project.
 
-| Command              | Description                         |
-|----------------------|-------------------------------------|
-| `make` / `make help` | Display list of available commands. |
-| `make lint`          | Lint Go Sync.                       |
-| `make fix`           | Fix some common linter errors.      |
-| `make generate`      | Generate automated code.            |
+| Command         | Description                    |
+| --------------- | ------------------------------ |
+| `make generate` | Generate automated code.       |
+| `make lint`     | Lint Go Sync.                  |
+| `make lint-fix` | Fix some common linter errors. |
+
+The above is a small subset of available Makefile targets.
+Running `make` or `make help` will display a more complete list of available targets.
 
 ## Developing an adapter 🔌
 An adapter's basic functionality is to provide a common interface to a third party service. In order to keep 
