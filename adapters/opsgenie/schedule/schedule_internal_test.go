@@ -63,7 +63,7 @@ func testBuildScheduleGetResult(numRotations int, emails ...string) *schedule.Ge
 	rotations := make([]og.Rotation, numRotations)
 
 	for index, rotationEmails := range chunkedEmails {
-		participants := make([]og.Participant, len(rotationEmails))
+		participants := make([]og.Participant, 0, len(rotationEmails))
 		for _, email := range rotationEmails {
 			participants = append(participants, og.Participant{
 				Type:     og.User,
