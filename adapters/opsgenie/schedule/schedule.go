@@ -29,8 +29,9 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	ogSchedule "github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	gosync "github.com/ovotech/go-sync"
 	"golang.org/x/exp/slices"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 /*

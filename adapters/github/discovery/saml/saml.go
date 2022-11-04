@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ovotech/go-sync/adapters/github/discovery"
 	"github.com/shurcooL/githubv4"
+
+	"github.com/ovotech/go-sync/adapters/github/discovery"
 )
 
 // Ensure the Saml adapter type fully satisfies the discovery.GitHubDiscovery interface.

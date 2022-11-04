@@ -19,9 +19,10 @@ import (
 	"log"
 	"os"
 
-	gosync "github.com/ovotech/go-sync"
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/option"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 /*

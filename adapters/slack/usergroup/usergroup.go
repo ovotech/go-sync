@@ -47,8 +47,9 @@ import (
 	"strings"
 	"time"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 /*

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	admin "google.golang.org/api/admin/directory/v1"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 type mockCalls struct {

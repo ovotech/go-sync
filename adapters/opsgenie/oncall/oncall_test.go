@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
+
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/opsgenie/oncall"
 )

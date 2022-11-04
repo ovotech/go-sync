@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"testing"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 func TestNew(t *testing.T) {
