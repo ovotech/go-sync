@@ -1,5 +1,5 @@
 | **⚠️ Go Sync is under active development and subject to breaking changes.** |
-|-----------------------------------------------------------------------------|
+| -------------------------------------------------------------------------- |
 
 # Go Sync (all the things)
 
@@ -31,14 +31,16 @@ go get github.com/ovotech/go-sync@latest
 go get github.com/ovotech/go-sync/adapters/slack@latest
 ```
 
-You're ready to Go Sync 🎉
+You're ready to Go Sync! 🎉
 
 ## Usage
-[Read the documentation on pkg.go.dev](https://pkg.go.dev/github.com/ovotech/go-sync)
+
+Read the [documentation on `pkg.go.dev`](https://pkg.go.dev/github.com/ovotech/go-sync).
 
 Go Sync consists of two fundamental parts:
+
 1. [Sync](#sync-)
-2. [Adapters ](#adaptersadapters-)
+2. [Adapters](#adapters-)
 
 As long as your adapters are compatible, you can synchronise anything.
 
@@ -49,8 +51,8 @@ source := myAdapter.New(client, "some-value")
 
 // Initialise an adapter using an Init function.
 destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
-	myAdapter.Token:     "some-token", 
-	myAdapter.Something: "some-value",
+ myAdapter.Token:     "some-token",
+ myAdapter.Something: "some-value",
 })
 if err != nil {
     log.Fatal(err)
@@ -65,11 +67,13 @@ if err != nil {
 ```
 
 ### Init
-While we recommend using `New` to create an adapter in most cases, some plugins may provide an`Init` function for
+
+While we recommend using `New` to create an adapter in most cases, some plugins may provide an `Init` function for
 instantiating them too. Init functions are intended for programmatically creating adapters either via environment
 variables or some other dynamic configuration.
 
 ## Sync 🔄
+
 Sync is the logic that powers the automation. It accepts a source adapter, and synchronises it with destination
 adapters.
 
@@ -83,8 +87,10 @@ Sync is only uni-directional by design. You know where your things are, and wher
 5. Repeat from 2 for further adapters.
 
 ## [Adapters](./adapters) 🔌
-Adapters provide a common interface to services. Adapters must implement our [Adapter interface](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter)
-and functionally perform 3 things:
+
+Adapters provide a common interface to services.
+Adapters must implement our [Adapter interface](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter) and functionally
+perform 3 things:
 
 1. Get the things.
 2. Add some things.
