@@ -15,9 +15,11 @@ jobs:
         with:
           go-version-file: 'go.mod'
           cache: true
-      - name: make fix
+
+      - name: make lint-fix
         run: |
-          make fix
+          make lint-fix
+
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v12.0
