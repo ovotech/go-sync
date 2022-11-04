@@ -159,7 +159,7 @@ func (t *Team) Add(ctx context.Context, emails []string) error {
 	}
 
 	for _, name := range names {
-		var opts = &github.TeamAddTeamMembershipOptions{
+		opts := &github.TeamAddTeamMembershipOptions{
 			Role: "member",
 		}
 

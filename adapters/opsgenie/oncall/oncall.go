@@ -89,7 +89,6 @@ func (o *OnCall) Remove(_ context.Context, _ []string) error {
 // New Opsgenie OnCall [gosync.Adapter].
 func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *OnCall)) (*OnCall, error) {
 	scheduleClient, err := schedule.NewClient(opsgenieConfig)
-
 	if err != nil {
 		return nil, fmt.Errorf("opsgenie.oncall.new -> %w", err)
 	}
