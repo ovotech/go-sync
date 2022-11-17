@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/google/go-github/v47 v47.1.0
-	github.com/ovotech/go-sync v0.9.1
+	github.com/ovotech/go-sync v0.10.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
