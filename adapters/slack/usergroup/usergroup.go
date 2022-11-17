@@ -43,6 +43,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -85,6 +86,47 @@ type UserGroup struct {
 	MuteGroupCannotBeEmpty bool // See [usergroup.MuteGroupCannotBeEmpty]
 }
 
+// paginateUsersInfo requests.
+func (u *UserGroup) paginateUsersInfo(ctx context.Context, slackUsers ...string) (*[]slack.User, error) {
+	currentPage := 0
+	pageSize := 30
+	out := make([]slack.User, 0, cap(slackUsers))
+	totalPages := math.Floor(float64(len(slackUsers)) / float64(pageSize))
+
+	for {
+		u.Logger.Printf("Calling GetUsersInfo page %v of %v", currentPage+1, totalPages+1)
+
+		start := currentPage * pageSize
+		end := (currentPage * pageSize) + pageSize
+
+		if end > cap(slackUsers) {
+			end = cap(slackUsers)
+		}
+
+		// Get a page of slackUsers to send up to the API.
+		page := slackUsers[start:end]
+
+		// Request only the page of users.
+		users, err := u.client.GetUsersInfoContext(ctx, page...)
+		if err != nil {
+			return nil, fmt.Errorf("paginateusersinfo -> %w", err)
+		}
+
+		// Append the results to combined output.
+		out = append(out, *users...)
+
+		// When the output matches the number of input slack users, end the loop.
+		if len(out) == len(slackUsers) {
+			break
+		}
+
+		// Increment the current page.
+		currentPage++
+	}
+
+	return &out, nil
+}
+
 // Get email addresses in a Slack UserGroup.
 func (u *UserGroup) Get(ctx context.Context) ([]string, error) {
 	u.Logger.Printf("Fetching accounts from Slack UserGroup %s", u.userGroupID)
@@ -99,7 +141,7 @@ func (u *UserGroup) Get(ctx context.Context) ([]string, error) {
 	}
 
 	// Get the user info for each of the users.
-	users, err := u.client.GetUsersInfoContext(ctx, groupMembers...)
+	users, err := u.paginateUsersInfo(ctx, groupMembers...)
 	if err != nil {
 		return nil, fmt.Errorf("slack.usergroup.get.getusersinfo -> %w", err)
 	}
