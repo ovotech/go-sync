@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/google
 go 1.18
 
 require (
-	github.com/ovotech/go-sync v0.9.1
+	github.com/ovotech/go-sync v0.10.0
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/api v0.103.0
 )
