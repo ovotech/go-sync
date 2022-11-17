@@ -1,5 +1,14 @@
 /*
-Package team synchronises teams with Terraform Cloud.
+Package team synchronises teams with a Terraform Cloud organisation.
+
+# Requirements
+
+In order to synchronise with Terraform cloud, you will need an Organization API token:
+https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens#organization-api-tokens
+
+# Examples
+
+See [New] and [Init].
 */
 package team
 
@@ -93,7 +102,7 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 }
 
 // New Team [gosync.adapter].
-func New(client tfe.Client, organisation string) *Team {
+func New(client *tfe.Client, organisation string) *Team {
 	return &Team{
 		teams:        client.Teams,
 		organisation: organisation,
@@ -121,5 +130,5 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 		return nil, fmt.Errorf("team.init.newclient -> %w", err)
 	}
 
-	return New(*client, config[Organisation]), nil
+	return New(client, config[Organisation]), nil
 }
