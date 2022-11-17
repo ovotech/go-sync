@@ -194,8 +194,8 @@ generate: hack/bin/mockery ## Generate mocks.
 .PHONY: generate
 
 ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
-> for adapter in $(shell find adapters -depth 1 -type d); do
->   git tag $${adapter#*/}/$${RELEASE_VERSION:?}
+> for adapter in $(shell ls -d adapters/*); do
+>   git tag $${adapter}/$${RELEASE_VERSION:?}
 > done
 .PHONY: ci/tag-adapters
 
