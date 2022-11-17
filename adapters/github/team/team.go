@@ -27,6 +27,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/google/go-github/v47/github"
 	"github.com/shurcooL/githubv4"
@@ -72,6 +73,11 @@ DiscoveryMechanism for converting emails into GitHub users and vice versa. Suppo
   - [saml]
 */
 const DiscoveryMechanism gosync.ConfigKey = "discovery_mechanism"
+
+/*
+SamlMuteUserNotFoundErr mutes the UserNotFoundErr if SAML discovery fails to discover a user from GitHub.
+*/
+const SamlMuteUserNotFoundErr gosync.ConfigKey = "saml_mute_user_not_found_err"
 
 var (
 	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
@@ -256,6 +262,10 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 	switch config[DiscoveryMechanism] {
 	case "saml":
 		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
+
+		if strings.ToLower(config[SamlMuteUserNotFoundErr]) == "true" {
+			discoverySvc.(*saml.Saml).MuteUserNotFoundErr = true
+		}
 	default:
 		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[DiscoveryMechanism])
 	}
