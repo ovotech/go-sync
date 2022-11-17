@@ -17,33 +17,37 @@ type iGitHubV4Saml interface {
 	Query(ctx context.Context, q interface{}, variables map[string]interface{}) error
 }
 
+type emailQueryEdge struct {
+	Node struct {
+		SamlIdentity struct {
+			NameID string
+		}
+	}
+}
+
 type emailQuery struct {
 	Organization struct {
 		SamlIdentityProvider struct {
 			ExternalIdentities struct {
-				Edges []struct {
-					Node struct {
-						SamlIdentity struct {
-							NameID string
-						}
-					}
-				}
+				Edges []emailQueryEdge
 			} `graphql:"externalIdentities(login: $login, first: 1)"`
 		}
 	} `graphql:"organization(login: $org)"`
+}
+
+type usernameQueryEdge struct {
+	Node struct {
+		User struct {
+			Login string
+		}
+	}
 }
 
 type usernameQuery struct {
 	Organization struct {
 		SamlIdentityProvider struct {
 			ExternalIdentities struct {
-				Edges []struct {
-					Node struct {
-						User struct {
-							Login string
-						}
-					}
-				}
+				Edges []usernameQueryEdge
 			} `graphql:"externalIdentities(userName: $email, first: 1)"`
 		}
 	} `graphql:"organization(login: $org)"`
@@ -53,15 +57,17 @@ type usernameQuery struct {
 var ErrUserNotFound = errors.New("user_not_found")
 
 type Saml struct {
-	client iGitHubV4Saml
-	org    string // GitHub organisation.
+	client              iGitHubV4Saml
+	org                 string // GitHub organisation.
+	MuteUserNotFoundErr bool   // Mutes the `user_not_found` error if the user cannot be discovered.
 }
 
 // New instantiates a new GitHub SAML discovery adapter for use with GitHub adapters.
 func New(client *githubv4.Client, org string, optsFn ...func(*Saml)) *Saml {
 	saml := &Saml{
-		client: client,
-		org:    org,
+		client:              client,
+		org:                 org,
+		MuteUserNotFoundErr: false,
 	}
 
 	for _, fn := range optsFn {
@@ -88,14 +94,14 @@ func (s *Saml) GetEmailFromUsername(ctx context.Context, logins []string) ([]str
 			return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> graphql query error -> %w", login, err)
 		}
 
-		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) != 1 {
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 1 {
+			emails = append(
+				emails,
+				query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.SamlIdentity.NameID,
+			)
+		} else if !s.MuteUserNotFoundErr {
 			return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> unknown identity -> %w", login, ErrUserNotFound)
 		}
-
-		emails = append(
-			emails,
-			query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.SamlIdentity.NameID,
-		)
 	}
 
 	return emails, nil
@@ -117,11 +123,11 @@ func (s *Saml) GetUsernameFromEmail(ctx context.Context, emails []string) ([]str
 			return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> graphql query error -> %w", email, err)
 		}
 
-		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) != 1 {
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 1 {
+			ids = append(ids, query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.User.Login)
+		} else if !s.MuteUserNotFoundErr {
 			return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> %w", email, ErrUserNotFound)
 		}
-
-		ids = append(ids, query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.User.Login)
 	}
 
 	return ids, nil
