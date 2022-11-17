@@ -6,4 +6,5 @@ use (
 	./adapters/google
 	./adapters/opsgenie
 	./adapters/slack
+	./adapters/terraformcloud
 )
