@@ -3,6 +3,7 @@ package usergroup
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -48,6 +49,47 @@ func TestUserGroup_Get(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, []string{"foo@email", "bar@email"}, users)
+}
+
+func TestUserGroup_Get_Pagination(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.TODO()
+
+	slackClient := newMockISlackUserGroup(t)
+	adapter := New(&slack.Client{}, "test")
+	adapter.client = slackClient
+
+	incrementingSlice := make([]string, 60)
+	firstPage := make([]interface{}, 30)
+	secondPage := make([]interface{}, 30)
+	firstResponse := make([]slack.User, 30)
+	secondResponse := make([]slack.User, 30)
+
+	for idx := range incrementingSlice {
+		incrementingSlice[idx] = fmt.Sprint(idx)
+
+		if idx < 30 {
+			firstPage[idx] = fmt.Sprint(idx)
+			firstResponse[idx] = slack.User{
+				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+			}
+		} else {
+			secondPage[idx-30] = fmt.Sprint(idx)
+			secondResponse[idx-30] = slack.User{
+				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+			}
+		}
+	}
+
+	slackClient.EXPECT().GetUserGroupMembersContext(ctx, "test").Return(incrementingSlice, nil)
+
+	slackClient.EXPECT().GetUsersInfoContext(ctx, firstPage...).Return(&firstResponse, nil)
+	slackClient.EXPECT().GetUsersInfoContext(ctx, secondPage...).Return(&secondResponse, nil)
+
+	_, err := adapter.Get(ctx)
+
+	assert.NoError(t, err)
 }
 
 func TestUserGroup_Add(t *testing.T) {
