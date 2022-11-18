@@ -34,7 +34,7 @@ var (
 	_ gosync.InitFn  = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
-// iTeams is a subset of the Terraform Enterprise Teams Client, and used to build mocks for easy testing.
+// iTeams is a subset of Terraform Enterprise Teams, and used to build mocks for easy testing.
 type iTeams interface {
 	List(ctx context.Context, organization string, options *tfe.TeamListOptions) (*tfe.TeamList, error)
 	Create(ctx context.Context, organization string, options tfe.TeamCreateOptions) (*tfe.Team, error)
@@ -69,11 +69,13 @@ func (t *Team) Get(ctx context.Context) ([]string, error) {
 	return teams, nil
 }
 
-// Add things to Team service.
+// Add teams to a Terraform Cloud organisation.
 func (t *Team) Add(ctx context.Context, teams []string) error {
 	t.Logger.Printf("Adding %s to Terraform Cloud organisation %s", teams, t.organisation)
 
 	for _, team := range teams {
+		team := team
+
 		_, err := t.teams.Create(ctx, t.organisation, tfe.TeamCreateOptions{Name: &team})
 		if err != nil {
 			return fmt.Errorf("terraformcloud.team.add -> %w", err)
@@ -85,7 +87,7 @@ func (t *Team) Add(ctx context.Context, teams []string) error {
 	return nil
 }
 
-// Remove things from Team service.
+// Remove teams from a Terraform Cloud organisation.
 func (t *Team) Remove(ctx context.Context, teams []string) error {
 	t.Logger.Printf("Removing %s from Terraform Cloud organisation %s", teams, t.organisation)
 
@@ -101,7 +103,7 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 	return nil
 }
 
-// New Team [gosync.adapter].
+// New Terraform Cloud Team [gosync.adapter].
 func New(client *tfe.Client, organisation string) *Team {
 	return &Team{
 		teams:        client.Teams,
