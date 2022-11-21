@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -24,14 +23,32 @@ func TestTeam_Get(t *testing.T) {
 	adapter := New(&tfe.Client{}, "test")
 	adapter.teams = iTeamsClient
 
-	iTeamsClient.EXPECT().List(ctx, "test", mock.Anything).Return(&tfe.TeamList{
+	iTeamsClient.EXPECT().List(ctx, "test", &tfe.TeamListOptions{
+		ListOptions: tfe.ListOptions{PageNumber: 1},
+	}).Return(&tfe.TeamList{
+		Pagination: &tfe.Pagination{
+			CurrentPage: 1,
+			NextPage:    2,
+			TotalPages:  2,
+		},
 		Items: []*tfe.Team{{Name: "foo"}, {Name: "bar"}},
+	}, nil)
+
+	iTeamsClient.EXPECT().List(ctx, "test", &tfe.TeamListOptions{
+		ListOptions: tfe.ListOptions{PageNumber: 2},
+	}).Return(&tfe.TeamList{
+		Pagination: &tfe.Pagination{
+			CurrentPage: 2,
+			NextPage:    2,
+			TotalPages:  2,
+		},
+		Items: []*tfe.Team{{Name: "fizz"}, {Name: "buzz"}},
 	}, nil)
 
 	things, err := adapter.Get(ctx)
 
 	assert.NoError(t, err)
-	assert.ElementsMatch(t, things, []string{"foo", "bar"})
+	assert.ElementsMatch(t, things, []string{"foo", "bar", "fizz", "buzz"})
 }
 
 func TestTeam_Add(t *testing.T) {
