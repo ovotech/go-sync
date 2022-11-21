@@ -48,20 +48,45 @@ type Team struct {
 	Logger       *log.Logger
 }
 
+// getOrgIDsFromEmails takes a slice of emails, and returns a slice of Organisational Membership IDs.
+func (t *Team) getTeams(ctx context.Context) ([]string, error) {
+	pageNumber := 1
+	teams := make([]string, 0)
+
+	t.Logger.Printf("Fetching first page")
+
+	for {
+		tfeTeams, err := t.teams.List(ctx, t.organisation, &tfe.TeamListOptions{
+			ListOptions: tfe.ListOptions{PageNumber: pageNumber},
+		})
+		if err != nil {
+			return nil, fmt.Errorf("teams.list(%s) -> %w", t.organisation, err)
+		}
+
+		t.Logger.Printf("Fetched page %v in %v", tfeTeams.CurrentPage, tfeTeams.TotalPages)
+
+		for _, team := range tfeTeams.Items {
+			teams = append(teams, team.Name)
+			t.cache[team.Name] = team.ID
+		}
+
+		pageNumber = tfeTeams.NextPage
+
+		if tfeTeams.CurrentPage >= tfeTeams.TotalPages {
+			break
+		}
+	}
+
+	return teams, nil
+}
+
 // Get teams in a Terraform Cloud organisation.
 func (t *Team) Get(ctx context.Context) ([]string, error) {
 	t.Logger.Printf("Fetching teams in Terraform Cloud organisation %s", t.organisation)
 
-	tfeTeams, err := t.teams.List(ctx, t.organisation, &tfe.TeamListOptions{})
+	teams, err := t.getTeams(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("terraformcloud.team.get.list -> %w", err)
-	}
-
-	teams := make([]string, 0, len(tfeTeams.Items))
-
-	for _, team := range tfeTeams.Items {
-		teams = append(teams, team.Name)
-		t.cache[team.Name] = team.ID
+		return nil, fmt.Errorf("terraformcloud.team.get.getteams -> %w", err)
 	}
 
 	t.Logger.Println("Fetched teams successfully")
