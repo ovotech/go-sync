@@ -93,7 +93,7 @@ func (u *User) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]stri
 	pageNumber := 1
 	ids := make([]string, 0, len(emails))
 
-	u.Logger.Printf("Fetching %s from Terraform Cloud organisation %s", emails, u.organisation)
+	u.Logger.Printf("Fetching IDs from Terraform Cloud organisation %s", u.organisation)
 
 	for {
 		users, err := u.organizationMemberships.List(ctx, u.organisation, &tfe.OrganizationMembershipListOptions{
@@ -166,9 +166,11 @@ func (u *User) Add(ctx context.Context, emails []string) error {
 		return fmt.Errorf("terraformcloud.user.add(%s, %s).getteamid -> %w", u.organisation, u.team, err)
 	}
 
-	err = u.teamMembers.Add(ctx, teamID, tfe.TeamMemberAddOptions{OrganizationMembershipIDs: ids})
-	if err != nil {
-		return fmt.Errorf("terraformcloud.user.add(%s, %s).add(%s) -> %w", u.organisation, u.team, emails, err)
+	if len(ids) > 0 {
+		err = u.teamMembers.Add(ctx, teamID, tfe.TeamMemberAddOptions{OrganizationMembershipIDs: ids})
+		if err != nil {
+			return fmt.Errorf("terraformcloud.user.add(%s, %s).add(%s) -> %w", u.organisation, u.team, emails, err)
+		}
 	}
 
 	u.Logger.Println("Finished adding users successfully")
@@ -193,9 +195,11 @@ func (u *User) Remove(ctx context.Context, emails []string) error {
 		return fmt.Errorf("terraformcloud.user.remove(%s, %s).getteamid -> %w", u.organisation, u.team, err)
 	}
 
-	err = u.teamMembers.Remove(ctx, teamID, tfe.TeamMemberRemoveOptions{OrganizationMembershipIDs: ids})
-	if err != nil {
-		return fmt.Errorf("terraformcloud.user.remove(%s, %s).add(%s) -> %w", u.organisation, u.team, emails, err)
+	if len(ids) > 0 {
+		err = u.teamMembers.Remove(ctx, teamID, tfe.TeamMemberRemoveOptions{OrganizationMembershipIDs: ids})
+		if err != nil {
+			return fmt.Errorf("terraformcloud.user.remove(%s, %s).add(%s) -> %w", u.organisation, u.team, emails, err)
+		}
 	}
 
 	u.Logger.Println("Finished removing users successfully")
