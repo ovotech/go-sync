@@ -16,3 +16,6 @@ var ErrMissingConfig = errors.New("missing configuration")
 
 // ErrInvalidConfig is returned when an InitFn is passed an invalid configuration.
 var ErrInvalidConfig = errors.New("invalid configuration")
+
+// ErrTooManyChanges is returned when a change limit has been set, and the number of changes exceeds it.
+var ErrTooManyChanges = errors.New("too many changes")
