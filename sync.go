@@ -23,6 +23,8 @@ const (
 	RemoveAdd OperatingMode = "RemoveAdd"
 	// AddRemove first adds things, then removes them.
 	AddRemove OperatingMode = "AddRemove"
+	// NoChangeLimit tells Sync not to set a change limit.
+	NoChangeLimit int = -1
 )
 
 type Sync struct {
@@ -31,18 +33,31 @@ type Sync struct {
 	CaseSensitive bool            // CaseSensitive sets if Go Sync is case-sensitive. Default is true.
 	source        Adapter         // The source adapter.
 	cache         map[string]bool // cache prevents polling the source more than once.
-	Logger        *log.Logger
+	/*
+		MaximumChanges sets the maximum number of allowed changes per add/remove operation. It is not a cumulative
+		total, and the number only applies to each distinct operation.
+
+		For example:
+
+		Setting this value to 3 means that a maximum of 3 things can be added AND removed from a destination (total 6)
+		changes before Sync returns an ErrTooManyChanges error.
+
+		Default is NoChangeLimit (or -1).
+	*/
+	MaximumChanges int
+	Logger         *log.Logger
 }
 
 // New creates a new Sync service.
 func New(source Adapter, optsFn ...func(*Sync)) *Sync {
 	sync := &Sync{
-		DryRun:        false,
-		OperatingMode: RemoveAdd,
-		CaseSensitive: true,
-		source:        source,
-		cache:         make(map[string]bool),
-		Logger:        log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		DryRun:         false,
+		OperatingMode:  RemoveAdd,
+		CaseSensitive:  true,
+		source:         source,
+		cache:          make(map[string]bool),
+		MaximumChanges: NoChangeLimit,
+		Logger:         log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	for _, fn := range optsFn {
@@ -123,6 +138,11 @@ func (s *Sync) perform(
 		s.Logger.Printf("Processing things to %s\n", action)
 
 		thingsToChange := diffFn(things)
+
+		// If the changes exceed the maximum change limit, fail with the ErrTooManyChanges error.
+		if len(thingsToChange) > s.MaximumChanges && s.MaximumChanges != NoChangeLimit {
+			return fmt.Errorf("%s(%v) -> %w(%v)", action, thingsToChange, ErrTooManyChanges, s.MaximumChanges)
+		}
 
 		if s.DryRun {
 			s.Logger.Printf("Would %s %s, but running in dry run mode", action, thingsToChange)
