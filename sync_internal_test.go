@@ -384,6 +384,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		source.EXPECT().Get(ctx).Return([]string{"foo", "bar"}, nil)
 		destination.EXPECT().Get(ctx).Return([]string{"fizz"}, nil)
 		destination.EXPECT().Add(ctx, []string{"foo", "bar"}).Return(nil)
+		destination.EXPECT().Add(ctx, []string{"bar", "foo"}).Return(nil)
 		destination.EXPECT().Remove(ctx, []string{"fizz"}).Return(nil)
 
 		t.Run("0", func(t *testing.T) {
