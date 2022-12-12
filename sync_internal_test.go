@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestNew(t *testing.T) {
@@ -383,8 +384,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 		source.EXPECT().Get(ctx).Return([]string{"foo", "bar"}, nil)
 		destination.EXPECT().Get(ctx).Return([]string{"fizz"}, nil)
-		destination.EXPECT().Add(ctx, []string{"foo", "bar"}).Return(nil)
-		destination.EXPECT().Add(ctx, []string{"bar", "foo"}).Return(nil)
+		destination.EXPECT().Add(ctx, mock.Anything).Maybe().Return(nil)
 		destination.EXPECT().Remove(ctx, []string{"fizz"}).Return(nil)
 
 		t.Run("0", func(t *testing.T) {
@@ -403,7 +403,6 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 			syncService.MaximumChanges = 1
-			syncService.OperatingMode = RemoveAdd
 
 			err := syncService.SyncWith(ctx, destination)
 
@@ -422,25 +421,6 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 			syncService.MaximumChanges = 2
-			syncService.OperatingMode = RemoveAdd
-
-			err := syncService.SyncWith(ctx, destination)
-
-			assert.ErrorIs(t, err, ErrTooManyChanges)
-
-			// Set the operating mode to Add only (only 2 additions), which should pass successfully.
-			syncService.OperatingMode = AddOnly
-
-			err = syncService.SyncWith(ctx, destination)
-
-			assert.NoError(t, err)
-		})
-
-		t.Run("3", func(t *testing.T) {
-			t.Parallel()
-
-			syncService := New(source)
-			syncService.MaximumChanges = 3
 
 			err := syncService.SyncWith(ctx, destination)
 
