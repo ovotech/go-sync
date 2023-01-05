@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/hashicorp/go-tfe v1.16.0
-	github.com/ovotech/go-sync v0.11.2
+	github.com/ovotech/go-sync v0.12.0
 	github.com/stretchr/testify v1.8.1
 )
 
