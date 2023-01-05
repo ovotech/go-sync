@@ -14,8 +14,8 @@ github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
-github.com/ovotech/go-sync v0.11.2 h1:9FCUnBgzMlMAnUUwg80uaBeeRwNxnxRQupr0mzCarH4=
-github.com/ovotech/go-sync v0.11.2/go.mod h1:DsjVEnkuBtd3+O1hEHa7CkuH88CgiZBlOC3el8kwhJI=
+github.com/ovotech/go-sync v0.12.0 h1:b+y7asqPW7DZCZUcWsx0X41EkM1eQ1qW24kcF33tuzs=
+github.com/ovotech/go-sync v0.12.0/go.mod h1:DsjVEnkuBtd3+O1hEHa7CkuH88CgiZBlOC3el8kwhJI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00 h1:fiFvD4lT0aWjuuAb64LlZ/67v87m+Kc9Qsu5cMFNK0w=
