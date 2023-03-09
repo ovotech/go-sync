@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectTasksOptions">
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="write $FilePath$ --skip-generated -s standard,default,prefix(github.com/ovotech),prefix(github.com/ovotech/go-sync),blank,dot" />
+      <option name="arguments" value="lint-fix-gci $FilePath$" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="NEVER" />
@@ -14,7 +14,7 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$PROJECT_DIR$/hack/bin/gci" />
+      <option name="program" value="make" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Project Files" />
       <option name="trackOnlyRoot" value="true" />
@@ -26,7 +26,7 @@
       </envs>
     </TaskOptions>
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="-w $FilePath$" />
+      <option name="arguments" value="lint-fix-gofumpt $FilePath$" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="NEVER" />
@@ -38,7 +38,7 @@
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$PROJECT_DIR$/hack/bin/gofumpt" />
+      <option name="program" value="make" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Project Files" />
       <option name="trackOnlyRoot" value="true" />
@@ -50,19 +50,19 @@
       </envs>
     </TaskOptions>
     <TaskOptions isEnabled="true">
-      <option name="arguments" value="run --fix $FileDir$" />
+      <option name="arguments" value="lint-fix-golangci-lint $FileDir$" />
       <option name="checkSyntaxErrors" value="true" />
       <option name="description" />
       <option name="exitCodeBehavior" value="NEVER" />
       <option name="fileExtension" value="go" />
       <option name="immediateSync" value="false" />
       <option name="name" value="golangci-lint" />
-      <option name="output" value="" />
+      <option name="output" value="$FilePath$" />
       <option name="outputFilters">
         <array />
       </option>
       <option name="outputFromStdout" value="false" />
-      <option name="program" value="$PROJECT_DIR$/hack/bin/golangci-lint" />
+      <option name="program" value="make" />
       <option name="runOnExternalChanges" value="true" />
       <option name="scopeName" value="Project Files" />
       <option name="trackOnlyRoot" value="true" />
