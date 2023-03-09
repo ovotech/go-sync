@@ -3,6 +3,8 @@ package gosync
 import "errors"
 
 // ErrNotImplemented is for brand-new adapters that are still being worked on.
+//
+//goland:noinspection GoUnusedGlobalVariable
 var ErrNotImplemented = errors.New("not implemented")
 
 // ErrCacheEmpty is returned if an adapter expects Get to be called before Add/Remove.
