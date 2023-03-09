@@ -23,7 +23,7 @@ jobs:
 
       - name: Check for changes
         id: check-changed-files
-        uses: tj-actions/verify-changed-files@v12.0
+        uses: tj-actions/verify-changed-files@v13.1
         with:
           files: |
             *
