@@ -1,0 +1,5 @@
+all: true
+with-expecter: true
+inpackage: true
+testonly: true
+disable-version-string: true

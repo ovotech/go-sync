@@ -190,7 +190,7 @@ tmp/.built.sentinel: tmp/.linted.sentinel
 > touch $@
 
 generate: hack/bin/mockery ## Generate mocks.
-> hack/bin/mockery --all --with-expecter --inpackage --testonly
+> hack/bin/mockery
 .PHONY: generate
 
 ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
