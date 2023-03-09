@@ -24,7 +24,7 @@ All tools necessary to action the various Makefile targets will be automatically
 `hack/bin/` sub-directory within this project.
 
 | Command         | Description                    |
-| --------------- | ------------------------------ |
+|-----------------|--------------------------------|
 | `make generate` | Generate automated code.       |
 | `make lint`     | Lint Go Sync.                  |
 | `make lint-fix` | Fix some common linter errors. |
