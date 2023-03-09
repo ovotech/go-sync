@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/google/go-github/v47 v47.1.0
-	github.com/ovotech/go-sync v0.12.1
+	github.com/ovotech/go-sync v0.0.0
 	github.com/shurcooL/githubv4 v0.0.0-20220520033151-0b4e3294ff00
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/oauth2 v0.6.0
@@ -23,3 +23,5 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/ovotech/go-sync v0.0.0 => ../../
