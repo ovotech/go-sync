@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 	syncService := New(adapter)
 
 	assert.Empty(t, syncService.cache)
-	assert.Equal(t, RemoveAdd, syncService.OperatingMode)
+	assert.Equal(t, RemoveAdd, syncService.operatingMode)
 	assert.False(t, syncService.DryRun)
 	assert.Zero(t, adapter.Calls)
 }
@@ -242,7 +242,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		assert.NoError(t, err)
 	})
 
-	t.Run("OperatingMode", func(t *testing.T) {
+	t.Run("operatingMode", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("AddOnly", func(t *testing.T) {
@@ -252,7 +252,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination := NewMockAdapter(t)
 
 			syncService := New(source)
-			syncService.OperatingMode = AddOnly
+			syncService.operatingMode = AddOnly
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
@@ -270,7 +270,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination := NewMockAdapter(t)
 
 			syncService := New(source)
-			syncService.OperatingMode = RemoveOnly
+			syncService.operatingMode = RemoveOnly
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
@@ -288,7 +288,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination := NewMockAdapter(t)
 
 			syncService := New(source)
-			syncService.OperatingMode = RemoveAdd
+			syncService.operatingMode = RemoveAdd
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
@@ -310,7 +310,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination := NewMockAdapter(t)
 
 			syncService := New(source)
-			syncService.OperatingMode = AddRemove
+			syncService.operatingMode = AddRemove
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"bar"}, nil)
@@ -326,7 +326,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		})
 	})
 
-	t.Run("CaseSensitive", func(t *testing.T) {
+	t.Run("caseSensitive", func(t *testing.T) {
 		t.Parallel()
 
 		t.Run("default", func(t *testing.T) {
@@ -335,7 +335,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			source := NewMockAdapter(t)
 			syncService := New(source)
 
-			assert.True(t, syncService.CaseSensitive)
+			assert.True(t, syncService.caseSensitive)
 		})
 
 		t.Run("true", func(t *testing.T) {
@@ -350,7 +350,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination.EXPECT().Remove(ctx, []string{"foo"}).Return(nil)
 
 			syncService := New(source)
-			syncService.CaseSensitive = true
+			syncService.caseSensitive = true
 
 			err := syncService.SyncWith(ctx, destination)
 
@@ -368,7 +368,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination.EXPECT().Add(ctx, []string{"bar"}).Return(nil)
 
 			syncService := New(source)
-			syncService.CaseSensitive = false
+			syncService.caseSensitive = false
 
 			err := syncService.SyncWith(ctx, destination)
 
@@ -376,7 +376,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 		})
 	})
 
-	t.Run("MaximumChanges", func(t *testing.T) {
+	t.Run("maximumChanges", func(t *testing.T) {
 		t.Parallel()
 
 		source := NewMockAdapter(t)
@@ -391,7 +391,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			t.Parallel()
 
 			syncService := New(source)
-			syncService.MaximumChanges = 0
+			syncService.maximumChanges = 0
 
 			err := syncService.SyncWith(ctx, destination)
 
@@ -402,14 +402,14 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			t.Parallel()
 
 			syncService := New(source)
-			syncService.MaximumChanges = 1
+			syncService.maximumChanges = 1
 
 			err := syncService.SyncWith(ctx, destination)
 
 			assert.ErrorIs(t, err, ErrTooManyChanges)
 
 			// Set the operating mode to Remove only (only 1 addition), which should pass successfully.
-			syncService.OperatingMode = RemoveOnly
+			syncService.operatingMode = RemoveOnly
 
 			err = syncService.SyncWith(ctx, destination)
 
@@ -420,7 +420,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			t.Parallel()
 
 			syncService := New(source)
-			syncService.MaximumChanges = 2
+			syncService.maximumChanges = 2
 
 			err := syncService.SyncWith(ctx, destination)
 
