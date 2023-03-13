@@ -168,8 +168,8 @@ tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint tmp/.t
 > touch $@
 
 lint-fix-gci: hack/bin/gci hack/bin/yq $(GO_FILES) ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
-> sections="$(shell hack/bin/yq '.linters-settings.gci.sections | join(",")' .golangci.yaml )"
-> hack/bin/gci write . --section "$${sections}"
+> sections="$(shell hack/bin/yq '.linters-settings.gci.sections | join(" -s ")' .golangci.yaml )"
+> hack/bin/gci write . -s $${sections}
 .PHONY: lint-fix-gci
 
 lint-fix-gofumpt: hack/bin/gofumpt $(GO_FILES) ## Runs 'gofumpt -w' to format and simplify all Go code.
