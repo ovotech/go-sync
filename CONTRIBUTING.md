@@ -54,30 +54,26 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ovotech/go-sync/pkg/ports"
+	
+	"github.com/ovotech/go-sync/packages/gosync"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &MyAdapter{}
+type adapter struct{}
 
-var ErrNotImplemented = errors.New("not implemented")
-
-type MyAdapter struct{}
-
-func New() *MyAdapter {
-	return &MyAdapter {}
+func (a *adapter) Get(_ context.Context) ([]string, error) {
+	return nil, fmt.Errorf("myadapter.get -> %w", gosync.ErrNotImplemented)
 }
 
-func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
-	return nil, fmt.Errorf("myadapter.get -> %w", ErrNotImplemented)
+func (a *adapter) Add(_ context.Context, _ []string) error {
+	return fmt.Errorf("myadapter.add -> %w", gosync.ErrNotImplemented)
 }
 
-func (m *MyAdapter) Add(_ context.Context, _ []string) error {
-	return fmt.Errorf("myadapter.add -> %w", ErrNotImplemented)
+func (a *adapter) Remove(_ context.Context, _ []string) error {
+	return fmt.Errorf("myadapter.remove -> %w", gosync.ErrNotImplemented)
 }
 
-func (m *MyAdapter) Remove(_ context.Context, _ []string) error {
-	return fmt.Errorf("myadapter.remove -> %w", ErrNotImplemented)
+func New() gosync.Adapter {
+	return &adapter {}
 }
 ```
 
