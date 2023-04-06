@@ -1,35 +1,35 @@
 name: goreleaser
 
 on:
-  push:
-    tags:
-      - 'v[0-9].[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'Package'
+        required: true
+        type: choice
+        options:
+          - github
+          - google
+          - gosync
+          - opsgenie
+          - slack
+          - terraformcloud
+      version:
+        description: 'Version'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Set env
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-      - run: git fetch --force --tags
-      - uses: actions/setup-go@v3
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-      - uses: goreleaser/goreleaser-action@v4
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Tag and push release for adapters
         run: |
-          make ci/tag-adapters
+          git tag packages/$${ inputs.package }/$${ inputs.version }
           git push origin --tags
