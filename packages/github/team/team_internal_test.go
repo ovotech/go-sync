@@ -12,16 +12,6 @@ import (
 	"github.com/ovotech/go-sync/packages/gosync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-
-	assert.Equal(t, "org", adapter.org)
-	assert.Equal(t, "slug", adapter.slug)
-}
-
 func TestTeam_Get(t *testing.T) {
 	t.Parallel()
 
@@ -29,7 +19,16 @@ func TestTeam_Get(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
+	rawAdapter, err := Init(
+		ctx,
+		map[gosync.ConfigKey]string{GitHubOrg: "org", TeamSlug: "slug"},
+		WithGitHubV3Client(&github.Client{}),
+		WithDiscoveryService(discovery),
+	)
+	assert.NoError(t, err)
+
+	adapter := rawAdapter.(*Adapter)
+
 	adapter.teams = gitHubClient
 
 	gitHubClient.
@@ -63,7 +62,18 @@ func TestTeam_Add(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
+
+	rawAdapter, err := Init(
+		ctx,
+		map[gosync.ConfigKey]string{GitHubOrg: "org", TeamSlug: "slug"},
+		WithGitHubV3Client(&github.Client{}),
+		WithDiscoveryService(discovery),
+	)
+
+	assert.NoError(t, err)
+
+	adapter := rawAdapter.(*Adapter)
+
 	adapter.teams = gitHubClient
 
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
@@ -73,7 +83,7 @@ func TestTeam_Add(t *testing.T) {
 	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "org", "slug", "fizz", mock.Anything).Return(nil, nil, nil)
 	gitHubClient.EXPECT().AddTeamMembershipBySlug(ctx, "org", "slug", "buzz", mock.Anything).Return(nil, nil, nil)
 
-	err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
+	err = adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
 	assert.NoError(t, err)
 }
@@ -85,14 +95,25 @@ func TestTeam_Remove(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
+
+	rawAdapter, err := Init(
+		ctx,
+		map[gosync.ConfigKey]string{GitHubOrg: "org", TeamSlug: "slug"},
+		WithGitHubV3Client(&github.Client{}),
+		WithDiscoveryService(discovery),
+	)
+
+	assert.NoError(t, err)
+
+	adapter := rawAdapter.(*Adapter)
+
 	adapter.teams = gitHubClient
 	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "foo").Return(nil, nil)
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "bar").Return(nil, nil)
 
-	err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
+	err = adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
 	assert.NoError(t, err)
 }
@@ -114,10 +135,10 @@ func TestInit(t *testing.T) {
 		})
 
 		assert.NoError(t, err)
-		assert.IsType(t, &Team{}, adapter)
-		assert.Equal(t, "org", adapter.(*Team).org)
-		assert.Equal(t, "slug", adapter.(*Team).slug)
-		assert.IsType(t, &saml.Saml{}, adapter.(*Team).discovery)
+		assert.IsType(t, &Adapter{}, adapter)
+		assert.Equal(t, "org", adapter.(*Adapter).org)
+		assert.Equal(t, "slug", adapter.(*Adapter).slug)
+		assert.IsType(t, &saml.Saml{}, adapter.(*Adapter).discovery)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
