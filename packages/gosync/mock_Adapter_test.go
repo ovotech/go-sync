@@ -108,8 +108,8 @@ func (_c *MockAdapter_Get_Call) Run(run func(ctx context.Context)) *MockAdapter_
 	return _c
 }
 
-func (_c *MockAdapter_Get_Call) Return(things []string, err error) *MockAdapter_Get_Call {
-	_c.Call.Return(things, err)
+func (_c *MockAdapter_Get_Call) Return(_a0 []string, _a1 error) *MockAdapter_Get_Call {
+	_c.Call.Return(_a0, _a1)
 	return _c
 }
 
