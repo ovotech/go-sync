@@ -1,7 +1,4 @@
 linters:
-  # Disable all linters.
-  disable-all: true
-  # Enable specific linter
   # https://golangci-lint.run/usage/linters/#enabled-by-default
   enable:
     - asasalint
@@ -40,7 +37,6 @@ linters:
     - goimports
     - gomnd
     - gomoddirectives
-    - gomodguard
     - goprintffuncname
     - gosec
     - gosimple
@@ -87,6 +83,10 @@ linters:
     - wsl
 
 linters-settings:
+  gomoddirectives:
+    # Allow local `replace` directives.
+    replace-local: true
+
   gci:
     # Section configuration to compare against.
     # Section names are case-insensitive and may contain parameters in ().
