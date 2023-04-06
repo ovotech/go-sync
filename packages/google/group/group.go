@@ -206,7 +206,7 @@ Required config:
   - [group.GoogleAuthenticationMechanism]
   - [group.Name]
 */
-func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+func Init(ctx context.Context, config map[gosync.ConfigKey]string, _ ...func(interface{})) (gosync.Adapter, error) {
 	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)

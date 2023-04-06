@@ -281,7 +281,7 @@ Required config:
   - [conversation.SlackAPIKey]
   - [conversation.Name]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, _ ...func(interface{})) (gosync.Adapter, error) {
 	for _, key := range []gosync.ConfigKey{SlackAPIKey, Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)

@@ -229,7 +229,7 @@ Required config:
   - [user.Team]
   - [user.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, _ ...func(interface{})) (gosync.Adapter, error) {
 	for _, key := range []gosync.ConfigKey{Token, Organisation, Team} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, key)
