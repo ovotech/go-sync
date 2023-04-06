@@ -9,22 +9,26 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: /adapters/github
+    directory: /packages/github
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: /adapters/google
+    directory: /packages/google
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: /adapters/opsgenie
+    directory: /packages/gosync
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: /adapters/slack
+    directory: /packages/opsgenie
     schedule:
       interval: daily
   - package-ecosystem: gomod
-    directory: /adapters/terraformcloud
+    directory: /packages/slack
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
+    directory: /packages/terraformcloud
     schedule:
       interval: daily
