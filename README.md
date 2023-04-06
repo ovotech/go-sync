@@ -5,10 +5,9 @@
 
 <div align="center">
 
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ovotech/go-sync?label=go&logo=go)](go.mod)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ovotech/go-sync)](https://github.com/ovotech/go-sync/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/ovotech/go-sync?style=flat)](https://goreportcard.com/report/github.com/ovotech/go-sync)
-[![Go Reference](https://pkg.go.dev/badge/github.com/ovotech/go-sync.svg)](https://pkg.go.dev/github.com/ovotech/go-sync)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ovotech/go-sync?filename=packages/gosync/go.mod&label=go&logo=go)](packages/gosync/go.mod)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ovotech/go-sync/packages/gosync?style=flat)](https://goreportcard.com/report/github.com/ovotech/go-sync/packages/gosync)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ovotech/go-sync.svg)](https://pkg.go.dev/github.com/ovotech/go-sync/packages/gosync)
 [![Test Status](https://github.com/ovotech/go-sync/actions/workflows/test.yml/badge.svg)](https://github.com/ovotech/go-sync/actions/workflows/test.yml)
 [![GitHub issues](https://img.shields.io/github/issues/ovotech/go-sync?style=flat)](https://github.com/ovotech/go-sync/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/ovotech/go-sync?label=pull+requests&style=flat)](https://github.com/ovotech/go-sync/pull-requests)
@@ -25,9 +24,10 @@ _* Doesn't have to be people._
 ## Installation
 
 ```shell
+# Install Go Sync.
 go get github.com/ovotech/go-sync/packages/gosync@latest
 
-# Then get the packages you need.
+# Then install any extra packages you need e.g.
 go get github.com/ovotech/go-sync/packages/slack@latest
 ```
 
@@ -35,24 +35,20 @@ You're ready to Go Sync! 🎉
 
 ## Usage
 
-Read the [documentation on `pkg.go.dev`](https://pkg.go.dev/github.com/ovotech/go-sync).
-
-Go Sync consists of two fundamental parts:
-
-1. [Sync](#sync-)
-2. [Adapters](#adapters-)
-
-As long as your adapters are compatible, you can synchronise anything.
-
 ```go
-// Create an adapter using the recommended method.
-client := service.New("some-token")
-source := myAdapter.New(client, "some-value")
+ctx := context.Background()
 
-// Initialise an adapter using an Init function.
-destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
-	myAdapter.Token:     "some-token",
-	myAdapter.Something: "some-value",
+// Initialise a new source adapter.
+source, err := src.Init(ctx, map[gosync.ConfigKey]string{
+    src.SomeSecret: "something",
+})
+if err != nil {
+    log.Fatal(err)
+}
+
+// Initialise a destination adapter.
+destination, err := dest.Init(ctx, map[gosync.ConfigKey]string{
+	dest.AnotherSecret: "something-else",
 })
 if err != nil {
 	log.Fatal(err)
@@ -60,46 +56,25 @@ if err != nil {
 
 sync := gosync.New(source)
 
-err := sync.SyncWith(context.Background(), destination)
+// Synchronise the users in the destination with the source.
+err := sync.SyncWith(ctx, destination)
 if err != nil {
 	log.Fatal(err)
 }
 ```
 
-### Init
+## Packages
 
-While we recommend using `New` to create an adapter in most cases, some plugins may provide an `Init` function for
-instantiating them too. Init functions are intended for programmatically creating adapters either via environment
-variables or some other dynamic configuration.
+This monorepo contains several Go modules that can all be installed independently of each other.
 
-## Sync 🔄
-
-Sync is the logic that powers the automation. It accepts a source adapter, and synchronises it with destination
-adapters.
-
-Sync is only uni-directional by design. You know where your things are, and where you want them to be. It works by:
-
-1. Get a list of things in your source service.
-   1. Cache it, so you're not calling your source service more than you have to.
-2. Get a list of things in your destination service.
-3. Add the things that are missing.
-4. Remove the things that shouldn't be there.
-5. Repeat from 2 for further adapters.
-
-## [Adapters](./adapters) 🔌
-
-Adapters provide a common interface to services.
-Adapters must implement our [Adapter interface](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter) and functionally
-perform 3 things:
-
-1. Get the things.
-2. Add some things.
-3. Remove some things.
-
-These things can be anything, but we recommend email addresses. There's no point trying to sync a Slack User ID with a
-GitHub user! 🙅
-
-Can't find an adapter you're looking for? [Why not write your own! ✨](/CONTRIBUTING.md)
+| Directory                                   | Documentation                                                                 | Description                                               |
+|---------------------------------------------|-------------------------------------------------------------------------------|-----------------------------------------------------------|
+| [github](./packages/github)                 | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/github)         | Synchronise emails with a GitHub team                     |
+| [google](./packages/google)                 | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/google)         | Synchronise emails with a Google Group                    |
+| [gosync](./packages/google)                 | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/gosync)         | Main Go Sync module                                       |
+| [opsgenie](./packages/opsgenie)             | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/opsgenie)       | Synchronise emails with Opsgenie oncall & schedule rotas  |
+| [slack](./packages/slack)                   | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/slack)          | Synchronise emails with Slack conversations & user groups |
+| [terraformcloud](./packages/terraformcloud) | [Link](https://pkg.go.dev/github.com/ovotech/go-sync/packages/terraformcloud) | Synchronise emails with Terraform Cloud users & teams     |
 
 ### Made with 💚 by OVO Energy's DevEx team
 
