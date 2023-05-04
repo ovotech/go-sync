@@ -1,116 +1,37 @@
 linters:
-  # Disable all linters.
-  disable-all: true
-  # Enable specific linter
-  # https://golangci-lint.run/usage/linters/#enabled-by-default
-  enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - containedctx
-    - contextcheck
-    - cyclop
-    - decorder
-    - depguard
-    - dogsled
-    - dupl
-    - durationcheck
-    - errcheck
-    - errchkjson
-    - errname
-    - errorlint
-    - execinquery
-    - exhaustive
-    - exportloopref
-    - forbidigo
-    - funlen
-    - gci
-    - gochecknoglobals
-    - gochecknoinits
-    - gocognit
-    - goconst
-    - gocritic
-    - gocyclo
-    - godot
-    - godox
-    - goerr113
-    - gofmt
-    - goheader
-    - goimports
-    - gomnd
-    - gomoddirectives
+  enable-all: true
+  disable:
+    - deadcode # deprecated
+    - exhaustruct
+    - exhaustivestruct # deprecated
+    - forcetypeassert
+    - gofumpt
+    - golint # deprecated
     - gomodguard
-    - goprintffuncname
-    - gosec
-    - gosimple
-    - govet
-    - grouper
-    - importas
-    - ineffassign
-    - interfacebloat
-    - lll
-    - logrlint
-    - maintidx
-    - makezero
-    - misspell
-    - nakedret
-    - nestif
-    - nilerr
-    - nilnil
-    - nlreturn
-    - noctx
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - prealloc
-    - predeclared
-    - promlinter
-    - reassign
-    - revive
-    - staticcheck
-    - stylecheck
-    - tagliatelle
-    - tenv
-    - testpackage
-    - thelper
-    - tparallel
-    - typecheck
-    - unconvert
-    - unparam
-    - unused
-    - usestdlibvars
-    - varnamelen
-    - whitespace
-    - wrapcheck
-    - wsl
+    - gomoddirectives
+    - ifshort # deprecated
+    - interfacer # deprecated
+    - ireturn
+    - maligned # deprecated
+    - nosnakecase # deprecated
+    - rowserrcheck # disabled because of generics
+    - scopelint # deprecated
+    - structcheck # deprecated
+    - testableexamples # deprecated
+    - varcheck
+    - wastedassign # disabled because of generics
 
 linters-settings:
+  gomoddirectives:
+    replace-local: true
+
   gci:
-    # Section configuration to compare against.
-    # Section names are case-insensitive and may contain parameters in ().
-    # The default order of sections is `standard > default > custom > blank > dot`,
-    # If `custom-order` is `true`, it follows the order of `sections` option.
-    # Default: ["standard", "default"]
     sections:
-      # Standard section: captures all standard packages.
       - standard
-      # Default section: contains all imports that could not be matched to another section type.
       - default
-      # Custom section: groups all imports with the specified Prefix.
       - prefix(github.com/ovotech)
       - prefix(github.com/ovotech/go-sync)
-      # Blank section: contains all blank imports. This section is not present unless explicitly enabled.
       - blank
-      # Dot section: contains all dot imports. This section is not present unless explicitly enabled.
       - dot
-
-    # Skip generated files.
-    # Default: true
     skip-generated: true
-
-    # Enable custom order of sections.
-    # If `true`, make the section order the same as the order of `sections`.
-    # Default: false
     custom-order: true
