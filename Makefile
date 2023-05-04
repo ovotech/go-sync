@@ -41,8 +41,8 @@ endif
 # With no numeric argument to '--jobs', Make runs as many recipes simultaneously as possible.
 MAKEFLAGS += --jobs
 
-# Define a list of adapters as relative module paths.
-ADAPTERS := $(shell find adapters -depth 1 -type d | awk '{ print "./"$$1"/..." }')
+# Define a list of packages as relative module paths.
+PACKAGES := $(shell find packages -depth 1 -type d | awk '{ print "./"$$1"/..." }')
 
 # Configure an 'all' target to cover the bases.
 all: generate test lint build ## Generate and test and lint and build.
@@ -127,22 +127,22 @@ clean-all: clean clean-hack ## Clean all of the things.
 # Tests - re-run if any Go files have changes since 'tmp/.tests-passed.sentinel' was last touched.
 tmp/.tests-passed.sentinel: generate $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -v ./... $(ADAPTERS)
+> go test -count=1 -v $(PACKAGES)
 > touch $@
 
 tmp/.cover-tests-passed.sentinel: $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v ./... $(ADAPTERS)
+> go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v $(PACKAGES)
 > touch $@
 
 tmp/.benchmarks-ran.sentinel: $(GO_FILES)
 > mkdir -p $(@D)
-> go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v ./... $(ADAPTERS)
+> go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v $(PACKAGES)
 > touch $@
 
 tmp/.report-ran.sentinel: hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -v ./... $(ADAPTERS) |& hack/bin/go-junit-report --iocopy --out report.xml --set-exit-code
+> go test -count=1 -v $(PACKAGES) |& hack/bin/go-junit-report --iocopy --out report.xml --set-exit-code
 > touch $@
 
 # Lint - re-run if the tests have been re-run (and so, by proxy, whenever the source files have changed).
@@ -159,12 +159,12 @@ tmp/.linted.gofumpt.sentinel: hack/bin/gofumpt tmp/.tests-passed.sentinel
 
 tmp/.linted.go.vet.sentinel: tmp/.tests-passed.sentinel
 > mkdir -p $(@D)
-> go vet ./...
+> go vet $(PACKAGES)
 > touch $@
 
 tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint tmp/.tests-passed.sentinel
 > mkdir -p $(@D)
-> hack/bin/golangci-lint run ./... $(ADAPTERS)
+> hack/bin/golangci-lint run $(PACKAGES)
 > touch $@
 
 lint-fix-gci: hack/bin/gci hack/bin/yq $(GO_FILES) ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
@@ -177,7 +177,7 @@ lint-fix-gofumpt: hack/bin/gofumpt $(GO_FILES) ## Runs 'gofumpt -w' to format an
 .PHONY: lint-fix-gofumpt
 
 lint-fix-golangci-lint: hack/bin/golangci-lint $(GO_FILES) ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
-> hack/bin/golangci-lint run --fix ./... $(ADAPTERS)
+> hack/bin/golangci-lint run --fix $(PACKAGES)
 .PHONY: lint-fix-golangci-lint
 
 lint-fix: lint-fix-gci lint-fix-gofumpt lint-fix-golangci-lint ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
@@ -186,18 +186,18 @@ lint-fix: lint-fix-gci lint-fix-gofumpt lint-fix-golangci-lint ## Runs 'gci', 'g
 # Re-build if the lint output is re-run (and so, by proxy, whenever the source files have changed).
 tmp/.built.sentinel: tmp/.linted.sentinel
 > mkdir -p $(@D)
-> go build -v ./... $(ADAPTERS)
+> go build -v $(PACKAGES)
 > touch $@
 
 generate: hack/bin/mockery ## Generate mocks.
 > hack/bin/mockery
 .PHONY: generate
 
-ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
-> for adapter in $(shell ls -d adapters/*); do
->   git tag $${adapter}/$${RELEASE_VERSION:?}
+ci/tag-packages: ## Tag all packages with $RELEASE_VERSION environment variable. For use in CI.
+> for package in $(shell ls -d packages/*); do
+>   git tag $${package}/$${RELEASE_VERSION:?}
 > done
-.PHONY: ci/tag-adapters
+.PHONY: ci/tag-packages
 
 tidy: ## Run 'go mod tidy' on all Go modules.
 > find . -name 'go.mod' -execdir go mod tidy \;
