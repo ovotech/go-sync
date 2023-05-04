@@ -25,10 +25,10 @@ _* Doesn't have to be people._
 ## Installation
 
 ```shell
-go get github.com/ovotech/go-sync@latest
+go get github.com/ovotech/go-sync/packages/gosync@latest
 
 # Then get the adapters you need.
-go get github.com/ovotech/go-sync/adapters/slack@latest
+go get github.com/ovotech/go-sync/packages/slack@latest
 ```
 
 You're ready to Go Sync! 🎉
