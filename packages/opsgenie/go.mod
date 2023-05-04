@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.14
-	github.com/ovotech/go-sync v0.0.0
+	github.com/ovotech/go-sync/packages/gosync v0.0.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 )
@@ -21,4 +21,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/ovotech/go-sync v0.0.0 => ../../
+replace github.com/ovotech/go-sync/packages/gosync v0.0.0 => ../gosync

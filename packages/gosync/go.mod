@@ -1,4 +1,4 @@
-module github.com/ovotech/go-sync
+module github.com/ovotech/go-sync/packages/gosync
 
 go 1.18
 

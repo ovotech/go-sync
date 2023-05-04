@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	gosync "github.com/ovotech/go-sync"
+	"github.com/ovotech/go-sync/packages/gosync"
 )
 
 func ExampleNew() {
