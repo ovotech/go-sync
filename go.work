@@ -1,10 +1,10 @@
 go 1.18
 
 use (
-	.
-	./adapters/github
-	./adapters/google
-	./adapters/opsgenie
-	./adapters/slack
-	./adapters/terraformcloud
+	./packages/github
+	./packages/google
+	./packages/gosync
+	./packages/opsgenie
+	./packages/slack
+	./packages/terraformcloud
 )
