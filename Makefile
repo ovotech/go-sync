@@ -75,7 +75,7 @@ hack/bin/gci:
 
 hack/bin/go-junit-report:
 > mkdir -p $(@D)
-> GOBIN=$(CURDIR)/hack/bin go install github.com/jstemmer/go-junit-report/v2@latest
+> GOBIN=$(CURDIR)/hack/bin go install github.com/jstemmer/go-junit-report/v2@f50ae24655f6484f175ceb0672505dfec6565637
 
 hack/bin/gofumpt:
 > mkdir -p $(@D)
