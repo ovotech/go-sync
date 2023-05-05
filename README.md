@@ -5,7 +5,7 @@
 
 <div align="center">
 
-[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ovotech/go-sync?label=go&logo=go)](go.mod)
+[![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/ovotech/go-sync?filename=packages%2Fgosync%2Fgo.mod)](packages/gosync/go.mod)
 [![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/ovotech/go-sync)](https://github.com/ovotech/go-sync/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ovotech/go-sync?style=flat)](https://goreportcard.com/report/github.com/ovotech/go-sync)
 [![Go Reference](https://pkg.go.dev/badge/github.com/ovotech/go-sync.svg)](https://pkg.go.dev/github.com/ovotech/go-sync)
