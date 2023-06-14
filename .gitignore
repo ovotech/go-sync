@@ -10,5 +10,8 @@
 # Makefile things
 /tmp/
 
+# IntelliJ folder
+/.idea/
+
 # Output from 'go-junit-report'
 /report.xml
