@@ -314,13 +314,12 @@ func (_c *mockISlackConversation_KickUserFromConversation_Call) RunAndReturn(run
 	return _c
 }
 
-type mockConstructorTestingTnewMockISlackConversation interface {
+// newMockISlackConversation creates a new instance of mockISlackConversation. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockISlackConversation(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockISlackConversation creates a new instance of mockISlackConversation. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockISlackConversation(t mockConstructorTestingTnewMockISlackConversation) *mockISlackConversation {
+}) *mockISlackConversation {
 	mock := &mockISlackConversation{}
 	mock.Mock.Test(t)
 

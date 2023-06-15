@@ -154,13 +154,12 @@ func (_c *mockIMembersService_List_Call) RunAndReturn(run func(string) *admin.Me
 	return _c
 }
 
-type mockConstructorTestingTnewMockIMembersService interface {
+// newMockIMembersService creates a new instance of mockIMembersService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockIMembersService(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockIMembersService creates a new instance of mockIMembersService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockIMembersService(t mockConstructorTestingTnewMockIMembersService) *mockIMembersService {
+}) *mockIMembersService {
 	mock := &mockIMembersService{}
 	mock.Mock.Test(t)
 

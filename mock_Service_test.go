@@ -64,13 +64,12 @@ func (_c *MockService_SyncWith_Call) RunAndReturn(run func(context.Context, Adap
 	return _c
 }
 
-type mockConstructorTestingTNewMockService interface {
+// NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockService(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func NewMockService(t mockConstructorTestingTNewMockService) *MockService {
+}) *MockService {
 	mock := &MockService{}
 	mock.Mock.Test(t)
 

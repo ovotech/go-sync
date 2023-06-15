@@ -255,13 +255,12 @@ func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) RunAndReturn(r
 	return _c
 }
 
-type mockConstructorTestingTnewMockISlackUserGroup interface {
+// newMockISlackUserGroup creates a new instance of mockISlackUserGroup. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockISlackUserGroup(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockISlackUserGroup creates a new instance of mockISlackUserGroup. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockISlackUserGroup(t mockConstructorTestingTnewMockISlackUserGroup) *mockISlackUserGroup {
+}) *mockISlackUserGroup {
 	mock := &mockISlackUserGroup{}
 	mock.Mock.Test(t)
 

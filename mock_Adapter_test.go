@@ -161,13 +161,12 @@ func (_c *MockAdapter_Remove_Call) RunAndReturn(run func(context.Context, []stri
 	return _c
 }
 
-type mockConstructorTestingTNewMockAdapter interface {
+// NewMockAdapter creates a new instance of MockAdapter. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockAdapter(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// NewMockAdapter creates a new instance of MockAdapter. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func NewMockAdapter(t mockConstructorTestingTNewMockAdapter) *MockAdapter {
+}) *MockAdapter {
 	mock := &MockAdapter{}
 	mock.Mock.Test(t)
 

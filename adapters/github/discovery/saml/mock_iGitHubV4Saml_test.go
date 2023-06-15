@@ -65,13 +65,12 @@ func (_c *mockIGitHubV4Saml_Query_Call) RunAndReturn(run func(context.Context, i
 	return _c
 }
 
-type mockConstructorTestingTnewMockIGitHubV4Saml interface {
+// newMockIGitHubV4Saml creates a new instance of mockIGitHubV4Saml. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockIGitHubV4Saml(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockIGitHubV4Saml creates a new instance of mockIGitHubV4Saml. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockIGitHubV4Saml(t mockConstructorTestingTnewMockIGitHubV4Saml) *mockIGitHubV4Saml {
+}) *mockIGitHubV4Saml {
 	mock := &mockIGitHubV4Saml{}
 	mock.Mock.Test(t)
 

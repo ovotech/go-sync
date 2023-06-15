@@ -165,13 +165,12 @@ func (_c *mockITeamMembers_Remove_Call) RunAndReturn(run func(context.Context, s
 	return _c
 }
 
-type mockConstructorTestingTnewMockITeamMembers interface {
+// newMockITeamMembers creates a new instance of mockITeamMembers. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockITeamMembers(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockITeamMembers creates a new instance of mockITeamMembers. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockITeamMembers(t mockConstructorTestingTnewMockITeamMembers) *mockITeamMembers {
+}) *mockITeamMembers {
 	mock := &mockITeamMembers{}
 	mock.Mock.Test(t)
 

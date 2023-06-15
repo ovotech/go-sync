@@ -131,13 +131,12 @@ func (_c *MockGitHubDiscovery_GetUsernameFromEmail_Call) RunAndReturn(run func(c
 	return _c
 }
 
-type mockConstructorTestingTNewMockGitHubDiscovery interface {
+// NewMockGitHubDiscovery creates a new instance of MockGitHubDiscovery. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockGitHubDiscovery(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// NewMockGitHubDiscovery creates a new instance of MockGitHubDiscovery. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func NewMockGitHubDiscovery(t mockConstructorTestingTNewMockGitHubDiscovery) *MockGitHubDiscovery {
+}) *MockGitHubDiscovery {
 	mock := &MockGitHubDiscovery{}
 	mock.Mock.Test(t)
 

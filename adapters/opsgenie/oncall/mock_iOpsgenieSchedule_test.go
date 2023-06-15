@@ -77,13 +77,12 @@ func (_c *mockIOpsgenieSchedule_GetOnCalls_Call) RunAndReturn(run func(context.C
 	return _c
 }
 
-type mockConstructorTestingTnewMockIOpsgenieSchedule interface {
+// newMockIOpsgenieSchedule creates a new instance of mockIOpsgenieSchedule. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockIOpsgenieSchedule(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockIOpsgenieSchedule creates a new instance of mockIOpsgenieSchedule. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockIOpsgenieSchedule(t mockConstructorTestingTnewMockIOpsgenieSchedule) *mockIOpsgenieSchedule {
+}) *mockIOpsgenieSchedule {
 	mock := &mockIOpsgenieSchedule{}
 	mock.Mock.Test(t)
 

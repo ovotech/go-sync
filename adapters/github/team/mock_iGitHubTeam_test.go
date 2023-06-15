@@ -212,13 +212,12 @@ func (_c *mockIGitHubTeam_RemoveTeamMembershipBySlug_Call) RunAndReturn(run func
 	return _c
 }
 
-type mockConstructorTestingTnewMockIGitHubTeam interface {
+// newMockIGitHubTeam creates a new instance of mockIGitHubTeam. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func newMockIGitHubTeam(t interface {
 	mock.TestingT
 	Cleanup(func())
-}
-
-// newMockIGitHubTeam creates a new instance of mockIGitHubTeam. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
-func newMockIGitHubTeam(t mockConstructorTestingTnewMockIGitHubTeam) *mockIGitHubTeam {
+}) *mockIGitHubTeam {
 	mock := &mockIGitHubTeam{}
 	mock.Mock.Test(t)
 
