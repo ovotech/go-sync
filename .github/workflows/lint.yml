@@ -11,26 +11,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: "go.mod"
           cache: true
 
       - name: make lint-fix
         run: |
+          make generate
           make lint-fix
-
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v13.1
         with:
           files: |
             *
-
       - name: Fail if code needs linting
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
           echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
-          echo "Run make fix to attempt to fix linter errors."
+          echo "Run make lint-fix or make generate to attempt to fix linter errors."
           exit 1
