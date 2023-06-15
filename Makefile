@@ -42,7 +42,7 @@ endif
 MAKEFLAGS += --jobs
 
 # Define a list of adapters as relative module paths.
-ADAPTERS := $(shell find adapters -depth 1 -type d | awk '{ print "./"$$1"/..." }')
+ADAPTERS := $(shell find . -name 'go.mod' -exec sh -c 'echo {} | sed -e "s/go.mod/.../"' \;)
 
 # Configure an 'all' target to cover the bases.
 all: generate test lint build ## Generate and test and lint and build.
