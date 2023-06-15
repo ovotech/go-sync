@@ -142,7 +142,7 @@ tmp/.benchmarks-ran.sentinel: $(GO_FILES)
 
 tmp/.report-ran.sentinel: hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -v ./... $(ADAPTERS) |& hack/bin/go-junit-report --iocopy --out report.xml --set-exit-code
+> go test -count=1 -v ./... $(ADAPTERS) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
 > touch $@
 
 # Lint - re-run if the tests have been re-run (and so, by proxy, whenever the source files have changed).
