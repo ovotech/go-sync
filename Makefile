@@ -124,23 +124,29 @@ clean-hack: ## Deletes all binaries under 'hack'.
 clean-all: clean clean-hack ## Clean all of the things.
 .PHONY: clean-all
 
+tmp/.generated.sentinel: hack/bin/gofumpt hack/bin/mockery $(GO_FILES)
+> mkdir -p $(@D)
+> hack/bin/mockery
+> hack/bin/gofumpt -w . # Mockery output needs to be gofumpt'd otherwise this check will fail.
+> touch $@
+
 # Tests - re-run if any Go files have changes since 'tmp/.tests-passed.sentinel' was last touched.
-tmp/.tests-passed.sentinel: generate $(GO_FILES)
+tmp/.tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.cover-tests-passed.sentinel: $(GO_FILES)
+tmp/.cover-tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.benchmarks-ran.sentinel: $(GO_FILES)
+tmp/.benchmarks-ran.sentinel: tmp/.generated.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.report-ran.sentinel: hack/bin/go-junit-report $(GO_FILES)
+tmp/.report-ran.sentinel: tmp/.generated.sentinel hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v ./... $(ADAPTERS) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
 > touch $@
@@ -189,8 +195,7 @@ tmp/.built.sentinel: tmp/.linted.sentinel
 > go build -v ./... $(ADAPTERS)
 > touch $@
 
-generate: hack/bin/mockery ## Generate mocks.
-> hack/bin/mockery
+generate: tmp/.generated.sentinel ## Generate mocks.
 .PHONY: generate
 
 ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
