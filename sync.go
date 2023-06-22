@@ -28,12 +28,13 @@ const (
 )
 
 type Sync struct {
-	DryRun bool // DryRun mode calculates membership, but doesn't add or remove.
-
-	operatingMode OperatingMode // Change the order of Sync's operation. Default is RemoveAdd.
-	caseSensitive bool          // caseSensitive sets if Go Sync is case-sensitive. Default is true.
+	DryRun        bool            // DryRun mode calculates membership, but doesn't add or remove.
+	OperatingMode OperatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
+	CaseSensitive bool            // CaseSensitive sets if Go Sync is case-sensitive. Default is true.
+	source        Adapter         // The source adapter.
+	cache         map[string]bool // cache prevents polling the source more than once.
 	/*
-		maximumChanges sets the maximum number of allowed changes per add/remove operation. It is not a cumulative
+		MaximumChanges sets the maximum number of allowed changes per add/remove operation. It is not a cumulative
 		total, and the number only applies to each distinct operation.
 
 		For example:
@@ -43,10 +44,27 @@ type Sync struct {
 
 		Default is NoChangeLimit (or -1).
 	*/
-	maximumChanges int
-	source         Adapter         // The source adapter.
-	cache          map[string]bool // cache prevents polling the source more than once.
-	logger         *log.Logger
+	MaximumChanges int
+	Logger         *log.Logger
+}
+
+// New creates a new Sync service.
+func New(source Adapter, optsFn ...func(*Sync)) *Sync {
+	sync := &Sync{
+		DryRun:         false,
+		OperatingMode:  RemoveAdd,
+		CaseSensitive:  true,
+		source:         source,
+		cache:          make(map[string]bool),
+		MaximumChanges: NoChangeLimit,
+		Logger:         log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	for _, fn := range optsFn {
+		fn(sync)
+	}
+
+	return sync
 }
 
 // generateHashMap takes a list of strings and returns a hashed map of { item => true }.
@@ -54,7 +72,7 @@ func (s *Sync) generateHashMap(i []string) map[string]bool {
 	out := map[string]bool{}
 
 	for _, str := range i {
-		if s.caseSensitive {
+		if s.CaseSensitive {
 			out[str] = true
 		} else {
 			out[strings.ToLower(str)] = true
@@ -95,7 +113,7 @@ func (s *Sync) getThingsToRemove(things []string) []string {
 // generateCache populates the cache with a map of things for efficient lookup.
 func (s *Sync) generateCache(ctx context.Context) error {
 	if len(s.cache) == 0 {
-		s.logger.Println("Getting things from source adapter")
+		s.Logger.Println("Getting things from source adapter")
 
 		things, err := s.source.Get(ctx)
 		if err != nil {
@@ -117,17 +135,17 @@ func (s *Sync) perform(
 	executeFn func(context.Context, []string) error,
 ) func() error {
 	return func() error {
-		s.logger.Printf("Processing things to %s\n", action)
+		s.Logger.Printf("Processing things to %s\n", action)
 
 		thingsToChange := diffFn(things)
 
 		// If the changes exceed the maximum change limit, fail with the ErrTooManyChanges error.
-		if len(thingsToChange) > s.maximumChanges && s.maximumChanges != NoChangeLimit {
-			return fmt.Errorf("%s(%v) -> %w(%v)", action, thingsToChange, ErrTooManyChanges, s.maximumChanges)
+		if len(thingsToChange) > s.MaximumChanges && s.MaximumChanges != NoChangeLimit {
+			return fmt.Errorf("%s(%v) -> %w(%v)", action, thingsToChange, ErrTooManyChanges, s.MaximumChanges)
 		}
 
 		if s.DryRun {
-			s.logger.Printf("Would %s %s, but running in dry run mode", action, thingsToChange)
+			s.Logger.Printf("Would %s %s, but running in dry run mode", action, thingsToChange)
 
 			return nil
 		}
@@ -136,7 +154,7 @@ func (s *Sync) perform(
 			return nil
 		}
 
-		s.logger.Printf("%s: %s", action, thingsToChange)
+		s.Logger.Printf("%s: %s", action, thingsToChange)
 
 		err := executeFn(ctx, thingsToChange)
 		if err != nil {
@@ -149,25 +167,25 @@ func (s *Sync) perform(
 
 // SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
 func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
-	s.logger.Println("Starting sync")
+	s.Logger.Println("Starting sync")
 
 	// Call to populate the cache from the source adapter.
 	if err := s.generateCache(ctx); err != nil {
 		return fmt.Errorf("sync.syncwith.generateCache -> %w", err)
 	}
 
-	s.logger.Println("Getting things from destination adapter")
+	s.Logger.Println("Getting things from destination adapter")
 
 	things, err := adapter.Get(ctx)
 	if err != nil {
 		return fmt.Errorf("sync.syncwith.get -> %w", err)
 	}
 
-	s.logger.Printf("Running in %s operating mode", s.operatingMode)
+	s.Logger.Printf("Running in %s operating mode", s.OperatingMode)
 
 	operations := make([]func() error, 0, 2) //nolint:gomnd
 
-	switch s.operatingMode {
+	switch s.OperatingMode {
 	case AddOnly:
 		operations = []func() error{
 			s.perform(ctx, "add", things, s.getThingsToAdd, adapter.Add),
@@ -195,49 +213,7 @@ func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
 		}
 	}
 
-	s.logger.Println("Finished sync")
+	s.Logger.Println("Finished sync")
 
 	return nil
-}
-
-// SetOperatingMode sets a custom operating mode.
-func SetOperatingMode(mode OperatingMode) func(*Sync) {
-	return func(s *Sync) {
-		s.operatingMode = mode
-	}
-}
-
-// SetCaseSensitive can configure Go Sync's case sensitivity when comparing things.
-func SetCaseSensitive(caseSensitive bool) func(*Sync) {
-	return func(s *Sync) {
-		s.caseSensitive = caseSensitive
-	}
-}
-
-// SetMaximumChanges sets a maximum number of changes that Sync will allow before returning an ErrTooManyChanges error.
-func SetMaximumChanges(maximumChanges int) func(*Sync) {
-	return func(s *Sync) {
-		s.maximumChanges = maximumChanges
-	}
-}
-
-// New creates a new gosync.Sync service.
-func New(source Adapter, configFns ...func(*Sync)) *Sync {
-	sync := &Sync{
-		DryRun: false,
-
-		operatingMode:  RemoveAdd,
-		caseSensitive:  true,
-		maximumChanges: NoChangeLimit,
-		source:         source,
-		cache:          make(map[string]bool),
-
-		logger: log.New(os.Stderr, "[go-sync/sync] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range configFns {
-		fn(sync)
-	}
-
-	return sync
 }
