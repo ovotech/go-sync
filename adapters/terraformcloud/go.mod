@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/hashicorp/go-tfe v1.27.0
-	github.com/ovotech/go-sync v0
+	github.com/ovotech/go-sync v0.12.1
 	github.com/stretchr/testify v1.8.4
 )
 
@@ -22,5 +22,3 @@ require (
 	golang.org/x/time v0.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/ovotech/go-sync v0 => ../../
