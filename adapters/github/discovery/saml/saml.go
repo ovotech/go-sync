@@ -94,14 +94,26 @@ func (s *Saml) GetEmailFromUsername(ctx context.Context, logins []string) ([]str
 			return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> graphql query error -> %w", login, err)
 		}
 
-		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 1 {
-			emails = append(
-				emails,
-				query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.SamlIdentity.NameID,
-			)
-		} else if !s.MuteUserNotFoundErr {
-			return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> unknown identity -> %w", login, ErrUserNotFound)
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 0 {
+			if !s.MuteUserNotFoundErr {
+				return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> unknown identity -> %w", login, ErrUserNotFound)
+			}
+
+			continue
 		}
+
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.SamlIdentity.NameID) == 0 {
+			if !s.MuteUserNotFoundErr {
+				return nil, fmt.Errorf("github.saml.getemailfromusername(%s) -> unknown identity -> %w", login, ErrUserNotFound)
+			}
+
+			continue
+		}
+
+		emails = append(
+			emails,
+			query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.SamlIdentity.NameID,
+		)
 	}
 
 	return emails, nil
@@ -123,11 +135,26 @@ func (s *Saml) GetUsernameFromEmail(ctx context.Context, emails []string) ([]str
 			return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> graphql query error -> %w", email, err)
 		}
 
-		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 1 {
-			ids = append(ids, query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.User.Login)
-		} else if !s.MuteUserNotFoundErr {
-			return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> %w", email, ErrUserNotFound)
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges) == 0 {
+			if !s.MuteUserNotFoundErr {
+				return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> %w", email, ErrUserNotFound)
+			}
+
+			continue
 		}
+
+		if len(query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.User.Login) == 0 {
+			if !s.MuteUserNotFoundErr {
+				return nil, fmt.Errorf("github.saml.getusernamefromemail(%s) -> %w", email, ErrUserNotFound)
+			}
+
+			continue
+		}
+
+		ids = append(
+			ids,
+			query.Organization.SamlIdentityProvider.ExternalIdentities.Edges[0].Node.User.Login,
+		)
 	}
 
 	return ids, nil
