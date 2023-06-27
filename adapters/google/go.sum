@@ -66,8 +66,8 @@ github.com/googleapis/gax-go/v2 v2.10.0/go.mod h1:4UOEnMCrxsSqQ940WnTiD6qJ63le2e
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
-github.com/ovotech/go-sync v0.12.1 h1:RT5fniCOFy9ugeuM9va2+EJ0ndDcgKOT7xEVcW8yi+M=
-github.com/ovotech/go-sync v0.12.1/go.mod h1:JHB287s+Vn0QrbWdhNOo+0XAIAg+szPkss5MJVnuTZs=
+github.com/ovotech/go-sync v0.13.1 h1:BYALOUxbkCPXFODINdhUJyUmrxEDuivjwFPf3kFLAC8=
+github.com/ovotech/go-sync v0.13.1/go.mod h1:mzYty1nlJJQzuT+Gv72YckTJZpUYg3WD8YlgjoRPQ7Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
