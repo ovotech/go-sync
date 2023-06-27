@@ -121,6 +121,7 @@ func TestConversation_Add(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint:funlen
 func TestConversation_Remove(t *testing.T) {
 	t.Parallel()
 
@@ -165,6 +166,36 @@ func TestConversation_Remove(t *testing.T) {
 		adapter.MuteRestrictedErrOnKickFromPublic = true
 
 		err = adapter.Remove(ctx, []string{"foo@email", "bar@email"})
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Check case sensitivity", func(t *testing.T) {
+		t.Parallel()
+
+		slackClient := newMockISlackConversation(t)
+		adapter := New(&slack.Client{}, "test")
+		adapter.client = slackClient
+
+		slackClient.EXPECT().GetUsersInConversation(&slack.GetUsersInConversationParameters{
+			ChannelID: "test",
+			Cursor:    "",
+			Limit:     50,
+		}).Return([]string{"foo", "bar"}, "", nil)
+
+		slackClient.EXPECT().GetUsersInfo("foo", "bar").Return(&[]slack.User{
+			// Capitalise the letter E in email.
+			{ID: "foo", IsBot: false, Profile: slack.UserProfile{Email: "foo@Email"}},
+			{ID: "bar", IsBot: false, Profile: slack.UserProfile{Email: "bar@Email"}},
+		}, nil)
+
+		_, _ = adapter.Get(ctx)
+
+		slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(nil)
+		slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(nil)
+
+		// Capitalise the first letter of each email.
+		err := adapter.Remove(ctx, []string{"Foo@email", "Bar@email"})
 
 		assert.NoError(t, err)
 	})
