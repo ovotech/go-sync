@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/slack
 go 1.18
 
 require (
-	github.com/ovotech/go-sync v0.12.1
+	github.com/ovotech/go-sync v0.13.1
 	github.com/slack-go/slack v0.12.2
 	github.com/stretchr/testify v1.8.4
 )
