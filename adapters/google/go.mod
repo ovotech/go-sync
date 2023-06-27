@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/ovotech/go-sync v0.12.1
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/api v0.127.0
+	google.golang.org/api v0.128.0
 )
 
 require (
