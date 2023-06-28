@@ -181,10 +181,10 @@ func (c *Conversation) Get(_ context.Context) ([]string, error) {
 
 	for _, user := range *users {
 		if !user.IsBot {
-			emails = append(emails, user.Profile.Email)
+			emails = append(emails, strings.ToLower(user.Profile.Email))
 
 			// Add the email -> ID map for use with Remove method.
-			c.cache[user.Profile.Email] = user.ID
+			c.cache[strings.ToLower(user.Profile.Email)] = user.ID
 		}
 	}
 
@@ -200,7 +200,7 @@ func (c *Conversation) Add(_ context.Context, emails []string) error {
 	slackIds := make([]string, len(emails))
 
 	for index, email := range emails {
-		user, err := c.client.GetUserByEmail(email)
+		user, err := c.client.GetUserByEmail(strings.ToLower(email))
 		if err != nil {
 			return fmt.Errorf("slack.conversation.add.getuserbyemail(%s) -> %w", email, err)
 		}
@@ -228,7 +228,7 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	}
 
 	for _, email := range emails {
-		err := c.client.KickUserFromConversation(c.conversationName, c.cache[email])
+		err := c.client.KickUserFromConversation(c.conversationName, c.cache[strings.ToLower(email)])
 		if err != nil {
 			if c.MuteRestrictedErrOnKickFromPublic && strings.Contains(err.Error(), "restricted_action") {
 				c.Logger.Println("Cannot kick from public channel, but error is muted by configuration - continuing")
