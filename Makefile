@@ -198,12 +198,6 @@ tmp/.built.sentinel: tmp/.linted.sentinel
 generate: tmp/.generated.sentinel ## Generate mocks.
 .PHONY: generate
 
-ci/tag-adapters: ## Tag all adapters with $RELEASE_VERSION environment variable. For use in CI.
-> for adapter in $(shell ls -d adapters/*); do
->   git tag $${adapter}/$${RELEASE_VERSION:?}
-> done
-.PHONY: ci/tag-adapters
-
 tidy: ## Run 'go mod tidy' on all Go modules.
 > find . -name 'go.mod' -execdir go mod tidy \;
 .PHONY: tidy
