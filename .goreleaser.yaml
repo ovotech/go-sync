@@ -1,8 +1,0 @@
-project_name: go-sync
-before:
-  hooks:
-    - go mod tidy
-builds:
-  - skip: true
-changelog:
-  sort: asc
