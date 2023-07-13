@@ -15,17 +15,20 @@ jobs:
         with:
           go-version-file: "go.mod"
           cache: true
-
-      - name: make lint-fix
+      - name: Run Make commands
         run: |
           make generate
           make lint-fix
+          make lint
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v13.1
         with:
           files: |
             *
+      - name: Diff
+        if: steps.check-changed-files.outputs.files_changed == 'true'
+        run: git diff
       - name: Fail if code needs linting
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
