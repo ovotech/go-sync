@@ -25,16 +25,6 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-/*
-GoogleAuthenticationMechanism sets the authentication mechanism for Google.
-
-Supported options are:
-  - [default]
-
-[default]: https://cloud.google.com/docs/authentication/application-default-credentials
-*/
-const GoogleAuthenticationMechanism gosync.ConfigKey = "google_authentication_mechanism"
-
 // Name is the name of your Google group.
 const Name gosync.ConfigKey = "name"
 
@@ -175,51 +165,59 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
+// WithAdminService passes a custom Google Admin Service to the adapter.
+func WithAdminService(adminService *admin.Service) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Group); ok {
+			adapter.membersService = adminService.Members
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Group); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Google Group [gosync.Adapter].
 
 Required config:
-  - [group.GoogleAuthenticationMechanism]
   - [group.Name]
 */
-func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, Name} {
+func Init(
+	ctx context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn,
+) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	var (
-		client *admin.Service
-		err    error
-	)
-
-	scopes := option.WithScopes(admin.AdminDirectoryGroupMemberScope)
-
-	switch config[GoogleAuthenticationMechanism] {
-	case "_testing_":
-		// Only for use in testing in order to prevent failure to fetch default credentials.
-		client, err = admin.NewService(ctx, scopes, option.WithAPIKey("_testing_"))
-		if err != nil {
-			return nil, fmt.Errorf("google.group.init -> %w", err)
-		}
-	case "default":
-		client, err = admin.NewService(ctx, scopes)
-		if err != nil {
-			return nil, fmt.Errorf("google.group.init -> %w", err)
-		}
-	default:
-		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[GoogleAuthenticationMechanism])
-	}
-
 	adapter := &Group{
-		membersService: client.Members,
-		name:           config[Name],
-		Logger:         log.New(os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+		name: config[Name],
 
 		callList:   callList,
 		callInsert: callInsert,
 		callDelete: callDelete,
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
 	}
 
 	if val, ok := config[Role]; ok {
@@ -228,6 +226,15 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 
 	if val, ok := config[DeliverySettings]; ok {
 		adapter.DeliverySettings = val
+	}
+
+	if adapter.membersService == nil {
+		client, err := admin.NewService(ctx, option.WithScopes(admin.AdminDirectoryGroupMemberScope))
+		if err != nil {
+			return nil, fmt.Errorf("google.group.init -> %w", err)
+		}
+
+		WithAdminService(client)(adapter)
 	}
 
 	return adapter, nil

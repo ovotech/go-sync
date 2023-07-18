@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	admin "google.golang.org/api/admin/directory/v1"
+	"google.golang.org/api/option"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -195,8 +196,7 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			GoogleAuthenticationMechanism: "_testing_",
-			Name:                          "name",
+			Name: "name",
 		})
 
 		assert.NoError(t, err)
@@ -209,48 +209,22 @@ func TestInit(t *testing.T) {
 	t.Run("missing config", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("missing authentication", func(t *testing.T) {
-			t.Parallel()
-
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				Name: "name",
-			})
-
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GoogleAuthenticationMechanism)
-		})
-
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GoogleAuthenticationMechanism: "default",
-			})
+			_, err := Init(ctx, map[gosync.ConfigKey]string{})
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, Name)
 		})
 	})
 
-	t.Run("invalid config", func(t *testing.T) {
-		t.Parallel()
-
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
-			GoogleAuthenticationMechanism: "foo",
-			Name:                          "name",
-		})
-
-		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
-		assert.ErrorContains(t, err, "foo")
-	})
-
 	t.Run("role", func(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			GoogleAuthenticationMechanism: "_testing_",
-			Name:                          "name",
-			Role:                          "role",
+			Name: "name",
+			Role: "role",
 		})
 
 		assert.NoError(t, err)
@@ -261,12 +235,53 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			GoogleAuthenticationMechanism: "_testing_",
-			Name:                          "name",
-			DeliverySettings:              "delivery",
+			Name:             "name",
+			DeliverySettings: "delivery",
 		})
 
 		assert.NoError(t, err)
 		assert.Equal(t, "delivery", adapter.(*Group).DeliverySettings)
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Name: "name",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*Group).Logger)
+	})
+
+	t.Run("with admin service", func(t *testing.T) {
+		t.Parallel()
+
+		client, err := admin.NewService(
+			ctx,
+			option.WithScopes(admin.AdminDirectoryGroupMemberScope),
+			option.WithAPIKey("_testing_"),
+		)
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Name: "name",
+		}, WithAdminService(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Members, adapter.(*Group).membersService)
+	})
+
+	t.Run("default", func(t *testing.T) {
+		t.Parallel()
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Name: "name",
+		})
+
+		assert.NoError(t, err)
+		assert.NotNil(t, adapter.(*Group).membersService)
 	})
 }
