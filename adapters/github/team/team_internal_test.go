@@ -2,6 +2,8 @@ package team
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/google/go-github/v47/github"
@@ -12,16 +14,6 @@ import (
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-
-	assert.Equal(t, "org", adapter.org)
-	assert.Equal(t, "slug", adapter.slug)
-}
-
 func TestTeam_Get(t *testing.T) {
 	t.Parallel()
 
@@ -29,8 +21,14 @@ func TestTeam_Get(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	gitHubClient.
 		EXPECT().
@@ -63,8 +61,14 @@ func TestTeam_Add(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
 		Maybe().Return([]string{"fizz", "buzz"}, nil)
@@ -85,9 +89,15 @@ func TestTeam_Remove(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
-	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		cache:     map[string]string{"foo@email": "foo", "bar@email": "bar"},
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "foo").Return(nil, nil)
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "bar").Return(nil, nil)
