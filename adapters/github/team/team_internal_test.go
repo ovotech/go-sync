@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-github/v47/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/oauth2"
 
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
@@ -171,19 +172,6 @@ func TestInit(t *testing.T) {
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, TeamSlug)
 		})
-
-		t.Run("missing discovery", func(t *testing.T) {
-			t.Parallel()
-
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubToken: "token",
-				GitHubOrg:   "org",
-				TeamSlug:    "slug",
-			})
-
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, DiscoveryMechanism)
-		})
 	})
 
 	t.Run("invalid config", func(t *testing.T) {
@@ -196,7 +184,55 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "foo",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
-		assert.ErrorContains(t, err, "foo")
+		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "saml",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*Team).Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client := github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: "token"},
+		)))
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "saml",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Teams, adapter.(*Team).teams)
+	})
+
+	t.Run("with discovery service", func(t *testing.T) {
+		t.Parallel()
+
+		mockDiscovery := NewMockGitHubDiscovery(t)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken: "token",
+			GitHubOrg:   "org",
+			TeamSlug:    "slug",
+		}, WithDiscoveryService(mockDiscovery))
+
+		assert.NoError(t, err)
+		assert.Equal(t, mockDiscovery, adapter.(*Team).discovery)
 	})
 }
