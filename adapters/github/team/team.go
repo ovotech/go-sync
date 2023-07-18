@@ -204,36 +204,6 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 }
 
 /*
-New GitHub Team [gosync.Adapter].
-
-Recommended reading for parameters:
-  - org: [team.GitHubOrg]
-  - slug: [team.TeamSlug]
-*/
-func New(
-	client *github.Client,
-	discovery discovery.GitHubDiscovery,
-	org string,
-	slug string,
-	optsFn ...func(*Team),
-) *Team {
-	team := &Team{
-		teams:     client.Teams,
-		discovery: discovery,
-		org:       org,
-		slug:      slug,
-		cache:     nil,
-		Logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(team)
-	}
-
-	return team
-}
-
-/*
 Init a new GitHub Team [gosync.Adapter].
 
 Required config:
@@ -270,5 +240,14 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[DiscoveryMechanism])
 	}
 
-	return New(gitHubV3Client, discoverySvc, config[GitHubOrg], config[TeamSlug]), nil
+	adapter := &Team{
+		teams:     gitHubV3Client.Teams,
+		discovery: discoverySvc,
+		org:       config[GitHubOrg],
+		slug:      config[TeamSlug],
+		cache:     nil,
+		Logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	return adapter, nil
 }
