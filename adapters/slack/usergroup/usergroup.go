@@ -243,32 +243,67 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
+// WithClient passes a custom Slack client to the adapter.
+func WithClient(client *slack.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*UserGroup); ok {
+			adapter.client = client
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*UserGroup); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Slack UserGroup [gosync.Adapter].
 
 Required config:
-  - [usergroup.SlackAPIKey]
   - [usergroup.UserGroupID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, UserGroupID} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{UserGroupID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client := slack.New(config[SlackAPIKey])
-
 	adapter := &UserGroup{
-		client:                 client,
 		userGroupID:            config[UserGroupID],
-		cache:                  nil,
+		cache:                  make(map[string]string),
 		MuteGroupCannotBeEmpty: false,
-		Logger:                 log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	if _, ok := config[SlackAPIKey]; ok {
+		client := slack.New(config[SlackAPIKey])
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
 	}
 
 	if val, ok := config[MuteGroupCannotBeEmpty]; ok {
 		adapter.MuteGroupCannotBeEmpty = strings.ToLower(val) == "true"
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("user.init -> %w(%s)", gosync.ErrMissingConfig, SlackAPIKey)
 	}
 
 	return adapter, nil

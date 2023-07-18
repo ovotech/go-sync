@@ -253,36 +253,67 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	return nil
 }
 
+// WithClient passes a custom Slack client to the adapter.
+func WithClient(client *slack.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Conversation); ok {
+			adapter.client = client
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Conversation); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Slack Conversation [gosync.Adapter].
 
 Required config:
-  - [conversation.SlackAPIKey]
   - [conversation.Name]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, Name} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client := slack.New(config[SlackAPIKey])
-
 	adapter := &Conversation{
 		MuteRestrictedErrOnKickFromPublic: false,
-		client:                            client,
 		conversationName:                  config[Name],
-		cache:                             nil,
-		Logger: log.New(
-			os.Stderr,
-			"[go-sync/slack/conversation] ",
-			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
+		cache:                             make(map[string]string),
+	}
+
+	if _, ok := config[SlackAPIKey]; ok {
+		client := slack.New(config[SlackAPIKey])
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
 	}
 
 	if val, ok := config[MuteRestrictedErrOnKickFromPublic]; ok {
 		adapter.MuteRestrictedErrOnKickFromPublic = strings.ToLower(val) == "true"
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/slack/conversation] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, SlackAPIKey)
 	}
 
 	return adapter, nil
