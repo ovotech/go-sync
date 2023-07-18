@@ -139,6 +139,7 @@ func TestUserGroup_Add(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestUserGroup_Remove(t *testing.T) {
 	t.Parallel()
 
