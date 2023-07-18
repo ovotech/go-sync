@@ -2,6 +2,8 @@ package group
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,14 +39,6 @@ func (m *mockCalls) callDelete(ctx context.Context, call *admin.MembersDeleteCal
 	return args.Error(0) //nolint:wrapcheck
 }
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	group := New(&admin.Service{}, "test")
-
-	assert.Equal(t, "test", group.name)
-}
-
 func TestGroups_Get(t *testing.T) {
 	t.Parallel()
 
@@ -66,9 +60,14 @@ func TestGroups_Get(t *testing.T) {
 		},
 	}, nil)
 
-	group := New(&admin.Service{}, "test")
-	group.membersService = mockMembersService
-	group.callList = mockCall.callList
+	group := &Group{
+		name:           "test",
+		membersService: mockMembersService,
+		Logger:         log.New(os.Stdout, "", log.LstdFlags),
+		callList:       mockCall.callList,
+		callInsert:     mockCall.callInsert,
+		callDelete:     mockCall.callDelete,
+	}
 
 	emails, err := group.Get(ctx)
 
@@ -88,9 +87,14 @@ func TestGroups_Add(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
 
-	group := New(&admin.Service{}, "test")
-	group.membersService = mockMembersService
-	group.callInsert = mockCall.callInsert
+	group := &Group{
+		name:           "test",
+		membersService: mockMembersService,
+		Logger:         log.New(os.Stdout, "", log.LstdFlags),
+		callList:       mockCall.callList,
+		callInsert:     mockCall.callInsert,
+		callDelete:     mockCall.callDelete,
+	}
 
 	err := group.Add(ctx, []string{"foo@email", "bar@email"})
 
@@ -109,9 +113,14 @@ func TestGroups_Remove(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callDelete", ctx, mock.Anything).Twice().Return(nil)
 
-	group := New(&admin.Service{}, "test")
-	group.membersService = mockMembersService
-	group.callDelete = mockCall.callDelete
+	group := &Group{
+		name:           "test",
+		membersService: mockMembersService,
+		Logger:         log.New(os.Stdout, "", log.LstdFlags),
+		callList:       mockCall.callList,
+		callInsert:     mockCall.callInsert,
+		callDelete:     mockCall.callDelete,
+	}
 
 	err := group.Remove(ctx, []string{"foo@email", "bar@email"})
 
@@ -132,11 +141,15 @@ func TestRole(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
 
-	group := New(&admin.Service{}, "test")
-	group.Role = "test-role"
-
-	group.membersService = mockMembersService
-	group.callInsert = mockCall.callInsert
+	group := &Group{
+		name:           "test",
+		Role:           "test-role",
+		membersService: mockMembersService,
+		Logger:         log.New(os.Stdout, "", log.LstdFlags),
+		callList:       mockCall.callList,
+		callInsert:     mockCall.callInsert,
+		callDelete:     mockCall.callDelete,
+	}
 
 	err := group.Add(ctx, []string{"foo@email"})
 
@@ -157,11 +170,15 @@ func TestDeliverySettings(t *testing.T) {
 	mockCall := new(mockCalls)
 	mockCall.On("callInsert", ctx, mock.Anything).Return(&admin.Member{}, nil)
 
-	group := New(&admin.Service{}, "test")
-	group.DeliverySettings = "test-delivery-settings"
-
-	group.membersService = mockMembersService
-	group.callInsert = mockCall.callInsert
+	group := &Group{
+		name:             "test",
+		membersService:   mockMembersService,
+		DeliverySettings: "test-delivery-settings",
+		Logger:           log.New(os.Stdout, "", log.LstdFlags),
+		callList:         mockCall.callList,
+		callInsert:       mockCall.callInsert,
+		callDelete:       mockCall.callDelete,
+	}
 
 	err := group.Add(ctx, []string{"foo@email"})
 
