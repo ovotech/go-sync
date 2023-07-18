@@ -87,32 +87,67 @@ func (o *OnCall) Remove(_ context.Context, _ []string) error {
 	return gosync.ErrReadOnly
 }
 
+// WithClient passes a custom Opsgenie Schedule client to the adapter.
+func WithClient(client *schedule.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*OnCall); ok {
+			adapter.client = client
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*OnCall); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Opsgenie OnCall [gosync.Adapter].
 
 Required config:
-  - [oncall.OpsgenieAPIKey]
   - [oncall.ScheduleID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, ScheduleID} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	scheduleClient, err := schedule.NewClient(&client.Config{
-		ApiKey: config[OpsgenieAPIKey],
-	})
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.oncall.new -> %w", err)
-	}
-
 	adapter := &OnCall{
-		client:     scheduleClient,
 		scheduleID: config[ScheduleID],
 		getTime:    time.Now,
-		Logger:     log.New(os.Stderr, "[go-sync/opsgenie/oncall]", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	if _, ok := config[OpsgenieAPIKey]; ok {
+		scheduleClient, err := schedule.NewClient(&client.Config{
+			ApiKey: config[OpsgenieAPIKey],
+		})
+		if err != nil {
+			return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+		}
+
+		WithClient(scheduleClient)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/opsgenie/oncall] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, OpsgenieAPIKey)
 	}
 
 	return adapter, nil
