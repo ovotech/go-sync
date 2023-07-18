@@ -4,19 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/slack-go/slack"
-
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/slack/usergroup"
 )
-
-func ExampleNew() {
-	client := slack.New("my-slack-token")
-
-	adapter := usergroup.New(client, "S0123ABC456")
-
-	gosync.New(adapter)
-}
 
 func ExampleInit() {
 	ctx := context.Background()

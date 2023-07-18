@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,26 +16,18 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
-
-	assert.Equal(t, "test", adapter.userGroupID)
-	assert.False(t, adapter.MuteGroupCannotBeEmpty)
-	assert.Zero(t, slackClient.Calls)
-}
-
 func TestUserGroup_Get(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
 
 	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &UserGroup{
+		client:      slackClient,
+		userGroupID: "test",
+		Logger:      log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	slackClient.EXPECT().GetUserGroupMembersContext(ctx, "test").Return([]string{"foo", "bar"}, nil)
 	slackClient.EXPECT().GetUsersInfoContext(ctx, "foo", "bar").Maybe().Return(&[]slack.User{
@@ -57,8 +51,12 @@ func TestUserGroup_Get_Pagination(t *testing.T) {
 	ctx := context.TODO()
 
 	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &UserGroup{
+		client:      slackClient,
+		userGroupID: "test",
+		Logger:      log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	incrementingSlice := make([]string, 60)
 	firstPage := make([]interface{}, 30)
@@ -101,8 +99,12 @@ func TestUserGroup_Add(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		err := adapter.Add(ctx, []string{"foo", "bar"})
 
@@ -114,8 +116,12 @@ func TestUserGroup_Add(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "fizz@email").Return(&slack.User{ID: "fizz"}, nil)
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "buzz@email").Return(&slack.User{ID: "buzz"}, nil)
@@ -142,8 +148,12 @@ func TestUserGroup_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
@@ -155,9 +165,13 @@ func TestUserGroup_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			cache:       map[string]string{"foo@email": "foo", "bar@email": "bar"},
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "foo").Return(slack.UserGroup{}, nil)
 
@@ -173,10 +187,14 @@ func TestUserGroup_Remove(t *testing.T) {
 		errInvalidArguments := errors.New("invalid_arguments") //nolint:goerr113
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo"}
-		adapter.MuteGroupCannotBeEmpty = false
+
+		adapter := &UserGroup{
+			client:                 slackClient,
+			userGroupID:            "test",
+			cache:                  map[string]string{"foo@email": "foo"},
+			MuteGroupCannotBeEmpty: false,
+			Logger:                 log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "").Return(slack.UserGroup{}, errInvalidArguments)
 

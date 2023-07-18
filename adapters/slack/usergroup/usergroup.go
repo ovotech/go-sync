@@ -243,23 +243,6 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// New Slack UserGroup [gosync.Adapter].
-func New(slackClient *slack.Client, userGroupID string, optsFn ...func(group *UserGroup)) *UserGroup {
-	ugAdapter := &UserGroup{
-		client:                 slackClient,
-		userGroupID:            userGroupID,
-		cache:                  nil,
-		MuteGroupCannotBeEmpty: false,
-		Logger:                 log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(ugAdapter)
-	}
-
-	return ugAdapter
-}
-
 /*
 Init a new Slack UserGroup [gosync.Adapter].
 
@@ -276,7 +259,13 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 
 	client := slack.New(config[SlackAPIKey])
 
-	adapter := New(client, config[UserGroupID])
+	adapter := &UserGroup{
+		client:                 client,
+		userGroupID:            config[UserGroupID],
+		cache:                  nil,
+		MuteGroupCannotBeEmpty: false,
+		Logger:                 log.New(os.Stderr, "[go-sync/slack/usergroup] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
 
 	if val, ok := config[MuteGroupCannotBeEmpty]; ok {
 		adapter.MuteGroupCannotBeEmpty = strings.ToLower(val) == "true"
