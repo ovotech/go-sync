@@ -127,4 +127,32 @@ func TestInit(t *testing.T) {
 		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 		assert.ErrorContains(t, err, Organisation)
 	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Token:        "token",
+			Organisation: "org",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*Team).Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client, err := tfe.NewClient(&tfe.Config{Token: "test"})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Organisation: "org",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Teams, adapter.(*Team).teams)
+	})
 }
