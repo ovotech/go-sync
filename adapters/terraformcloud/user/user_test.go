@@ -4,22 +4,9 @@ import (
 	"context"
 	"log"
 
-	"github.com/hashicorp/go-tfe"
-
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/terraformcloud/user"
 )
-
-func ExampleNew() {
-	client, err := tfe.NewClient(&tfe.Config{Token: "my-org-token"})
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	adapter := user.New(client, "my-org", "my-team")
-
-	gosync.New(adapter)
-}
 
 func ExampleInit() {
 	ctx := context.Background()

@@ -2,6 +2,8 @@ package team
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-tfe"
@@ -10,18 +12,18 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-}
-
 func TestTeam_Get(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
 
 	iTeamsClient := newMockITeams(t)
-	adapter := New(&tfe.Client{}, "test")
-	adapter.teams = iTeamsClient
+
+	adapter := &Team{
+		organisation: "test",
+		teams:        iTeamsClient,
+		Logger:       log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	iTeamsClient.EXPECT().List(ctx, "test", &tfe.TeamListOptions{
 		ListOptions: tfe.ListOptions{PageNumber: 1},
@@ -57,8 +59,12 @@ func TestTeam_Add(t *testing.T) {
 	ctx := context.TODO()
 
 	iTeamsClient := newMockITeams(t)
-	adapter := New(&tfe.Client{}, "test")
-	adapter.teams = iTeamsClient
+
+	adapter := &Team{
+		organisation: "test",
+		teams:        iTeamsClient,
+		Logger:       log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	foo := "foo"
 
@@ -75,9 +81,13 @@ func TestTeam_Remove(t *testing.T) {
 	ctx := context.TODO()
 
 	iTeamsClient := newMockITeams(t)
-	adapter := New(&tfe.Client{}, "test")
-	adapter.teams = iTeamsClient
-	adapter.cache = map[string]string{"foo": "foo-id"}
+
+	adapter := &Team{
+		organisation: "test",
+		teams:        iTeamsClient,
+		cache:        map[string]string{"foo": "foo-id"},
+		Logger:       log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	iTeamsClient.EXPECT().Delete(ctx, "foo-id").Return(nil)
 
