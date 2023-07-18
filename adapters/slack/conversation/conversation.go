@@ -253,27 +253,6 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	return nil
 }
 
-// New Slack Conversation [gosync.Adapter].
-func New(client *slack.Client, conversationName string, optsFn ...func(conversation *Conversation)) *Conversation {
-	conversation := &Conversation{
-		MuteRestrictedErrOnKickFromPublic: false,
-		client:                            client,
-		conversationName:                  conversationName,
-		cache:                             nil,
-		Logger: log.New(
-			os.Stderr,
-			"[go-sync/slack/conversation] ",
-			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
-	}
-
-	for _, fn := range optsFn {
-		fn(conversation)
-	}
-
-	return conversation
-}
-
 /*
 Init a new Slack Conversation [gosync.Adapter].
 
@@ -290,7 +269,17 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 
 	client := slack.New(config[SlackAPIKey])
 
-	adapter := New(client, config[Name])
+	adapter := &Conversation{
+		MuteRestrictedErrOnKickFromPublic: false,
+		client:                            client,
+		conversationName:                  config[Name],
+		cache:                             nil,
+		Logger: log.New(
+			os.Stderr,
+			"[go-sync/slack/conversation] ",
+			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		),
+	}
 
 	if val, ok := config[MuteRestrictedErrOnKickFromPublic]; ok {
 		adapter.MuteRestrictedErrOnKickFromPublic = strings.ToLower(val) == "true"

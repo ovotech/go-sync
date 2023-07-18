@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/slack-go/slack"
@@ -16,8 +18,12 @@ func TestNew(t *testing.T) {
 	t.Parallel()
 
 	slackClient := newMockISlackConversation(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &Conversation{
+		client:           slackClient,
+		conversationName: "test",
+		Logger:           log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	assert.Equal(t, "test", adapter.conversationName)
 	assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic)
@@ -28,8 +34,12 @@ func TestConversation_Get(t *testing.T) {
 	t.Parallel()
 
 	slackClient := newMockISlackConversation(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &Conversation{
+		client:           slackClient,
+		conversationName: "test",
+		Logger:           log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	// First page.
 	slackClient.EXPECT().GetUsersInConversation(&slack.GetUsersInConversationParameters{
@@ -62,8 +72,12 @@ func TestConversation_Get_Pagination(t *testing.T) {
 	t.Parallel()
 
 	slackClient := newMockISlackConversation(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &Conversation{
+		client:           slackClient,
+		conversationName: "test",
+		Logger:           log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	incrementingSlice := make([]string, 60)
 	firstPage := make([]interface{}, 30)
@@ -105,8 +119,12 @@ func TestConversation_Add(t *testing.T) {
 	t.Parallel()
 
 	slackClient := newMockISlackConversation(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &Conversation{
+		client:           slackClient,
+		conversationName: "test",
+		Logger:           log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	slackClient.EXPECT().GetUserByEmail("foo@email").Return(&slack.User{
 		ID: "foo",
@@ -131,9 +149,13 @@ func TestConversation_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackConversation(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+		adapter := &Conversation{
+			client:           slackClient,
+			conversationName: "test",
+			cache:            map[string]string{"foo@email": "foo", "bar@email": "bar"},
+			Logger:           log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().KickUserFromConversation("test", "foo").Return(nil)
 		slackClient.EXPECT().KickUserFromConversation("test", "bar").Return(nil)
@@ -149,9 +171,12 @@ func TestConversation_Remove(t *testing.T) {
 		restrictedAction := errors.New("restricted_action") //nolint:goerr113
 
 		slackClient := newMockISlackConversation(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+		adapter := &Conversation{
+			client:           slackClient,
+			conversationName: "test",
+			cache:            map[string]string{"foo@email": "foo", "bar@email": "bar"},
+			Logger:           log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().KickUserFromConversation("test", "foo").Maybe().Return(restrictedAction)
 		slackClient.EXPECT().KickUserFromConversation("test", "bar").Maybe().Return(restrictedAction)
@@ -174,8 +199,12 @@ func TestConversation_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackConversation(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &Conversation{
+			client:           slackClient,
+			conversationName: "test",
+			Logger:           log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().GetUsersInConversation(&slack.GetUsersInConversationParameters{
 			ChannelID: "test",
