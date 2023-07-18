@@ -34,7 +34,7 @@ const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
 const Team gosync.ConfigKey = "team"
 
 var (
-	_ gosync.Adapter = &User{} // Ensure [user.User] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter = &user{} // Ensure [user.user] fully satisfies the [gosync.Adapter] interface.
 	_ gosync.InitFn  = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
@@ -61,7 +61,7 @@ type iOrganizationMemberships interface {
 	) (*tfe.OrganizationMembershipList, error)
 }
 
-type User struct {
+type user struct {
 	organisation            string
 	team                    string
 	teams                   iTeams
@@ -71,7 +71,7 @@ type User struct {
 }
 
 // getTeamID queries the Terraform Cloud API to convert a friendly team name into a team ID.
-func (u *User) getTeamID(ctx context.Context) (string, error) {
+func (u *user) getTeamID(ctx context.Context) (string, error) {
 	u.Logger.Printf("Querying Terraform Cloud organisation %s for team ID of %s", u.organisation, u.team)
 
 	teams, err := u.teams.List(ctx, u.organisation, &tfe.TeamListOptions{Names: []string{u.team}})
@@ -89,7 +89,7 @@ func (u *User) getTeamID(ctx context.Context) (string, error) {
 }
 
 // getOrgIDsFromEmails takes a slice of emails, and returns a slice of Organisational Membership IDs.
-func (u *User) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]string, error) {
+func (u *user) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]string, error) {
 	pageNumber := 1
 	ids := make([]string, 0, len(emails))
 
@@ -123,7 +123,7 @@ func (u *User) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]stri
 }
 
 // Get users in a Terraform Cloud team.
-func (u *User) Get(ctx context.Context) ([]string, error) {
+func (u *user) Get(ctx context.Context) ([]string, error) {
 	u.Logger.Printf("Fetching users in Terraform Cloud team %s", u.team)
 
 	team, err := u.teams.List(ctx, u.organisation, &tfe.TeamListOptions{
@@ -150,7 +150,7 @@ func (u *User) Get(ctx context.Context) ([]string, error) {
 }
 
 // Add users to a Terraform Cloud team.
-func (u *User) Add(ctx context.Context, emails []string) error {
+func (u *user) Add(ctx context.Context, emails []string) error {
 	u.Logger.Printf("Adding %s to Terraform Cloud team %s", emails, u.team)
 
 	ids, err := u.getOrgIDsFromEmails(ctx, emails)
@@ -179,7 +179,7 @@ func (u *User) Add(ctx context.Context, emails []string) error {
 }
 
 // Remove users from a Terraform Cloud team.
-func (u *User) Remove(ctx context.Context, emails []string) error {
+func (u *user) Remove(ctx context.Context, emails []string) error {
 	u.Logger.Printf("Removing %s from Terraform Cloud team %s", emails, u.team)
 
 	ids, err := u.getOrgIDsFromEmails(ctx, emails)
@@ -207,22 +207,8 @@ func (u *User) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// New Terraform Cloud User [gosync.adapter].
-func New(client *tfe.Client, organisation string, team string) *User {
-	return &User{
-		organisation:            organisation,
-		team:                    team,
-		teams:                   client.Teams,
-		teamMembers:             client.TeamMembers,
-		organizationMemberships: client.OrganizationMemberships,
-		Logger: log.New(
-			os.Stderr, "[go-sync/terraformcloud/user] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
-	}
-}
-
 /*
-Init a new Terraform Cloud User [gosync.Adapter].
+Init a new Terraform Cloud user [gosync.Adapter].
 
 Required config:
   - [user.Token]
@@ -241,5 +227,16 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 		return nil, fmt.Errorf("team.init.newclient -> %w", err)
 	}
 
-	return New(client, config[Organisation], config[Team]), nil
+	adapter := &user{
+		organisation:            config[Organisation],
+		team:                    config[Team],
+		teams:                   client.Teams,
+		teamMembers:             client.TeamMembers,
+		organizationMemberships: client.OrganizationMemberships,
+		Logger: log.New(
+			os.Stderr, "[go-sync/terraformcloud/user] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		),
+	}
+
+	return adapter, nil
 }

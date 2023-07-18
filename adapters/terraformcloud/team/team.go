@@ -48,10 +48,14 @@ type Team struct {
 	Logger       *log.Logger
 }
 
-// getOrgIDsFromEmails takes a slice of emails, and returns a slice of Organisational Membership IDs.
-func (t *Team) getTeams(ctx context.Context) ([]string, error) {
+// Get teams in a Terraform Cloud organisation.
+func (t *Team) Get(ctx context.Context) ([]string, error) {
+	t.Logger.Printf("Fetching teams in Terraform Cloud organisation %s", t.organisation)
+
 	pageNumber := 1
 	teams := make([]string, 0)
+
+	t.cache = make(map[string]string)
 
 	t.Logger.Printf("Fetching first page")
 
@@ -75,18 +79,6 @@ func (t *Team) getTeams(ctx context.Context) ([]string, error) {
 		if tfeTeams.CurrentPage >= tfeTeams.TotalPages {
 			break
 		}
-	}
-
-	return teams, nil
-}
-
-// Get teams in a Terraform Cloud organisation.
-func (t *Team) Get(ctx context.Context) ([]string, error) {
-	t.Logger.Printf("Fetching teams in Terraform Cloud organisation %s", t.organisation)
-
-	teams, err := t.getTeams(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("terraformcloud.team.get.getteams -> %w", err)
 	}
 
 	t.Logger.Println("Fetched teams successfully")
@@ -128,16 +120,6 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 	return nil
 }
 
-// New Terraform Cloud Team [gosync.adapter].
-func New(client *tfe.Client, organisation string) *Team {
-	return &Team{
-		teams:        client.Teams,
-		organisation: organisation,
-		cache:        make(map[string]string),
-		Logger:       log.New(os.Stderr, "[go-sync/terraformcloud/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-}
-
 /*
 Init a new Terraform Cloud Team [gosync.Adapter].
 
@@ -157,5 +139,12 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 		return nil, fmt.Errorf("team.init.newclient -> %w", err)
 	}
 
-	return New(client, config[Organisation]), nil
+	adapter := &Team{
+		teams:        client.Teams,
+		organisation: config[Organisation],
+		cache:        make(map[string]string),
+		Logger:       log.New(os.Stderr, "[go-sync/terraformcloud/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	return adapter, nil
 }

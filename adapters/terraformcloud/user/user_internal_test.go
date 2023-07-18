@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-tfe"
@@ -20,8 +22,12 @@ func TestUser_Get(t *testing.T) {
 	ctx := context.TODO()
 	mockTeams := newMockITeams(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
+	adapter := &user{
+		organisation: "org",
+		team:         "team",
+		teams:        mockTeams,
+		Logger:       log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	mockTeams.EXPECT().List(ctx, "org", &tfe.TeamListOptions{
 		ListOptions: tfe.ListOptions{
@@ -54,10 +60,14 @@ func TestUser_Add(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
-	adapter.organizationMemberships = mockOrgMembership
-	adapter.teamMembers = mockTeamMembers
+	adapter := &user{
+		organisation:            "org",
+		team:                    "team",
+		teams:                   mockTeams,
+		organizationMemberships: mockOrgMembership,
+		teamMembers:             mockTeamMembers,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	// Mock a first page of responses from the API.
 	mockOrgMembership.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
@@ -113,10 +123,14 @@ func TestUser_Remove(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
-	adapter.organizationMemberships = mockOrgMembership
-	adapter.teamMembers = mockTeamMembers
+	adapter := &user{
+		organisation:            "org",
+		team:                    "team",
+		teams:                   mockTeams,
+		organizationMemberships: mockOrgMembership,
+		teamMembers:             mockTeamMembers,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	mockOrgMembership.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
 		ListOptions: tfe.ListOptions{PageNumber: 1},
@@ -163,7 +177,7 @@ func TestInit(t *testing.T) {
 		})
 
 		assert.NoError(t, err)
-		assert.IsType(t, &User{}, adapter)
+		assert.IsType(t, &user{}, adapter)
 	})
 
 	t.Run("missing token", func(t *testing.T) {
