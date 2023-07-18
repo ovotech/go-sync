@@ -203,50 +203,98 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
+// WithClient passes a custom GitHub client to the adapter.
+func WithClient(client *github.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Team); ok {
+			adapter.teams = client.Teams
+		}
+	}
+}
+
+// WithDiscoveryService passes a GitHub Discovery Service to the adapter.
+func WithDiscoveryService(discovery discovery.GitHubDiscovery) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Team); ok {
+			adapter.discovery = discovery
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Team); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new GitHub Team [gosync.Adapter].
 
 Required config:
-  - [team.GitHubToken]
   - [team.GitHubOrg]
   - [team.TeamSlug]
-  - [team.DiscoveryMechanism]
 */
-func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{GitHubToken, GitHubOrg, TeamSlug, DiscoveryMechanism} {
+//nolint:cyclop
+func Init(
+	ctx context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn,
+) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{GitHubOrg, TeamSlug} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: config[GitHubToken]},
-	))
-
-	var (
-		gitHubV3Client = github.NewClient(oauthClient)
-		gitHubV4Client = githubv4.NewClient(oauthClient)
-		discoverySvc   discovery.GitHubDiscovery
-	)
-
-	switch config[DiscoveryMechanism] {
-	case "saml":
-		discoverySvc = saml.New(gitHubV4Client, config[GitHubOrg])
-
-		if strings.ToLower(config[SamlMuteUserNotFoundErr]) == "true" {
-			discoverySvc.(*saml.Saml).MuteUserNotFoundErr = true
-		}
-	default:
-		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrInvalidConfig, config[DiscoveryMechanism])
+	adapter := &Team{
+		org:   config[GitHubOrg],
+		slug:  config[TeamSlug],
+		cache: make(map[string]string),
 	}
 
-	adapter := &Team{
-		teams:     gitHubV3Client.Teams,
-		discovery: discoverySvc,
-		org:       config[GitHubOrg],
-		slug:      config[TeamSlug],
-		cache:     nil,
-		Logger:    log.New(os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	if config[GitHubToken] != "" {
+		oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: config[GitHubToken]},
+		))
+
+		WithClient(github.NewClient(oauthClient))(adapter)
+	}
+
+	if config[GitHubToken] != "" && strings.ToLower(config[DiscoveryMechanism]) == "saml" {
+		oauthClient := oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: config[GitHubToken]},
+		))
+
+		discoverySvc := saml.New(githubv4.NewClient(oauthClient), config[GitHubOrg])
+
+		if strings.ToLower(config[SamlMuteUserNotFoundErr]) == "true" {
+			discoverySvc.MuteUserNotFoundErr = true
+		}
+
+		WithDiscoveryService(discoverySvc)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/github/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.teams == nil {
+		return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, GitHubToken)
+	}
+
+	if adapter.discovery == nil {
+		return nil, fmt.Errorf("github.team.init -> %w(%s,%s)", gosync.ErrMissingConfig, GitHubToken, DiscoveryMechanism)
 	}
 
 	return adapter, nil
