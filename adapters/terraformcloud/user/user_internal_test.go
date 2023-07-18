@@ -12,10 +12,6 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-}
-
 func TestUser_Get(t *testing.T) {
 	t.Parallel()
 
@@ -162,6 +158,7 @@ func TestUser_Remove(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -214,5 +211,37 @@ func TestInit(t *testing.T) {
 
 		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 		assert.ErrorContains(t, err, Team)
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Token:        "token",
+			Organisation: "org",
+			Team:         "team",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*user).Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client, err := tfe.NewClient(&tfe.Config{Token: "test"})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Organisation: "org",
+			Team:         "team",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Teams, adapter.(*user).teams)
+		assert.Equal(t, client.TeamMembers, adapter.(*user).teamMembers)
+		assert.Equal(t, client.OrganizationMemberships, adapter.(*user).organizationMemberships)
 	})
 }

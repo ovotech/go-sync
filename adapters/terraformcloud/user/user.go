@@ -207,35 +207,68 @@ func (u *user) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
+// WithClient passes a custom Terraform Cloud client to the adapter.
+func WithClient(client *tfe.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*user); ok {
+			adapter.teams = client.Teams
+			adapter.teamMembers = client.TeamMembers
+			adapter.organizationMemberships = client.OrganizationMemberships
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*user); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Terraform Cloud user [gosync.Adapter].
 
 Required config:
-  - [user.Token]
   - [user.Team]
   - [user.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{Token, Organisation, Team} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{Organisation, Team} {
 		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, key)
+			return nil, fmt.Errorf("user.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
-	if err != nil {
-		return nil, fmt.Errorf("team.init.newclient -> %w", err)
+	adapter := &user{
+		organisation: config[Organisation],
+		team:         config[Team],
 	}
 
-	adapter := &user{
-		organisation:            config[Organisation],
-		team:                    config[Team],
-		teams:                   client.Teams,
-		teamMembers:             client.TeamMembers,
-		organizationMemberships: client.OrganizationMemberships,
-		Logger: log.New(
+	if _, ok := config[Token]; ok {
+		client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
+		if err != nil {
+			return nil, fmt.Errorf("user.init.newclient -> %w", err)
+		}
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
 			os.Stderr, "[go-sync/terraformcloud/user] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.teamMembers == nil {
+		return nil, fmt.Errorf("user.init -> %w(%s)", gosync.ErrMissingConfig, Token)
 	}
 
 	return adapter, nil
