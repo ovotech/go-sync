@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/stretchr/testify/assert"
 
@@ -19,29 +18,25 @@ func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mockIOps
 	t.Helper()
 
 	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, _ := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
-	adapter.getTime = func() time.Time {
-		return mockedTime
+
+	adapter, err := Init(context.TODO(), map[gosync.ConfigKey]string{
+		OpsgenieAPIKey: "test",
+		ScheduleID:     "test",
+	})
+	assert.NoError(t, err)
+
+	if adapter, ok := adapter.(*OnCall); ok {
+		adapter.client = scheduleClient
+		adapter.getTime = func() time.Time {
+			return mockedTime
+		}
+
+		return adapter, scheduleClient
 	}
 
-	return adapter, scheduleClient
-}
+	t.Fatal("Could not coerce adapter into correct format")
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, err := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
-
-	assert.NoError(t, err)
-	assert.Equal(t, "test", adapter.scheduleID)
-	assert.Zero(t, scheduleClient.Calls)
+	return nil, nil
 }
 
 func TestOnCall_Get(t *testing.T) {

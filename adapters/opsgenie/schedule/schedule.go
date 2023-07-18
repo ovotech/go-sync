@@ -220,26 +220,6 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 	return nil
 }
 
-// New Opsgenie Schedule [gosync.Adapter].
-func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *Schedule)) (*Schedule, error) {
-	scheduleClient, err := ogSchedule.NewClient(opsgenieConfig)
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
-	}
-
-	scheduleAdapter := &Schedule{
-		client:     scheduleClient,
-		scheduleID: scheduleID,
-		Logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(scheduleAdapter)
-	}
-
-	return scheduleAdapter, nil
-}
-
 /*
 Init a new Opsgenie Schedule [gosync.Adapter].
 
@@ -254,13 +234,17 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 		}
 	}
 
-	opsgenieConfig := client.Config{
+	scheduleClient, err := ogSchedule.NewClient(&client.Config{
 		ApiKey: config[OpsgenieAPIKey],
+	})
+	if err != nil {
+		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
 	}
 
-	adapter, err := New(&opsgenieConfig, config[ScheduleID])
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+	adapter := &Schedule{
+		client:     scheduleClient,
+		scheduleID: config[ScheduleID],
+		Logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
 	}
 
 	return adapter, nil

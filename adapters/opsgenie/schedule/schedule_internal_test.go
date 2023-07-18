@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"testing"
-
-	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -21,12 +19,22 @@ func createMockedAdapter(t *testing.T) (*Schedule, *mockIOpsgenieSchedule) {
 	t.Helper()
 
 	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, _ := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
 
-	return adapter, scheduleClient
+	adapter, err := Init(context.TODO(), map[gosync.ConfigKey]string{
+		OpsgenieAPIKey: "test",
+		ScheduleID:     "test",
+	})
+	assert.NoError(t, err)
+
+	if adapter, ok := adapter.(*Schedule); ok {
+		adapter.client = scheduleClient
+
+		return adapter, scheduleClient
+	}
+
+	t.Fatal("Could not coerce adapter into correct format")
+
+	return nil, nil
 }
 
 func testBuildExpectedUpdateRotationRequest(emails ...string) *schedule.UpdateRotationRequest {
@@ -97,20 +105,6 @@ func testBuildScheduleGetResult(numRotations int, emails ...string) *schedule.Ge
 			Rotations: rotations,
 		},
 	}
-}
-
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, err := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
-
-	assert.NoError(t, err)
-	assert.Equal(t, "test", adapter.scheduleID)
-	assert.Zero(t, scheduleClient.Calls)
 }
 
 func TestSchedule_Get(t *testing.T) { //nolint:funlen
