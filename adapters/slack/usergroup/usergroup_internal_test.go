@@ -283,4 +283,31 @@ func TestInit(t *testing.T) {
 			assert.True(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
 		}
 	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			SlackAPIKey: "test",
+			UserGroupID: "usergroup",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*UserGroup).Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client := slack.New("test")
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			UserGroupID: "usergroup",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client, adapter.(*UserGroup).client)
+	})
 }
