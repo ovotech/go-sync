@@ -176,30 +176,6 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 }
 
 /*
-New Google Group [gosync.Adapter].
-
-Recommended reading for parameters:
-  - name: [group.Name]
-*/
-func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
-	group := &Group{
-		membersService: client.Members,
-		name:           name,
-		Logger:         log.New(os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-
-		callList:   callList,
-		callInsert: callInsert,
-		callDelete: callDelete,
-	}
-
-	for _, fn := range optsFn {
-		fn(group)
-	}
-
-	return group
-}
-
-/*
 Init a new Google Group [gosync.Adapter].
 
 Required config:
@@ -236,7 +212,15 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[GoogleAuthenticationMechanism])
 	}
 
-	adapter := New(client, config[Name])
+	adapter := &Group{
+		membersService: client.Members,
+		name:           config[Name],
+		Logger:         log.New(os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+
+		callList:   callList,
+		callInsert: callInsert,
+		callDelete: callDelete,
+	}
 
 	if val, ok := config[Role]; ok {
 		adapter.Role = val

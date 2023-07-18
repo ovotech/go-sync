@@ -4,24 +4,9 @@ import (
 	"context"
 	"log"
 
-	admin "google.golang.org/api/admin/directory/v1"
-
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/google/group"
 )
-
-func ExampleNew() {
-	ctx := context.Background()
-
-	client, err := admin.NewService(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	adapter := group.New(client, "my-group")
-
-	gosync.New(adapter)
-}
 
 func ExampleInit() {
 	ctx := context.Background()
