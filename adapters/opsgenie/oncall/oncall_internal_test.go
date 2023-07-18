@@ -3,9 +3,12 @@ package oncall
 import (
 	"context"
 	"errors"
+	"log"
+	"os"
 	"testing"
 	"time"
 
+	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/stretchr/testify/assert"
 
@@ -109,6 +112,7 @@ func TestOnCall_Remove(t *testing.T) {
 	assert.Zero(t, scheduleClient.Calls)
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -151,5 +155,35 @@ func TestInit(t *testing.T) {
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, ScheduleID)
 		})
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			OpsgenieAPIKey: "test",
+			ScheduleID:     "schedule",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.(*OnCall).Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		scheduleClient, err := schedule.NewClient(&client.Config{
+			ApiKey: "test",
+		})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			ScheduleID: "schedule",
+		}, WithClient(scheduleClient))
+
+		assert.NoError(t, err)
+		assert.Equal(t, scheduleClient, adapter.(*OnCall).client)
 	})
 }

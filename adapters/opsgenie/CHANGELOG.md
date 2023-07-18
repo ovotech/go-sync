@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.0.0
 
+### Added
+
+- `WithLogger` and `WithClient` ConfigFns.
+
 ### Removed
 
  - `New` functions have been removed. Use `InitFn` to instantiate a new adapter.

@@ -220,31 +220,66 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 	return nil
 }
 
+// WithClient passes a custom Opsgenie Schedule client to the adapter.
+func WithClient(client *ogSchedule.Client) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Schedule); ok {
+			adapter.client = client
+		}
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn {
+	return func(i interface{}) {
+		if adapter, ok := i.(*Schedule); ok {
+			adapter.Logger = logger
+		}
+	}
+}
+
 /*
 Init a new Opsgenie Schedule [gosync.Adapter].
 
 Required config:
-  - [schedule.OpsgenieAPIKey]
   - [schedule.ScheduleID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, ScheduleID} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+	for _, key := range []gosync.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
+			return nil, fmt.Errorf("opsgenie.schedule.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	scheduleClient, err := ogSchedule.NewClient(&client.Config{
-		ApiKey: config[OpsgenieAPIKey],
-	})
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
+	adapter := &Schedule{
+		scheduleID: config[ScheduleID],
 	}
 
-	adapter := &Schedule{
-		client:     scheduleClient,
-		scheduleID: config[ScheduleID],
-		Logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	if _, ok := config[OpsgenieAPIKey]; ok {
+		scheduleClient, err := ogSchedule.NewClient(&client.Config{
+			ApiKey: config[OpsgenieAPIKey],
+		})
+		if err != nil {
+			return nil, fmt.Errorf("opsgenie.schedule.init -> %w", err)
+		}
+
+		WithClient(scheduleClient)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("opsgenie.schedule.init -> %w(%s)", gosync.ErrMissingConfig, OpsgenieAPIKey)
 	}
 
 	return adapter, nil
