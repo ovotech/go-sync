@@ -14,6 +14,21 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
+func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn {
+	t.Helper()
+
+	client, err := admin.NewService(
+		ctx,
+		option.WithScopes(admin.AdminDirectoryGroupMemberScope),
+		option.WithAPIKey("_testing_"),
+	)
+	assert.NoError(t, err)
+
+	return func(i interface{}) {
+		i.(*Group).membersService = client.Members
+	}
+}
+
 type mockCalls struct {
 	mock.Mock
 }
@@ -197,7 +212,7 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Name: "name",
-		})
+		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
@@ -212,7 +227,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{})
+			_, err := Init(ctx, map[gosync.ConfigKey]string{}, withMockAdminService(ctx, t))
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, Name)
@@ -225,7 +240,7 @@ func TestInit(t *testing.T) {
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Name: "name",
 			Role: "role",
-		})
+		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
 		assert.Equal(t, "role", adapter.(*Group).Role)
@@ -237,7 +252,7 @@ func TestInit(t *testing.T) {
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Name:             "name",
 			DeliverySettings: "delivery",
-		})
+		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
 		assert.Equal(t, "delivery", adapter.(*Group).DeliverySettings)
@@ -250,28 +265,10 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Name: "name",
-		}, WithLogger(logger))
+		}, withMockAdminService(ctx, t), WithLogger(logger))
 
 		assert.NoError(t, err)
 		assert.Equal(t, logger, adapter.(*Group).Logger)
-	})
-
-	t.Run("with admin service", func(t *testing.T) {
-		t.Parallel()
-
-		client, err := admin.NewService(
-			ctx,
-			option.WithScopes(admin.AdminDirectoryGroupMemberScope),
-			option.WithAPIKey("_testing_"),
-		)
-		assert.NoError(t, err)
-
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
-			Name: "name",
-		}, WithAdminService(client))
-
-		assert.NoError(t, err)
-		assert.Equal(t, client.Members, adapter.(*Group).membersService)
 	})
 
 	t.Run("default", func(t *testing.T) {
@@ -279,7 +276,7 @@ func TestInit(t *testing.T) {
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Name: "name",
-		})
+		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
 		assert.NotNil(t, adapter.(*Group).membersService)
