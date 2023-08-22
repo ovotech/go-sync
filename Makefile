@@ -93,7 +93,7 @@ hack/bin/mockery:
 
 hack/bin/yq:
 > mkdir -p $(@D)
-> GOBIN=$(CURDIR)/hack/bin go install github.com/mikefarah/yq/v4@latest
+> GOBIN=$(CURDIR)/hack/bin go install github.com/mikefarah/yq/v4@v4.34.2
 
 # Tests look for sentinel files to determine whether or not they need to be run again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a retest.
