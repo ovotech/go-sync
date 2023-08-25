@@ -14,7 +14,7 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn {
+func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn[*Group] {
 	t.Helper()
 
 	client, err := admin.NewService(
@@ -24,8 +24,8 @@ func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn {
 	)
 	assert.NoError(t, err)
 
-	return func(i interface{}) {
-		i.(*Group).membersService = client.Members
+	return func(g *Group) {
+		g.membersService = client.Members
 	}
 }
 
@@ -216,9 +216,9 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
-		assert.Equal(t, "name", adapter.(*Group).name)
-		assert.Equal(t, "", adapter.(*Group).DeliverySettings)
-		assert.Equal(t, "", adapter.(*Group).Role)
+		assert.Equal(t, "name", adapter.name)
+		assert.Equal(t, "", adapter.DeliverySettings)
+		assert.Equal(t, "", adapter.Role)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -243,7 +243,7 @@ func TestInit(t *testing.T) {
 		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
-		assert.Equal(t, "role", adapter.(*Group).Role)
+		assert.Equal(t, "role", adapter.Role)
 	})
 
 	t.Run("delivery settings", func(t *testing.T) {
@@ -255,7 +255,7 @@ func TestInit(t *testing.T) {
 		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
-		assert.Equal(t, "delivery", adapter.(*Group).DeliverySettings)
+		assert.Equal(t, "delivery", adapter.DeliverySettings)
 	})
 
 	t.Run("with logger", func(t *testing.T) {
@@ -268,7 +268,7 @@ func TestInit(t *testing.T) {
 		}, withMockAdminService(ctx, t), WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*Group).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("default", func(t *testing.T) {
@@ -279,6 +279,6 @@ func TestInit(t *testing.T) {
 		}, withMockAdminService(ctx, t))
 
 		assert.NoError(t, err)
-		assert.NotNil(t, adapter.(*Group).membersService)
+		assert.NotNil(t, adapter.membersService)
 	})
 }
