@@ -9,6 +9,10 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: gomod
+    directory: /adapters/azuread
+    schedule:
+      interval: daily
+  - package-ecosystem: gomod
     directory: /adapters/github
     schedule:
       interval: daily
