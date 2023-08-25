@@ -80,8 +80,8 @@ SamlMuteUserNotFoundErr mutes the UserNotFoundErr if SAML discovery fails to dis
 const SamlMuteUserNotFoundErr gosync.ConfigKey = "saml_mute_user_not_found_err"
 
 var (
-	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Team] = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
 // iSlackConversation is a subset of the Slack Client used to build mocks for easy testing.
@@ -204,29 +204,23 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom GitHub client to the adapter.
-func WithClient(client *github.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Team); ok {
-			adapter.teams = client.Teams
-		}
+func WithClient(client *github.Client) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.teams = client.Teams
 	}
 }
 
 // WithDiscoveryService passes a GitHub Discovery Service to the adapter.
-func WithDiscoveryService(discovery discovery.GitHubDiscovery) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Team); ok {
-			adapter.discovery = discovery
-		}
+func WithDiscoveryService(discovery discovery.GitHubDiscovery) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.discovery = discovery
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Team); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.Logger = logger
 	}
 }
 
@@ -241,8 +235,8 @@ Required config:
 func Init(
 	ctx context.Context,
 	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn,
-) (gosync.Adapter, error) {
+	configFns ...gosync.ConfigFn[*Team],
+) (*Team, error) {
 	for _, key := range []gosync.ConfigKey{GitHubOrg, TeamSlug} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)

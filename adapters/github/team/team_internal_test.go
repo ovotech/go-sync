@@ -126,9 +126,9 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Team{}, adapter)
-		assert.Equal(t, "org", adapter.(*Team).org)
-		assert.Equal(t, "slug", adapter.(*Team).slug)
-		assert.IsType(t, &saml.Saml{}, adapter.(*Team).discovery)
+		assert.Equal(t, "org", adapter.org)
+		assert.Equal(t, "slug", adapter.slug)
+		assert.IsType(t, &saml.Saml{}, adapter.discovery)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -200,7 +200,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*Team).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -218,7 +218,7 @@ func TestInit(t *testing.T) {
 		}, WithClient(client))
 
 		assert.NoError(t, err)
-		assert.Equal(t, client.Teams, adapter.(*Team).teams)
+		assert.Equal(t, client.Teams, adapter.teams)
 	})
 
 	t.Run("with discovery service", func(t *testing.T) {
@@ -233,6 +233,6 @@ func TestInit(t *testing.T) {
 		}, WithDiscoveryService(mockDiscovery))
 
 		assert.NoError(t, err)
-		assert.Equal(t, mockDiscovery, adapter.(*Team).discovery)
+		assert.Equal(t, mockDiscovery, adapter.discovery)
 	})
 }
