@@ -28,18 +28,12 @@ func createMockedAdapter(ctx context.Context, t *testing.T, mockedTime time.Time
 	})
 	assert.NoError(t, err)
 
-	if adapter, ok := adapter.(*OnCall); ok {
-		adapter.client = scheduleClient
-		adapter.getTime = func() time.Time {
-			return mockedTime
-		}
-
-		return adapter, scheduleClient
+	adapter.client = scheduleClient
+	adapter.getTime = func() time.Time {
+		return mockedTime
 	}
 
-	t.Fatal("Could not coerce adapter into correct format")
-
-	return nil, nil
+	return adapter, scheduleClient
 }
 
 func TestOnCall_Get(t *testing.T) {
@@ -128,7 +122,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &OnCall{}, adapter)
-		assert.Equal(t, "schedule", adapter.(*OnCall).scheduleID)
+		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -168,7 +162,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*OnCall).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -184,6 +178,6 @@ func TestInit(t *testing.T) {
 		}, WithClient(scheduleClient))
 
 		assert.NoError(t, err)
-		assert.Equal(t, scheduleClient, adapter.(*OnCall).client)
+		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

@@ -30,15 +30,9 @@ func createMockedAdapter(ctx context.Context, t *testing.T) (*Schedule, *mockIOp
 	})
 	assert.NoError(t, err)
 
-	if adapter, ok := adapter.(*Schedule); ok {
-		adapter.client = scheduleClient
+	adapter.client = scheduleClient
 
-		return adapter, scheduleClient
-	}
-
-	t.Fatal("Could not coerce adapter into correct format")
-
-	return nil, nil
+	return adapter, scheduleClient
 }
 
 func testBuildExpectedUpdateRotationRequest(emails ...string) *schedule.UpdateRotationRequest {
@@ -353,7 +347,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Schedule{}, adapter)
-		assert.Equal(t, "schedule", adapter.(*Schedule).scheduleID)
+		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -393,7 +387,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*Schedule).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -409,6 +403,6 @@ func TestInit(t *testing.T) {
 		}, WithClient(scheduleClient))
 
 		assert.NoError(t, err)
-		assert.Equal(t, scheduleClient, adapter.(*Schedule).client)
+		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

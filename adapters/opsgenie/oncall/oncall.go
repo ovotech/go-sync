@@ -39,8 +39,8 @@ const OpsgenieAPIKey gosync.ConfigKey = "opsgenie_api_key" //nolint:gosec
 const ScheduleID gosync.ConfigKey = "schedule_id"
 
 var (
-	_ gosync.Adapter = &OnCall{} // Ensure [oncall.OnCall] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init      // Ensure the [oncall.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter         = &OnCall{} // Ensure [oncall.OnCall] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*OnCall] = Init      // Ensure [oncall.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 type iOpsgenieSchedule interface {
@@ -88,20 +88,16 @@ func (o *OnCall) Remove(_ context.Context, _ []string) error {
 }
 
 // WithClient passes a custom Opsgenie Schedule client to the adapter.
-func WithClient(client *schedule.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*OnCall); ok {
-			adapter.client = client
-		}
+func WithClient(client *schedule.Client) gosync.ConfigFn[*OnCall] {
+	return func(o *OnCall) {
+		o.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*OnCall); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*OnCall] {
+	return func(o *OnCall) {
+		o.Logger = logger
 	}
 }
 
@@ -111,7 +107,11 @@ Init a new Opsgenie OnCall [gosync.Adapter].
 Required config:
   - [oncall.ScheduleID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*OnCall],
+) (*OnCall, error) {
 	for _, key := range []gosync.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
