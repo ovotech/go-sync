@@ -30,8 +30,8 @@ const Token gosync.ConfigKey = "terraform_cloud_token"
 const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
 
 var (
-	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iTeams is a subset of Terraform Enterprise Teams, and used to build mocks for easy testing.
@@ -121,20 +121,16 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 }
 
 // WithClient passes a custom Terraform Cloud client to the adapter.
-func WithClient(client *tfe.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Team); ok {
-			adapter.teams = client.Teams
-		}
+func WithClient(client *tfe.Client) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.teams = client.Teams
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Team); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.Logger = logger
 	}
 }
 
@@ -144,7 +140,7 @@ Init a new Terraform Cloud Team [gosync.Adapter].
 Required config:
   - [team.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn[*Team]) (*Team, error) {
 	for _, key := range []gosync.ConfigKey{Organisation} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, key)

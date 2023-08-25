@@ -34,8 +34,8 @@ const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
 const Team gosync.ConfigKey = "team"
 
 var (
-	_ gosync.Adapter = &user{} // Ensure [user.user] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter       = &User{} // Ensure [User.User] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*User] = Init    // Ensure [user.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // ErrTeamNotFound is returned if the team cannot be found in the Terraform Cloud organisation.
@@ -61,7 +61,7 @@ type iOrganizationMemberships interface {
 	) (*tfe.OrganizationMembershipList, error)
 }
 
-type user struct {
+type User struct {
 	organisation            string
 	team                    string
 	teams                   iTeams
@@ -71,7 +71,7 @@ type user struct {
 }
 
 // getTeamID queries the Terraform Cloud API to convert a friendly team name into a team ID.
-func (u *user) getTeamID(ctx context.Context) (string, error) {
+func (u *User) getTeamID(ctx context.Context) (string, error) {
 	u.Logger.Printf("Querying Terraform Cloud organisation %s for team ID of %s", u.organisation, u.team)
 
 	teams, err := u.teams.List(ctx, u.organisation, &tfe.TeamListOptions{Names: []string{u.team}})
@@ -89,7 +89,7 @@ func (u *user) getTeamID(ctx context.Context) (string, error) {
 }
 
 // getOrgIDsFromEmails takes a slice of emails, and returns a slice of Organisational Membership IDs.
-func (u *user) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]string, error) {
+func (u *User) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]string, error) {
 	pageNumber := 1
 	ids := make([]string, 0, len(emails))
 
@@ -123,7 +123,7 @@ func (u *user) getOrgIDsFromEmails(ctx context.Context, emails []string) ([]stri
 }
 
 // Get users in a Terraform Cloud team.
-func (u *user) Get(ctx context.Context) ([]string, error) {
+func (u *User) Get(ctx context.Context) ([]string, error) {
 	u.Logger.Printf("Fetching users in Terraform Cloud team %s", u.team)
 
 	team, err := u.teams.List(ctx, u.organisation, &tfe.TeamListOptions{
@@ -150,7 +150,7 @@ func (u *user) Get(ctx context.Context) ([]string, error) {
 }
 
 // Add users to a Terraform Cloud team.
-func (u *user) Add(ctx context.Context, emails []string) error {
+func (u *User) Add(ctx context.Context, emails []string) error {
 	u.Logger.Printf("Adding %s to Terraform Cloud team %s", emails, u.team)
 
 	ids, err := u.getOrgIDsFromEmails(ctx, emails)
@@ -179,7 +179,7 @@ func (u *user) Add(ctx context.Context, emails []string) error {
 }
 
 // Remove users from a Terraform Cloud team.
-func (u *user) Remove(ctx context.Context, emails []string) error {
+func (u *User) Remove(ctx context.Context, emails []string) error {
 	u.Logger.Printf("Removing %s from Terraform Cloud team %s", emails, u.team)
 
 	ids, err := u.getOrgIDsFromEmails(ctx, emails)
@@ -208,40 +208,36 @@ func (u *user) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Terraform Cloud client to the adapter.
-func WithClient(client *tfe.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*user); ok {
-			adapter.teams = client.Teams
-			adapter.teamMembers = client.TeamMembers
-			adapter.organizationMemberships = client.OrganizationMemberships
-		}
+func WithClient(client *tfe.Client) gosync.ConfigFn[*User] {
+	return func(u *User) {
+		u.teams = client.Teams
+		u.teamMembers = client.TeamMembers
+		u.organizationMemberships = client.OrganizationMemberships
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*user); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*User] {
+	return func(u *User) {
+		u.Logger = logger
 	}
 }
 
 /*
-Init a new Terraform Cloud user [gosync.Adapter].
+Init a new Terraform Cloud User [gosync.Adapter].
 
 Required config:
   - [user.Team]
   - [user.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn[*User]) (*User, error) {
 	for _, key := range []gosync.ConfigKey{Organisation, Team} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("user.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	adapter := &user{
+	adapter := &User{
 		organisation: config[Organisation],
 		team:         config[Team],
 	}
