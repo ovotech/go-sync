@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - gosync
+          - adapters/azuread
           - adapters/github
           - adapters/opsgenie
           - adapters/slack

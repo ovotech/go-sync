@@ -183,7 +183,7 @@ lint-fix-gofumpt: hack/bin/gofumpt $(GO_FILES) ## Runs 'gofumpt -w' to format an
 .PHONY: lint-fix-gofumpt
 
 lint-fix-golangci-lint: hack/bin/golangci-lint $(GO_FILES) ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
-> hack/bin/golangci-lint run --fix ./... $(ADAPTERS)
+> hack/bin/golangci-lint run --timeout=10m --fix ./... $(ADAPTERS)
 .PHONY: lint-fix-golangci-lint
 
 lint-fix: lint-fix-gci lint-fix-gofumpt lint-fix-golangci-lint ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
