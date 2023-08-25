@@ -246,8 +246,8 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Conversation{}, adapter)
-		assert.Equal(t, "conversation", adapter.(*Conversation).conversationName)
-		assert.False(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic)
+		assert.Equal(t, "conversation", adapter.conversationName)
+		assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -286,7 +286,7 @@ func TestInit(t *testing.T) {
 				})
 
 				assert.NoError(t, err)
-				assert.False(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic, test)
+				assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic, test)
 			}
 
 			for _, test := range []string{"true", "True", "TRUE"} {
@@ -297,7 +297,7 @@ func TestInit(t *testing.T) {
 				})
 
 				assert.NoError(t, err)
-				assert.True(t, adapter.(*Conversation).MuteRestrictedErrOnKickFromPublic, test)
+				assert.True(t, adapter.MuteRestrictedErrOnKickFromPublic, test)
 			}
 		})
 	})
@@ -313,7 +313,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*Conversation).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -326,6 +326,6 @@ func TestInit(t *testing.T) {
 		}, WithClient(client))
 
 		assert.NoError(t, err)
-		assert.Equal(t, client, adapter.(*Conversation).client)
+		assert.Equal(t, client, adapter.client)
 	})
 }

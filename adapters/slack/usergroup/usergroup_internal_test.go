@@ -228,8 +228,8 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &UserGroup{}, adapter)
-		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupID)
-		assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty)
+		assert.Equal(t, "usergroup", adapter.userGroupID)
+		assert.False(t, adapter.MuteGroupCannotBeEmpty)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -269,7 +269,7 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+			assert.False(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
 
 		for _, test := range []string{"true", "True", "TRUE"} {
@@ -280,7 +280,7 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.True(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+			assert.True(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
 	})
 
@@ -295,7 +295,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*UserGroup).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -308,6 +308,6 @@ func TestInit(t *testing.T) {
 		}, WithClient(client))
 
 		assert.NoError(t, err)
-		assert.Equal(t, client, adapter.(*UserGroup).client)
+		assert.Equal(t, client, adapter.client)
 	})
 }

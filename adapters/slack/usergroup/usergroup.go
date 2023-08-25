@@ -65,8 +65,10 @@ const UserGroupID gosync.ConfigKey = "usergroup_id"
 const MuteGroupCannotBeEmpty gosync.ConfigKey = "mute_group_cannot_be_empty"
 
 var (
-	_ gosync.Adapter = &UserGroup{} // Ensure [usergroup.UserGroup] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init         // Ensure the [usergroup.Init] function fully satisfies the [gosync.InitFn] type.
+	// Ensure [usergroup.UserGroup] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter = &UserGroup{}
+	// Ensure the [usergroup.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn[*UserGroup] = Init
 )
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -244,20 +246,16 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Slack client to the adapter.
-func WithClient(client *slack.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*UserGroup); ok {
-			adapter.client = client
-		}
+func WithClient(client *slack.Client) gosync.ConfigFn[*UserGroup] {
+	return func(u *UserGroup) {
+		u.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*UserGroup); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*UserGroup] {
+	return func(u *UserGroup) {
+		u.Logger = logger
 	}
 }
 
@@ -267,7 +265,11 @@ Init a new Slack UserGroup [gosync.Adapter].
 Required config:
   - [usergroup.UserGroupID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*UserGroup],
+) (*UserGroup, error) {
 	for _, key := range []gosync.ConfigKey{UserGroupID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
