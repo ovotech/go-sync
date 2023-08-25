@@ -59,11 +59,11 @@ import (
 )
 
 var (
-	_ gosync.Adapter = &myAdapter{} // Ensure [myadapter.myAdapter] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init         // Ensure the [myadapter.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter            = &MyAdapter{} // Ensure [myadapter.myAdapter] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*MyAdapter] = Init         // Ensure [myadapter.Init] fully satisfies the [gosync.InitFn] type.
 )
 
-type myAdapter struct{}
+type MyAdapter struct{}
 
 func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
 	return nil, fmt.Errorf("myadapter.get -> %w", gosync.ErrNotImplemented)
@@ -77,7 +77,7 @@ func (m *MyAdapter) Remove(_ context.Context, _ []string) error {
 	return fmt.Errorf("myadapter.remove -> %w", gosync.ErrNotImplemented)
 }
 
-func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn[*MyAdapter]) (*MyAdapter, error) {
 	return nil, fmt.Errorf("myadapter.init -> %w", gosync.ErrNotImplemented)
 }
 ```
