@@ -81,7 +81,7 @@ const SamlMuteUserNotFoundErr gosync.ConfigKey = "saml_mute_user_not_found_err"
 
 var (
 	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*Team] = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iSlackConversation is a subset of the Slack Client used to build mocks for easy testing.
