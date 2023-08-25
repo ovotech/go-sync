@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/ovotech/go-sync v0.13.2
-	github.com/slack-go/slack v0.12.2
+	github.com/slack-go/slack v0.12.3
 	github.com/stretchr/testify v1.8.4
 )
 
