@@ -59,24 +59,39 @@ import (
 )
 
 var (
-	_ gosync.Adapter            = &MyAdapter{} // Ensure [myadapter.myAdapter] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*MyAdapter] = Init         // Ensure [myadapter.Init] fully satisfies the [gosync.InitFn] type.
+	// Ensure [myadapter.myAdapter] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter            = &MyAdapter{}
+	// Ensure [myadapter.Init] fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn[*MyAdapter] = Init
 )
 
-type MyAdapter struct{}
+type MyAdapter struct{
+	example struct{}
+}
 
+// Get things in MyAdapter.
 func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
 	return nil, fmt.Errorf("myadapter.get -> %w", gosync.ErrNotImplemented)
 }
 
+// Add things to MyAdapter.
 func (m *MyAdapter) Add(_ context.Context, _ []string) error {
 	return fmt.Errorf("myadapter.add -> %w", gosync.ErrNotImplemented)
 }
 
+// Remove things from MyAdapter.
 func (m *MyAdapter) Remove(_ context.Context, _ []string) error {
 	return fmt.Errorf("myadapter.remove -> %w", gosync.ErrNotImplemented)
 }
 
+// WithExample passes a custom example struct.
+func WithExample(example struct{}) gosync.ConfigFn[*MyAdapter] {
+	return func(m *MyAdapter) {
+		m.example = example
+    }
+}
+
+// Init a new [myadapter.MyAdapter].
 func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn[*MyAdapter]) (*MyAdapter, error) {
 	return nil, fmt.Errorf("myadapter.init -> %w", gosync.ErrNotImplemented)
 }
