@@ -139,7 +139,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*Team).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -153,6 +153,6 @@ func TestInit(t *testing.T) {
 		}, WithClient(client))
 
 		assert.NoError(t, err)
-		assert.Equal(t, client.Teams, adapter.(*Team).teams)
+		assert.Equal(t, client.Teams, adapter.teams)
 	})
 }

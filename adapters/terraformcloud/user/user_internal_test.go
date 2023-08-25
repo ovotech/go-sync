@@ -18,7 +18,7 @@ func TestUser_Get(t *testing.T) {
 	ctx := context.TODO()
 	mockTeams := newMockITeams(t)
 
-	adapter := &user{
+	adapter := &User{
 		organisation: "org",
 		team:         "team",
 		teams:        mockTeams,
@@ -56,7 +56,7 @@ func TestUser_Add(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := &user{
+	adapter := &User{
 		organisation:            "org",
 		team:                    "team",
 		teams:                   mockTeams,
@@ -119,7 +119,7 @@ func TestUser_Remove(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := &user{
+	adapter := &User{
 		organisation:            "org",
 		team:                    "team",
 		teams:                   mockTeams,
@@ -174,7 +174,7 @@ func TestInit(t *testing.T) {
 		})
 
 		assert.NoError(t, err)
-		assert.IsType(t, &user{}, adapter)
+		assert.IsType(t, &User{}, adapter)
 	})
 
 	t.Run("missing token", func(t *testing.T) {
@@ -225,7 +225,7 @@ func TestInit(t *testing.T) {
 		}, WithLogger(logger))
 
 		assert.NoError(t, err)
-		assert.Equal(t, logger, adapter.(*user).Logger)
+		assert.Equal(t, logger, adapter.Logger)
 	})
 
 	t.Run("with client", func(t *testing.T) {
@@ -240,8 +240,8 @@ func TestInit(t *testing.T) {
 		}, WithClient(client))
 
 		assert.NoError(t, err)
-		assert.Equal(t, client.Teams, adapter.(*user).teams)
-		assert.Equal(t, client.TeamMembers, adapter.(*user).teamMembers)
-		assert.Equal(t, client.OrganizationMemberships, adapter.(*user).organizationMemberships)
+		assert.Equal(t, client.Teams, adapter.teams)
+		assert.Equal(t, client.TeamMembers, adapter.teamMembers)
+		assert.Equal(t, client.OrganizationMemberships, adapter.organizationMemberships)
 	})
 }
