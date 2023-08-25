@@ -59,8 +59,8 @@ See `delivery_settings` field in [reference] for more information.
 const DeliverySettings gosync.ConfigKey = "delivery_settings"
 
 var (
-	_ gosync.Adapter = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init     // Ensure the [group.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter        = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Group] = Init     // Ensure [group.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // callList allows us to mock the returned struct from the List Google API call.
@@ -166,20 +166,16 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithAdminService passes a custom Google Admin Service to the adapter.
-func WithAdminService(adminService *admin.Service) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Group); ok {
-			adapter.membersService = adminService.Members
-		}
+func WithAdminService(adminService *admin.Service) gosync.ConfigFn[*Group] {
+	return func(g *Group) {
+		g.membersService = adminService.Members
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Group); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Group] {
+	return func(g *Group) {
+		g.Logger = logger
 	}
 }
 
@@ -192,8 +188,8 @@ Required config:
 func Init(
 	ctx context.Context,
 	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn,
-) (gosync.Adapter, error) {
+	configFns ...gosync.ConfigFn[*Group],
+) (*Group, error) {
 	for _, key := range []gosync.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
