@@ -44,7 +44,7 @@ jobs:
         run: git push origin --tags
       - name: Create Go Sync Release
         if: inputs.module == 'gosync'
-        id: create_release
+        id: create_gosync_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,7 +55,7 @@ jobs:
           prerelease: false
       - name: Create Adapter Release
         if: inputs.module != 'gosync'
-        id: create_release
+        id: create_adapter_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
