@@ -43,8 +43,8 @@ const OpsgenieAPIKey gosync.ConfigKey = "opsgenie_api_key" //nolint:gosec
 const ScheduleID gosync.ConfigKey = "schedule_id"
 
 var (
-	_ gosync.Adapter = &Schedule{} // Ensure [schedule.Schedule] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init        // Ensure the [schedule.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter           = &Schedule{} // Ensure [schedule.Schedule] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Schedule] = Init        // Ensure [schedule.Init] fully satisfies the [gosync.InitFn] type.
 
 	ErrMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
 	ErrNoRotations       = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
@@ -221,20 +221,16 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 }
 
 // WithClient passes a custom Opsgenie Schedule client to the adapter.
-func WithClient(client *ogSchedule.Client) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Schedule); ok {
-			adapter.client = client
-		}
+func WithClient(client *ogSchedule.Client) gosync.ConfigFn[*Schedule] {
+	return func(s *Schedule) {
+		s.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn {
-	return func(i interface{}) {
-		if adapter, ok := i.(*Schedule); ok {
-			adapter.Logger = logger
-		}
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Schedule] {
+	return func(s *Schedule) {
+		s.Logger = logger
 	}
 }
 
@@ -244,7 +240,11 @@ Init a new Opsgenie Schedule [gosync.Adapter].
 Required config:
   - [schedule.ScheduleID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn) (gosync.Adapter, error) {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*Schedule],
+) (*Schedule, error) {
 	for _, key := range []gosync.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("opsgenie.schedule.init -> %w(%s)", gosync.ErrMissingConfig, key)
