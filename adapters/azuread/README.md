@@ -13,5 +13,6 @@ go get github.com/ovotech/go-sync/adapters/azuread@latest
 | Adapter                                                                     | Type  | Summary                        |
 |-----------------------------------------------------------------------------|-------|--------------------------------|
 | [user](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/azuread/user) | Email | Synchronise users in Azure AD. |
+| [groupmembership](https://pkg.go.dev/github.com/ovotech/go-sync/adapters/azuread/groupmembership) | Email | Synchronise users to an Azure AD group. |
 
 Can't find an adapter you're looking for? [Why not write your own! ✨](/CONTRIBUTING.md)
