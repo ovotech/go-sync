@@ -7,9 +7,10 @@ import (
 	"flag"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/terraformcloud/membership"
-	"github.com/stretchr/testify/assert"
 )
 
 var (
