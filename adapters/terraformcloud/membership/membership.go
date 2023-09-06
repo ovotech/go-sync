@@ -185,8 +185,8 @@ func New(client *tfe.Client, organisation string) *Membership {
 Init a new Terraform Cloud Membership [gosync.Adapter].
 
 Required config:
-  - [user.Token]
-  - [user.Organisation]
+  - [membership.Token]
+  - [membership.Organisation]
 */
 func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
 	for _, key := range []gosync.ConfigKey{Token, Organisation} {
