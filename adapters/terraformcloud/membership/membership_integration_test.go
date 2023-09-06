@@ -12,9 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var email = flag.String("email", "test@example.com", "Enter the email of the user for the integration test")
-var organisation = flag.String("organisation", "", "Enter the Terraform Cloud organisation name")
-var token = flag.String("token", "", "Enter the Terraform Cloud API token")
+var (
+	email        = flag.String("email", "test@example.com", "Enter the email of the user for the integration test")
+	organisation = flag.String("organisation", "", "Enter the Terraform Cloud organisation name")
+	token        = flag.String("token", "", "Enter the Terraform Cloud API token")
+)
 
 func TestIntegration(t *testing.T) {
 	ctx := context.TODO()
