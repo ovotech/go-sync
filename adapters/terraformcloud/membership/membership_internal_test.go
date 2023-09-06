@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-tfe"
-	gosync "github.com/ovotech/go-sync"
 	"github.com/stretchr/testify/assert"
+
+	gosync "github.com/ovotech/go-sync"
 )
 
 func TestNew(t *testing.T) {
