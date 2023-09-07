@@ -1,5 +1,5 @@
 /*
-Package user synchronises members in a Terraform Cloud organisation.
+Package membership synchronises members in a Terraform Cloud organisation.
 
 # Requirements
 
@@ -28,11 +28,6 @@ const Token gosync.ConfigKey = "terraform_cloud_token"
 
 // Organisation sets the Terraform Cloud organisation.
 const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
-
-var (
-	_ gosync.Adapter = &Membership{} // Ensure [membership.Membership] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init          // Ensure the [membership.Init] function fully satisfies the [gosync.InitFn] type.
-)
 
 // iOrganizationMemberships is a subset of Terraform Enterprise
 // OrganizationMemberships, and used to build mocks for easy testing.
@@ -170,7 +165,7 @@ func (m *Membership) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// New Terraform Cloud membership [gosync.adapter].
+// New Terraform Cloud membership [gosync.Adapter].
 func New(client *tfe.Client, organisation string) *Membership {
 	return &Membership{
 		organisation:            organisation,

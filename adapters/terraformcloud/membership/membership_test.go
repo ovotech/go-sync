@@ -10,6 +10,13 @@ import (
 	"github.com/ovotech/go-sync/adapters/terraformcloud/membership"
 )
 
+var (
+	// Ensure [membership.Membership] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter = &membership.Membership{}
+	// Ensure the [membership.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn = membership.Init
+)
+
 func ExampleNew() {
 	client, err := tfe.NewClient(&tfe.Config{Token: "my-org-token"})
 	if err != nil {
