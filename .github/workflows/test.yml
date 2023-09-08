@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         go-version: [1.18, 1.19]
@@ -37,7 +37,7 @@ jobs:
             report.xml
   event_file:
     name: "Event File"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Upload
         uses: actions/upload-artifact@v3
