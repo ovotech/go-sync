@@ -95,13 +95,15 @@ hack/bin/yq:
 > mkdir -p $(@D)
 > GOBIN=$(CURDIR)/hack/bin go install github.com/mikefarah/yq/v4@v4.34.2
 
+# Code generation goes first, so that the tests will have them up-to-date.
 # Tests look for sentinel files to determine whether or not they need to be run again.
-# If any Go code file has been changed since the sentinel file was last touched, it will trigger a retest.
+# If any Go code file has been changed since the sentinel file was last touched, it will trigger regen/retest.
+generate: tmp/.generated-linted.sentinel ## Generate mocks.
 test: tmp/.tests-passed.sentinel ## Run tests. Will also generate.
 test-cover: tmp/.cover-tests-passed.sentinel ## Run all tests with the race detector, and output a coverage profile.
 bench: tmp/.benchmarks-ran.sentinel ## Run enough iterations of each benchmark to take ten seconds each.
 report: tmp/.report-ran.sentinel ## Run tests, and produce a JUnit report.
-.PHONY: test test-cover bench report
+.PHONY: generate test test-cover bench report
 
 # Linter checks look for sentinel files to determine whether or not they need to check again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a rerun.
@@ -124,29 +126,33 @@ clean-hack: ## Deletes all binaries under 'hack'.
 clean-all: clean clean-hack ## Clean all of the things.
 .PHONY: clean-all
 
-tmp/.generated.sentinel: hack/bin/gofumpt hack/bin/mockery $(GO_FILES)
+# Generate raw mocks with mockery. The lint-fix target will straighten out the raw generated code.
+tmp/.generated-raw.sentinel: hack/bin/mockery $(GO_FILES)
 > mkdir -p $(@D)
 > hack/bin/mockery
-> hack/bin/gofumpt -w . # Mockery output needs to be gofumpt'd otherwise this check will fail.
+> touch $@
+
+tmp/.generated-linted.sentinel: tmp/.generated-raw.sentinel lint-fix
+> mkdir -p $(@D)
 > touch $@
 
 # Tests - re-run if any Go files have changes since 'tmp/.tests-passed.sentinel' was last touched.
-tmp/.tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.tests-passed.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.cover-tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.cover-tests-passed.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.benchmarks-ran.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.benchmarks-ran.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
 > go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v ./... $(ADAPTERS)
 > touch $@
 
-tmp/.report-ran.sentinel: tmp/.generated.sentinel hack/bin/go-junit-report $(GO_FILES)
+tmp/.report-ran.sentinel: tmp/.generated-linted.sentinel hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v ./... $(ADAPTERS) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
 > touch $@
@@ -194,9 +200,6 @@ tmp/.built.sentinel: tmp/.linted.sentinel
 > mkdir -p $(@D)
 > go build -v ./... $(ADAPTERS)
 > touch $@
-
-generate: tmp/.generated.sentinel ## Generate mocks.
-.PHONY: generate
 
 tidy: ## Run 'go mod tidy' on all Go modules.
 > find . -name 'go.mod' -execdir go mod tidy \;
