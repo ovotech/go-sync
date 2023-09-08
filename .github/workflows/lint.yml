@@ -18,10 +18,7 @@ jobs:
           go-version-file: "go.mod"
           cache: true
       - name: Run Make commands
-        run: |
-          make generate
-          make lint-fix
-          make lint
+        run: make lint
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v13.1
