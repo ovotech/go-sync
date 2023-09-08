@@ -12,15 +12,12 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: [1.18, 1.19]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version-file: go.work
       - name: Install JUnit Reporter
         run: |
           go install github.com/jstemmer/go-junit-report@latest
@@ -30,11 +27,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: Test Results (Go ${{ matrix.go-version }})
+          name: Test Results
           path: |
             report.xml
   event_file:
-    name: "Event File"
+    name: Event File
     runs-on: ubuntu-latest
     steps:
       - name: Upload

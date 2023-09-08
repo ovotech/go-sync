@@ -1,6 +1,6 @@
 module github.com/ovotech/go-sync/adapters/github
 
-go 1.18
+go 1.21
 
 require (
 	github.com/google/go-github/v47 v47.1.0
