@@ -206,7 +206,7 @@ lint-fix-gofumpt: tmp/.lint-fix.gofumpt.sentinel ## Runs 'gofumpt -w' to format 
 
 tmp/.lint-fix.golangci-lint.sentinel: hack/bin/golangci-lint $(GO_FILES)
 > mkdir -p $(@D)
-> hack/bin/golangci-lint run --timeout=10m --fix $(GO_MODULES)
+> hack/bin/golangci-lint run --fix $(GO_MODULES)
 > touch $@
 
 lint-fix-golangci-lint: tmp/.lint-fix.golangci-lint.sentinel ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
