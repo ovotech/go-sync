@@ -17,10 +17,7 @@ jobs:
         with:
           go-version-file: go.work
           cache: true
-      - name: Run Make commands
-        run: make lint
-      - if: always()
-        run: ls -Al tmp
+      - run: make lint
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v13.1
