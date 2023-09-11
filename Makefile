@@ -132,7 +132,7 @@ tmp/.generated-raw.sentinel: hack/bin/mockery $(GO_FILES)
 > hack/bin/mockery
 > touch $@
 
-tmp/.generated-linted.sentinel: tmp/.generated-raw.sentinel lint-fix
+tmp/.generated-linted.sentinel: tmp/.generated-raw.sentinel tmp/.lint-fix.sentinel
 > mkdir -p $(@D)
 > touch $@
 
@@ -179,21 +179,38 @@ tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint tmp/.t
 > hack/bin/golangci-lint run $(GO_MODULES)
 > touch $@
 
-lint-fix-gci: hack/bin/gci hack/bin/yq $(GO_FILES) ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
+# Some linters will fix/reformat code, to help us stay on top of desired styles/layouts.
+tmp/.lint-fix.sentinel: tmp/.lint-fix.gci.sentinel tmp/.lint-fix.gofumpt.sentinel tmp/.lint-fix.golangci-lint.sentinel
+> mkdir -p $(@D)
+> touch $@
+
+lint-fix: tmp/.lint-fix.sentinel ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
+.PHONY: lint-fix
+
+tmp/.lint-fix.gci.sentinel: hack/bin/gci hack/bin/yq $(GO_FILES)
+> mkdir -p $(@D)
 > sections="$(shell hack/bin/yq '.linters-settings.gci.sections | join(" -s ")' .golangci.yaml )"
 > hack/bin/gci write . --custom-order --skip-generated -s $${sections}
+> touch $@
+
+lint-fix-gci:  ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
 .PHONY: lint-fix-gci
 
-lint-fix-gofumpt: hack/bin/gofumpt $(GO_FILES) ## Runs 'gofumpt -w' to format and simplify all Go code.
+tmp/.lint-fix.gofumpt.sentinel: hack/bin/gofumpt $(GO_FILES)
+> mkdir -p $(@D)
 > hack/bin/gofumpt -w .
+> touch $@
+
+lint-fix-gofumpt: tmp/.lint-fix.gofumpt.sentinel ## Runs 'gofumpt -w' to format and simplify all Go code.
 .PHONY: lint-fix-gofumpt
 
-lint-fix-golangci-lint: hack/bin/golangci-lint $(GO_FILES) ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
+tmp/.lint-fix.golangci-lint.sentinel: hack/bin/golangci-lint $(GO_FILES)
+> mkdir -p $(@D)
 > hack/bin/golangci-lint run --timeout=10m --fix $(GO_MODULES)
-.PHONY: lint-fix-golangci-lint
+> touch $@
 
-lint-fix: lint-fix-gci lint-fix-gofumpt lint-fix-golangci-lint ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
-.PHONY: lint-fix
+lint-fix-golangci-lint: tmp/.lint-fix.golangci-lint.sentinel ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
+.PHONY: lint-fix-golangci-lint
 
 # Re-build if the lint output is re-run (and so, by proxy, whenever the source files have changed).
 tmp/.built.sentinel: tmp/.linted.sentinel
