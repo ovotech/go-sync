@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          show-progress: false
       - name: Bump Go Sync version
         if: inputs.module == 'gosync'
         run: git tag ${{ inputs.version }}
