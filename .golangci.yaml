@@ -41,4 +41,4 @@ linters-settings:
       - ID
 
 run:
-  timeout: 10m
+  timeout: 30m
