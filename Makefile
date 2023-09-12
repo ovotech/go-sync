@@ -41,8 +41,8 @@ endif
 # With no numeric argument to '--jobs', Make runs as many recipes simultaneously as possible.
 MAKEFLAGS += --jobs
 
-# Define a list of adapters as relative module paths.
-ADAPTERS := $(shell find . -name 'go.mod' -exec sh -c 'echo {} | sed -e "s/go.mod/.../"' \;)
+# Define a list of Go modules as relative paths.
+GO_MODULES := $(shell find . -name 'go.mod' -exec sh -c 'echo {} | sed -e "s/go.mod/.../"' \;)
 
 # Configure an 'all' target to cover the bases.
 all: generate test lint build ## Generate and test and lint and build.
@@ -95,13 +95,15 @@ hack/bin/yq:
 > mkdir -p $(@D)
 > GOBIN=$(CURDIR)/hack/bin go install github.com/mikefarah/yq/v4@v4.34.2
 
+# Code generation goes first, so that the tests will have them up-to-date.
 # Tests look for sentinel files to determine whether or not they need to be run again.
-# If any Go code file has been changed since the sentinel file was last touched, it will trigger a retest.
+# If any Go code file has been changed since the sentinel file was last touched, it will trigger regen/retest.
+generate: tmp/.generated-linted.sentinel ## Generate mocks.
 test: tmp/.tests-passed.sentinel ## Run tests. Will also generate.
 test-cover: tmp/.cover-tests-passed.sentinel ## Run all tests with the race detector, and output a coverage profile.
 bench: tmp/.benchmarks-ran.sentinel ## Run enough iterations of each benchmark to take ten seconds each.
 report: tmp/.report-ran.sentinel ## Run tests, and produce a JUnit report.
-.PHONY: test test-cover bench report
+.PHONY: generate test test-cover bench report
 
 # Linter checks look for sentinel files to determine whether or not they need to check again.
 # If any Go code file has been changed since the sentinel file was last touched, it will trigger a rerun.
@@ -124,31 +126,35 @@ clean-hack: ## Deletes all binaries under 'hack'.
 clean-all: clean clean-hack ## Clean all of the things.
 .PHONY: clean-all
 
-tmp/.generated.sentinel: hack/bin/gofumpt hack/bin/mockery $(GO_FILES)
+# Generate raw mocks with mockery. The lint-fix target will straighten out the raw generated code.
+tmp/.generated-raw.sentinel: hack/bin/mockery $(GO_FILES)
 > mkdir -p $(@D)
 > hack/bin/mockery
-> hack/bin/gofumpt -w . # Mockery output needs to be gofumpt'd otherwise this check will fail.
+> touch $@
+
+tmp/.generated-linted.sentinel: tmp/.generated-raw.sentinel tmp/.lint-fix.sentinel
+> mkdir -p $(@D)
 > touch $@
 
 # Tests - re-run if any Go files have changes since 'tmp/.tests-passed.sentinel' was last touched.
-tmp/.tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.tests-passed.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -v ./... $(ADAPTERS)
+> go test -count=1 -v $(GO_MODULES)
 > touch $@
 
-tmp/.cover-tests-passed.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.cover-tests-passed.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v ./... $(ADAPTERS)
+> go test -count=1 -covermode=atomic -coverprofile=cover.out -race -v $(GO_MODULES)
 > touch $@
 
-tmp/.benchmarks-ran.sentinel: tmp/.generated.sentinel $(GO_FILES)
+tmp/.benchmarks-ran.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > mkdir -p $(@D)
-> go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v ./... $(ADAPTERS)
+> go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v $(GO_MODULES)
 > touch $@
 
-tmp/.report-ran.sentinel: tmp/.generated.sentinel hack/bin/go-junit-report $(GO_FILES)
+tmp/.report-ran.sentinel: tmp/.generated-linted.sentinel hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
-> go test -count=1 -v ./... $(ADAPTERS) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
+> go test -count=1 -v $(GO_MODULES) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
 > touch $@
 
 # Lint - re-run if the tests have been re-run (and so, by proxy, whenever the source files have changed).
@@ -170,33 +176,47 @@ tmp/.linted.go.vet.sentinel: tmp/.tests-passed.sentinel
 
 tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint tmp/.tests-passed.sentinel
 > mkdir -p $(@D)
-> hack/bin/golangci-lint run ./... $(ADAPTERS)
+> hack/bin/golangci-lint run $(GO_MODULES)
 > touch $@
 
-lint-fix-gci: hack/bin/gci hack/bin/yq $(GO_FILES) ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
+# Some linters will fix/reformat code, to help us stay on top of desired styles/layouts.
+tmp/.lint-fix.sentinel: tmp/.lint-fix.gci.sentinel tmp/.lint-fix.gofumpt.sentinel tmp/.lint-fix.golangci-lint.sentinel
+> mkdir -p $(@D)
+> touch $@
+
+lint-fix: tmp/.lint-fix.sentinel ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
+.PHONY: lint-fix
+
+tmp/.lint-fix.gci.sentinel: hack/bin/gci hack/bin/yq $(GO_FILES)
+> mkdir -p $(@D)
 > sections="$(shell hack/bin/yq '.linters-settings.gci.sections | join(" -s ")' .golangci.yaml )"
-> hack/bin/gci write . -s $${sections}
+> hack/bin/gci write . --custom-order --skip-generated -s $${sections}
+> touch $@
+
+lint-fix-gci:  ## Runs 'gci' to make imports deterministic using config from '.golangci.yaml'.
 .PHONY: lint-fix-gci
 
-lint-fix-gofumpt: hack/bin/gofumpt $(GO_FILES) ## Runs 'gofumpt -w' to format and simplify all Go code.
+tmp/.lint-fix.gofumpt.sentinel: hack/bin/gofumpt $(GO_FILES)
+> mkdir -p $(@D)
 > hack/bin/gofumpt -w .
+> touch $@
+
+lint-fix-gofumpt: tmp/.lint-fix.gofumpt.sentinel ## Runs 'gofumpt -w' to format and simplify all Go code.
 .PHONY: lint-fix-gofumpt
 
-lint-fix-golangci-lint: hack/bin/golangci-lint $(GO_FILES) ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
-> hack/bin/golangci-lint run --timeout=10m --fix ./... $(ADAPTERS)
-.PHONY: lint-fix-golangci-lint
+tmp/.lint-fix.golangci-lint.sentinel: hack/bin/golangci-lint $(GO_FILES)
+> mkdir -p $(@D)
+> hack/bin/golangci-lint run --fix $(GO_MODULES)
+> touch $@
 
-lint-fix: lint-fix-gci lint-fix-gofumpt lint-fix-golangci-lint ## Runs 'gci', 'gofumpt', and 'golangci-lint'.
-.PHONY: lint-fix
+lint-fix-golangci-lint: tmp/.lint-fix.golangci-lint.sentinel ## Runs 'golangci-lint run --fix' to auto-fix lint issues where supported.
+.PHONY: lint-fix-golangci-lint
 
 # Re-build if the lint output is re-run (and so, by proxy, whenever the source files have changed).
 tmp/.built.sentinel: tmp/.linted.sentinel
 > mkdir -p $(@D)
-> go build -v ./... $(ADAPTERS)
+> go build -v $(GO_MODULES)
 > touch $@
-
-generate: tmp/.generated.sentinel ## Generate mocks.
-.PHONY: generate
 
 tidy: ## Run 'go mod tidy' on all Go modules.
 > find . -name 'go.mod' -execdir go mod tidy \;

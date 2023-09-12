@@ -39,3 +39,6 @@ linters-settings:
   varnamelen:
     ignore-names:
       - ID
+
+run:
+  timeout: 30m

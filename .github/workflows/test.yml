@@ -11,12 +11,14 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         go-version: [1.18, 1.19]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          show-progress: false
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
@@ -35,7 +37,7 @@ jobs:
             report.xml
   event_file:
     name: "Event File"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Upload
         uses: actions/upload-artifact@v3
