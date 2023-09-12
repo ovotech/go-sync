@@ -163,18 +163,18 @@ tmp/.linted.sentinel: tmp/.linted.gofumpt.sentinel tmp/.linted.go.vet.sentinel t
 > mkdir -p $(@D)
 > touch $@
 
-tmp/.linted.gofumpt.sentinel: hack/bin/gofumpt tmp/.tests-passed.sentinel
+tmp/.linted.gofumpt.sentinel: hack/bin/gofumpt
 > mkdir -p $(@D)
 > hack/bin/gofumpt -l . \
   | awk '{ print } END { if (NR != 0) { print "Please run \"make lint-fix-gofumpt\" to fix these issues!"; exit 1 } }'
 > touch $@
 
-tmp/.linted.go.vet.sentinel: tmp/.tests-passed.sentinel
+tmp/.linted.go.vet.sentinel:
 > mkdir -p $(@D)
 > go vet ./...
 > touch $@
 
-tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint tmp/.tests-passed.sentinel
+tmp/.linted.golangci-lint.sentinel: .golangci.yaml hack/bin/golangci-lint
 > mkdir -p $(@D)
 > hack/bin/golangci-lint run $(GO_MODULES)
 > touch $@
