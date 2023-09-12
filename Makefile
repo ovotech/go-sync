@@ -152,7 +152,7 @@ tmp/.benchmarks-ran.sentinel: tmp/.generated-linted.sentinel $(GO_FILES)
 > go test -bench=. -benchmem -benchtime=10s -count=1 -run='^DoNotRunTests$$' -v $(GO_MODULES)
 > touch $@
 
-tmp/.report-ran.sentinel: tmp/.generated-linted.sentinel hack/bin/go-junit-report $(GO_FILES)
+tmp/.report-ran.sentinel: hack/bin/go-junit-report $(GO_FILES)
 > mkdir -p $(@D)
 > go test -count=1 -v $(GO_MODULES) 2>&1 | hack/bin/go-junit-report -iocopy -out report.xml -set-exit-code
 > touch $@
