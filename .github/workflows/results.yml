@@ -3,7 +3,7 @@ name: Test Results
 on:
   workflow_run:
     workflows:
-      - test
+      - Code Quality
     types:
       - completed
 
