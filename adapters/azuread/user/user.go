@@ -143,24 +143,9 @@ func (u *User) Remove(_ context.Context, _ []string) error {
 }
 
 var (
-	_ gosync.Adapter = &User{} // Ensure [user.User] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter       = &User{} // Ensure [user.User] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*User] = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
 )
-
-// New creates a new Adapter.
-func New(client iClient, optsFn ...func(*User)) *User {
-	user := &User{
-		client: client,
-		users:  client.Users(),
-		Logger: log.New(os.Stderr, "[go-sync/azuread/user] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-	}
-
-	for _, fn := range optsFn {
-		fn(user)
-	}
-
-	return user
-}
 
 // WithFilter provides a mechanism to set the Microsoft Graph query filter
 // when instantiating a new User adapter with the [user.New] method.
@@ -170,9 +155,20 @@ func WithFilter(f string) func(u *User) {
 	}
 }
 
+// WithClient provides a mechanism to pass a custom client to the adapter.
+func WithClient(client iClient) func(u *User) {
+	return func(u *User) {
+		u.client = client
+	}
+}
+
 // Init creates a new Adapter. By default, an Azure Graph Service Client will
 // be created using the default credentials in the environment.
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*User],
+) (*User, error) {
 	creds, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		return nil, fmt.Errorf("azuread.user.init.creds -> %w", err)
@@ -183,7 +179,15 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 		return nil, fmt.Errorf("azuread.user.init.client -> %w", err)
 	}
 
-	user := New(client)
+	user := &User{
+		client: client,
+		users:  client.Users(),
+		Logger: log.New(os.Stderr, "[go-sync/azuread/user] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+	}
+
+	for _, configFn := range configFns {
+		configFn(user)
+	}
 
 	if filter, ok := config[Filter]; ok {
 		user.filter = filter
