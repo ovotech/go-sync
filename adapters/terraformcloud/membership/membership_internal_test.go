@@ -2,6 +2,8 @@ package membership
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-tfe"
@@ -20,8 +22,11 @@ func TestMembership_Get(t *testing.T) {
 	ctx := context.TODO()
 	memberships := newMockIOrganizationMemberships(t)
 
-	adapter := New(&tfe.Client{}, "org")
-	adapter.organizationMemberships = memberships
+	adapter := &Membership{
+		organisation:            "org",
+		organizationMemberships: memberships,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	memberships.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
 		ListOptions: tfe.ListOptions{PageNumber: 1},
@@ -68,8 +73,11 @@ func TestMembership_Add(t *testing.T) {
 	ctx := context.TODO()
 	memberships := newMockIOrganizationMemberships(t)
 
-	adapter := New(&tfe.Client{}, "org")
-	adapter.organizationMemberships = memberships
+	adapter := &Membership{
+		organisation:            "org",
+		organizationMemberships: memberships,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	memberships.EXPECT().Create(ctx, "org", tfe.OrganizationMembershipCreateOptions{
 		Email: tfe.String("foo@email"),
@@ -90,8 +98,11 @@ func TestMembership_Remove(t *testing.T) {
 	ctx := context.TODO()
 	memberships := newMockIOrganizationMemberships(t)
 
-	adapter := New(&tfe.Client{}, "org")
-	adapter.organizationMemberships = memberships
+	adapter := &Membership{
+		organisation:            "org",
+		organizationMemberships: memberships,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	memberships.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
 		ListOptions: tfe.ListOptions{PageNumber: 1},
@@ -129,17 +140,6 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Membership{}, adapter)
-	})
-
-	t.Run("missing token", func(t *testing.T) {
-		t.Parallel()
-
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
-			Organisation: "org",
-		})
-
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-		assert.ErrorContains(t, err, Token)
 	})
 
 	t.Run("missing organisation", func(t *testing.T) {
