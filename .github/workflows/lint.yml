@@ -16,8 +16,18 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: go.work
-          cache: true
-      - run: make lint
+          cache-dependency-path: |
+            *.sum
+            **/*.sum
+      - uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+      - name: Generate source files
+        run: task generate
+      - name: Fix linter errors
+        run: task lint:fix
+      - name: Lint all source code
+        run: task lint
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v13.1
