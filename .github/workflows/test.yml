@@ -22,12 +22,15 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go-version }}
-      - name: Install JUnit Reporter
-        run: |
-          go install github.com/jstemmer/go-junit-report@latest
-      - name: Test
-        run: make report
+          go-version-file: go.work
+          cache-dependency-path: |
+            *.sum
+            **/*.sum
+      - uses: arduino/setup-task@v1
+        with:
+          version: 3.x
+      - name: Run Go tests and generate report
+        run: task tests:gotest:report
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v3
