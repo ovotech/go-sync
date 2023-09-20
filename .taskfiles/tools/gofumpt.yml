@@ -13,7 +13,7 @@ tasks:
     cmds:
       - go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
 
-  gci:
+  gofumpt:
     desc: Internal task to execute gofumpt commands
     dir: '{{.ROOT_DIR}}'
     deps:
@@ -31,7 +31,7 @@ tasks:
     sources:
       - ./**/*.go
     cmds:
-      - task: gci
+      - task: gofumpt
         vars:
           ARGS: -l
 
@@ -41,6 +41,6 @@ tasks:
     sources:
       - ./**/*.go
     cmds:
-      - task: gci
+      - task: gofumpt
         vars:
           ARGS: -w
