@@ -1,0 +1,46 @@
+version: '3'
+
+tasks:
+  install:
+    desc: A stricter formatter than gofmt
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - GOFUMPT_VERSION
+    status:
+      - test -f $GOBIN/gofumpt
+    cmds:
+      - go install mvdan.cc/gofumpt@{{.GOFUMPT_VERSION}}
+
+  gci:
+    desc: Internal task to execute gofumpt commands
+    dir: '{{.ROOT_DIR}}'
+    deps:
+      - install
+    internal: true
+    requires:
+      vars:
+        - ARGS
+    cmds:
+      - $GOBIN/gofumpt {{.ARGS}} .
+
+  default:
+    desc: Check Go formatting
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gci
+        vars:
+          ARGS: -l
+
+  fix:
+    desc: Fix Go formatting errors
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gci
+        vars:
+          ARGS: -w

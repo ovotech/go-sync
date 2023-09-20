@@ -1,0 +1,22 @@
+version: '3'
+
+includes:
+  gci: ./tools/gci.yml
+  gofumpt: ./tools/gofumpt.yml
+  golangci-lint: ./tools/golangci-lint.yml
+  govet: ./tools/govet.yml
+
+tasks:
+  default:
+    desc: Run all lint tasks, but do not fix problems
+    cmds:
+      - task: gofumpt
+      - task: govet
+      - task: golangci-lint
+
+  fix:
+    desc: Attempt to fix linter problems
+    cmds:
+      - task: gci
+      - task: gofumpt:fix
+      - task: golangci-lint:fix
