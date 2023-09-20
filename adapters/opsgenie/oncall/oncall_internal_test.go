@@ -3,6 +3,8 @@ package oncall
 import (
 	"context"
 	"errors"
+	"log"
+	"os"
 	"testing"
 	"time"
 
@@ -15,33 +17,23 @@ import (
 
 var errGetOnCall = errors.New("an example error")
 
-func createMockedAdapter(t *testing.T, mockedTime time.Time) (*OnCall, *mockIOpsgenieSchedule) {
+func createMockedAdapter(ctx context.Context, t *testing.T, mockedTime time.Time) (*OnCall, *mockIOpsgenieSchedule) {
 	t.Helper()
 
 	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, _ := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
+
+	adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		OpsgenieAPIKey: "test",
+		ScheduleID:     "test",
+	})
+	assert.NoError(t, err)
+
 	adapter.client = scheduleClient
 	adapter.getTime = func() time.Time {
 		return mockedTime
 	}
 
 	return adapter, scheduleClient
-}
-
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, err := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
-
-	assert.NoError(t, err)
-	assert.Equal(t, "test", adapter.scheduleID)
-	assert.Zero(t, scheduleClient.Calls)
 }
 
 func TestOnCall_Get(t *testing.T) {
@@ -54,7 +46,7 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("successful response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t, expectedTime)
+		adapter, scheduleClient := createMockedAdapter(ctx, t, expectedTime)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -74,7 +66,7 @@ func TestOnCall_Get(t *testing.T) {
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t, expectedTime)
+		adapter, scheduleClient := createMockedAdapter(ctx, t, expectedTime)
 		expectedRequest := &schedule.GetOnCallsRequest{
 			Flat:                   &flat,
 			Date:                   &expectedTime,
@@ -94,7 +86,7 @@ func TestOnCall_Add(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	adapter, scheduleClient := createMockedAdapter(t, time.Now())
+	adapter, scheduleClient := createMockedAdapter(ctx, t, time.Now())
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
@@ -106,7 +98,7 @@ func TestOnCall_Remove(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	adapter, scheduleClient := createMockedAdapter(t, time.Now())
+	adapter, scheduleClient := createMockedAdapter(ctx, t, time.Now())
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
@@ -114,6 +106,7 @@ func TestOnCall_Remove(t *testing.T) {
 	assert.Zero(t, scheduleClient.Calls)
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -129,7 +122,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &OnCall{}, adapter)
-		assert.Equal(t, "schedule", adapter.(*OnCall).scheduleID)
+		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -156,5 +149,35 @@ func TestInit(t *testing.T) {
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, ScheduleID)
 		})
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			OpsgenieAPIKey: "test",
+			ScheduleID:     "schedule",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		scheduleClient, err := schedule.NewClient(&client.Config{
+			ApiKey: "test",
+		})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			ScheduleID: "schedule",
+		}, WithClient(scheduleClient))
+
+		assert.NoError(t, err)
+		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

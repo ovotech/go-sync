@@ -2,6 +2,8 @@ package user
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-tfe"
@@ -10,18 +12,18 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-}
-
 func TestUser_Get(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
 	mockTeams := newMockITeams(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
+	adapter := &User{
+		organisation: "org",
+		team:         "team",
+		teams:        mockTeams,
+		Logger:       log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	mockTeams.EXPECT().List(ctx, "org", &tfe.TeamListOptions{
 		ListOptions: tfe.ListOptions{
@@ -54,10 +56,14 @@ func TestUser_Add(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
-	adapter.organizationMemberships = mockOrgMembership
-	adapter.teamMembers = mockTeamMembers
+	adapter := &User{
+		organisation:            "org",
+		team:                    "team",
+		teams:                   mockTeams,
+		organizationMemberships: mockOrgMembership,
+		teamMembers:             mockTeamMembers,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	// Mock a first page of responses from the API.
 	mockOrgMembership.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
@@ -113,10 +119,14 @@ func TestUser_Remove(t *testing.T) {
 	mockOrgMembership := newMockIOrganizationMemberships(t)
 	mockTeamMembers := newMockITeamMembers(t)
 
-	adapter := New(&tfe.Client{}, "org", "team")
-	adapter.teams = mockTeams
-	adapter.organizationMemberships = mockOrgMembership
-	adapter.teamMembers = mockTeamMembers
+	adapter := &User{
+		organisation:            "org",
+		team:                    "team",
+		teams:                   mockTeams,
+		organizationMemberships: mockOrgMembership,
+		teamMembers:             mockTeamMembers,
+		Logger:                  log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	mockOrgMembership.EXPECT().List(ctx, "org", &tfe.OrganizationMembershipListOptions{
 		ListOptions: tfe.ListOptions{PageNumber: 1},
@@ -148,6 +158,7 @@ func TestUser_Remove(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -200,5 +211,37 @@ func TestInit(t *testing.T) {
 
 		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 		assert.ErrorContains(t, err, Team)
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Token:        "token",
+			Organisation: "org",
+			Team:         "team",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client, err := tfe.NewClient(&tfe.Config{Token: "test"})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			Organisation: "org",
+			Team:         "team",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Teams, adapter.teams)
+		assert.Equal(t, client.TeamMembers, adapter.teamMembers)
+		assert.Equal(t, client.OrganizationMemberships, adapter.organizationMemberships)
 	})
 }

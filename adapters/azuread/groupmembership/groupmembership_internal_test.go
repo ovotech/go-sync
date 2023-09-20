@@ -34,7 +34,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &GroupMembership{}, adapter)
-		assert.Equal(t, "example", adapter.(*GroupMembership).group)
+		assert.Equal(t, "example", adapter.group)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -391,7 +391,7 @@ type MockRequestAdapter struct {
 	SerializationWriterFactory serialization.SerializationWriterFactory
 }
 
-func (r *MockRequestAdapter) Send(
+func (r *MockRequestAdapter) Send( //nolint:ireturn
 	_ context.Context,
 	_ *abstractions.RequestInformation,
 	_ serialization.ParsableFactory,
@@ -460,7 +460,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(
 	return nil, nil //nolint:nilnil
 }
 
-func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory {
+func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint:ireturn,lll
 	return r.SerializationWriterFactory
 }
 

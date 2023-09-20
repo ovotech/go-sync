@@ -54,30 +54,46 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/pkg/ports"
 )
 
-// Ensure the adapter type fully satisfies the ports.Adapter interface.
-var _ ports.Adapter = &MyAdapter{}
+var (
+	// Ensure [myadapter.myAdapter] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.Adapter            = &MyAdapter{}
+	// Ensure [myadapter.Init] fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn[*MyAdapter] = Init
+)
 
-var ErrNotImplemented = errors.New("not implemented")
-
-type MyAdapter struct{}
-
-func New() *MyAdapter {
-	return &MyAdapter {}
+type MyAdapter struct{
+	example struct{}
 }
 
+// Get things in MyAdapter.
 func (m *MyAdapter) Get(_ context.Context) ([]string, error) {
-	return nil, fmt.Errorf("myadapter.get -> %w", ErrNotImplemented)
+	return nil, fmt.Errorf("myadapter.get -> %w", gosync.ErrNotImplemented)
 }
 
+// Add things to MyAdapter.
 func (m *MyAdapter) Add(_ context.Context, _ []string) error {
-	return fmt.Errorf("myadapter.add -> %w", ErrNotImplemented)
+	return fmt.Errorf("myadapter.add -> %w", gosync.ErrNotImplemented)
 }
 
+// Remove things from MyAdapter.
 func (m *MyAdapter) Remove(_ context.Context, _ []string) error {
-	return fmt.Errorf("myadapter.remove -> %w", ErrNotImplemented)
+	return fmt.Errorf("myadapter.remove -> %w", gosync.ErrNotImplemented)
+}
+
+// WithExample passes a custom example struct.
+func WithExample(example struct{}) gosync.ConfigFn[*MyAdapter] {
+	return func(m *MyAdapter) {
+		m.example = example
+    }
+}
+
+// Init a new [myadapter.MyAdapter].
+func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn[*MyAdapter]) (*MyAdapter, error) {
+	return nil, fmt.Errorf("myadapter.init -> %w", gosync.ErrNotImplemented)
 }
 ```
 

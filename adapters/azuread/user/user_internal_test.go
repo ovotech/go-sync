@@ -9,7 +9,6 @@ import (
 	"github.com/microsoft/kiota-abstractions-go/serialization"
 	"github.com/microsoft/kiota-abstractions-go/store"
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
-	"github.com/microsoftgraph/msgraph-sdk-go/users"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -20,7 +19,7 @@ type MockRequestAdapter struct {
 	SerializationWriterFactory serialization.SerializationWriterFactory
 }
 
-func (r *MockRequestAdapter) Send(
+func (r *MockRequestAdapter) Send( //nolint: ireturn
 	_ context.Context,
 	_ *abstractions.RequestInformation,
 	_ serialization.ParsableFactory,
@@ -89,7 +88,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(
 	return nil, nil //nolint:nilnil
 }
 
-func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory {
+func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint: ireturn,lll
 	return r.SerializationWriterFactory
 }
 
@@ -113,10 +112,11 @@ func TestTeam_Get(t *testing.T) {
 	mockClient := newMockIClient(t)
 	mockUser := newMockIUser(t)
 
-	mockClient.On("Users").Return(&users.UsersRequestBuilder{})
-	mockClient.On("GetAdapter").Return(&MockRequestAdapter{})
+	mockClient.EXPECT().GetAdapter().Return(&MockRequestAdapter{})
 
-	adapter := New(mockClient)
+	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
+	assert.NoError(t, err)
+
 	adapter.users = mockUser
 
 	expected := []string{"test.email.1@ovo.com", "test.email.2@ovo.com", "test.email.3@ovo.com"}
@@ -131,7 +131,7 @@ func TestTeam_Get(t *testing.T) {
 	resp := models.NewUserCollectionResponse()
 	resp.SetValue(respOut)
 
-	mockUser.On("Get", ctx, mock.Anything).Return(resp, nil)
+	mockUser.EXPECT().Get(ctx, mock.Anything).Return(resp, nil)
 
 	emails, err := adapter.Get(ctx)
 	if err != nil {
@@ -146,11 +146,12 @@ func TestTeam_Get(t *testing.T) {
 func TestTeam_Add(t *testing.T) {
 	t.Parallel()
 
-	client := newMockIClient(t)
-	client.On("Users").Return(&users.UsersRequestBuilder{})
+	mockClient := newMockIClient(t)
 
-	adapter := New(client)
-	err := adapter.Add(context.TODO(), []string{"foo@email", "bar@email"})
+	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
+	assert.NoError(t, err)
+
+	err = adapter.Add(context.TODO(), []string{"foo@email", "bar@email"})
 
 	assert.ErrorIs(t, err, gosync.ErrReadOnly)
 }
@@ -158,11 +159,12 @@ func TestTeam_Add(t *testing.T) {
 func TestTeam_Remove(t *testing.T) {
 	t.Parallel()
 
-	client := newMockIClient(t)
-	client.On("Users").Return(&users.UsersRequestBuilder{})
+	mockClient := newMockIClient(t)
 
-	adapter := New(client)
-	err := adapter.Remove(context.TODO(), []string{"foo@email", "bar@email"})
+	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
+	assert.NoError(t, err)
+
+	err = adapter.Remove(context.TODO(), []string{"foo@email", "bar@email"})
 
 	assert.ErrorIs(t, err, gosync.ErrReadOnly)
 }
@@ -220,7 +222,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &User{}, adapter)
-		assert.Equal(t, "filter", adapter.(*User).filter)
+		assert.Equal(t, "filter", adapter.filter)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -232,33 +234,7 @@ func TestInit(t *testing.T) {
 			adapter, err := Init(ctx, map[gosync.ConfigKey]string{})
 
 			assert.NoError(t, err)
-			assert.Equal(t, "", adapter.(*User).filter)
+			assert.Equal(t, "", adapter.filter)
 		})
-	})
-}
-
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	t.Run("success", func(t *testing.T) {
-		t.Parallel()
-
-		client := newMockIClient(t)
-		client.On("Users").Return(&users.UsersRequestBuilder{})
-
-		adapter := New(client)
-		assert.Equal(t, client, adapter.client)
-	})
-
-	t.Run("with filter config", func(t *testing.T) {
-		t.Parallel()
-
-		filter := "mail eq 'test@example.com'"
-
-		client := newMockIClient(t)
-		client.On("Users").Return(&users.UsersRequestBuilder{})
-
-		adapter := New(client, WithFilter(filter))
-		assert.Equal(t, filter, adapter.filter)
 	})
 }

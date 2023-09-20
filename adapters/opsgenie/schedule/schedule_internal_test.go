@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
@@ -17,13 +19,17 @@ import (
 
 var errResponse = errors.New("an example error")
 
-func createMockedAdapter(t *testing.T) (*Schedule, *mockIOpsgenieSchedule) {
+func createMockedAdapter(ctx context.Context, t *testing.T) (*Schedule, *mockIOpsgenieSchedule) {
 	t.Helper()
 
 	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, _ := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
+
+	adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		OpsgenieAPIKey: "test",
+		ScheduleID:     "test",
+	})
+	assert.NoError(t, err)
+
 	adapter.client = scheduleClient
 
 	return adapter, scheduleClient
@@ -99,20 +105,6 @@ func testBuildScheduleGetResult(numRotations int, emails ...string) *schedule.Ge
 	}
 }
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	scheduleClient := newMockIOpsgenieSchedule(t)
-	adapter, err := New(&client.Config{
-		ApiKey: "test",
-	}, "test")
-	adapter.client = scheduleClient
-
-	assert.NoError(t, err)
-	assert.Equal(t, "test", adapter.scheduleID)
-	assert.Zero(t, scheduleClient.Calls)
-}
-
 func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Parallel()
 
@@ -121,7 +113,7 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 		expectedRequest := &schedule.GetRequest{
 			IdentifierType:  schedule.Id,
 			IdentifierValue: "test",
@@ -137,7 +129,7 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Run("successful response", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 		expectedResponse := testBuildScheduleGetResult(
 			1,
 			"example1@example.com", "example2@example.com", "example3@example.com",
@@ -153,7 +145,7 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Run("should handle multiple rotations", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 		expectedResponse := testBuildScheduleGetResult(
 			3,
 			"example1@example.com", "example2@example.com", "example3@example.com",
@@ -169,7 +161,7 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 	t.Run("should not duplicate participants across multiple rotations", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 		expectedResponse := testBuildScheduleGetResult(
 			2,
 			"example1@example.com", "example2@example.com", "example3@example.com", "example2@example.com",
@@ -190,7 +182,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -203,7 +195,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 	t.Run("an error should be returned if no rotations exist", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(0)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -215,7 +207,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 	t.Run("an error should be returned if the schedule has more than 1 rotation", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(
 			2,
@@ -230,7 +222,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 	t.Run("should add new participants to the rotation", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(
 			1,
@@ -249,7 +241,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 	t.Run("should not add duplicates to the rota", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -271,7 +263,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 	t.Run("error response", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -284,7 +276,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 	t.Run("an error should be returned if no rotations exist", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(0)
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -296,7 +288,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 	t.Run("an error should be returned if the schedule has more than 1 rotation", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(2, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -308,7 +300,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 	t.Run("should remove existing participants from the rotation", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -324,7 +316,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 	t.Run("should ignore nonexistent participants", func(t *testing.T) {
 		t.Parallel()
-		adapter, scheduleClient := createMockedAdapter(t)
+		adapter, scheduleClient := createMockedAdapter(ctx, t)
 
 		expectedScheduleResult := testBuildScheduleGetResult(1, "example1@example.com", "example2@example.com")
 		scheduleClient.EXPECT().Get(ctx, mock.Anything).Return(expectedScheduleResult, nil)
@@ -339,6 +331,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 	})
 }
 
+//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -354,7 +347,7 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Schedule{}, adapter)
-		assert.Equal(t, "schedule", adapter.(*Schedule).scheduleID)
+		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -381,5 +374,35 @@ func TestInit(t *testing.T) {
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, ScheduleID)
 		})
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			OpsgenieAPIKey: "test",
+			ScheduleID:     "schedule",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		scheduleClient, err := schedule.NewClient(&client.Config{
+			ApiKey: "test",
+		})
+		assert.NoError(t, err)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			ScheduleID: "schedule",
+		}, WithClient(scheduleClient))
+
+		assert.NoError(t, err)
+		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

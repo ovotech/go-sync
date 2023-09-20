@@ -30,8 +30,8 @@ const Token gosync.ConfigKey = "terraform_cloud_token"
 const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
 
 var (
-	_ gosync.Adapter = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init    // Ensure the [team.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iTeams is a subset of Terraform Enterprise Teams, and used to build mocks for easy testing.
@@ -48,10 +48,14 @@ type Team struct {
 	Logger       *log.Logger
 }
 
-// getOrgIDsFromEmails takes a slice of emails, and returns a slice of Organisational Membership IDs.
-func (t *Team) getTeams(ctx context.Context) ([]string, error) {
+// Get teams in a Terraform Cloud organisation.
+func (t *Team) Get(ctx context.Context) ([]string, error) {
+	t.Logger.Printf("Fetching teams in Terraform Cloud organisation %s", t.organisation)
+
 	pageNumber := 1
 	teams := make([]string, 0)
+
+	t.cache = make(map[string]string)
 
 	t.Logger.Printf("Fetching first page")
 
@@ -75,18 +79,6 @@ func (t *Team) getTeams(ctx context.Context) ([]string, error) {
 		if tfeTeams.CurrentPage >= tfeTeams.TotalPages {
 			break
 		}
-	}
-
-	return teams, nil
-}
-
-// Get teams in a Terraform Cloud organisation.
-func (t *Team) Get(ctx context.Context) ([]string, error) {
-	t.Logger.Printf("Fetching teams in Terraform Cloud organisation %s", t.organisation)
-
-	teams, err := t.getTeams(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("terraformcloud.team.get.getteams -> %w", err)
 	}
 
 	t.Logger.Println("Fetched teams successfully")
@@ -128,13 +120,17 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 	return nil
 }
 
-// New Terraform Cloud Team [gosync.adapter].
-func New(client *tfe.Client, organisation string) *Team {
-	return &Team{
-		teams:        client.Teams,
-		organisation: organisation,
-		cache:        make(map[string]string),
-		Logger:       log.New(os.Stderr, "[go-sync/terraformcloud/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+// WithClient passes a custom Terraform Cloud client to the adapter.
+func WithClient(client *tfe.Client) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.teams = client.Teams
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Team] {
+	return func(t *Team) {
+		t.Logger = logger
 	}
 }
 
@@ -142,20 +138,44 @@ func New(client *tfe.Client, organisation string) *Team {
 Init a new Terraform Cloud Team [gosync.Adapter].
 
 Required config:
-  - [team.Token]
   - [team.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{Token, Organisation} {
+func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn[*Team]) (*Team, error) {
+	for _, key := range []gosync.ConfigKey{Organisation} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
-	if err != nil {
-		return nil, fmt.Errorf("team.init.newclient -> %w", err)
+	adapter := &Team{
+		organisation: config[Organisation],
+		cache:        make(map[string]string),
 	}
 
-	return New(client, config[Organisation]), nil
+	if _, ok := config[Token]; ok {
+		client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
+		if err != nil {
+			return nil, fmt.Errorf("team.init.newclient -> %w", err)
+		}
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/terraformcloud/team] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.teams == nil {
+		return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, Token)
+	}
+
+	return adapter, nil
 }

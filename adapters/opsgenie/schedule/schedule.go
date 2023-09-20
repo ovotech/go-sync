@@ -43,8 +43,8 @@ const OpsgenieAPIKey gosync.ConfigKey = "opsgenie_api_key" //nolint:gosec
 const ScheduleID gosync.ConfigKey = "schedule_id"
 
 var (
-	_ gosync.Adapter = &Schedule{} // Ensure [schedule.Schedule] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init        // Ensure the [schedule.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter           = &Schedule{} // Ensure [schedule.Schedule] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Schedule] = Init        // Ensure [schedule.Init] fully satisfies the [gosync.InitFn] type.
 
 	ErrMultipleRotations = errors.New("gosync can only manage schedules with a single rotation")
 	ErrNoRotations       = errors.New("gosync cannot create rotations - you must have 1 already defined for schedule")
@@ -220,47 +220,66 @@ func (s *Schedule) updateParticipants(ctx context.Context, rotation *og.Rotation
 	return nil
 }
 
-// New Opsgenie Schedule [gosync.Adapter].
-func New(opsgenieConfig *client.Config, scheduleID string, optsFn ...func(schedule *Schedule)) (*Schedule, error) {
-	scheduleClient, err := ogSchedule.NewClient(opsgenieConfig)
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.schedule.new -> %w", err)
+// WithClient passes a custom Opsgenie Schedule client to the adapter.
+func WithClient(client *ogSchedule.Client) gosync.ConfigFn[*Schedule] {
+	return func(s *Schedule) {
+		s.client = client
 	}
+}
 
-	scheduleAdapter := &Schedule{
-		client:     scheduleClient,
-		scheduleID: scheduleID,
-		Logger:     log.New(os.Stderr, "[gosync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Schedule] {
+	return func(s *Schedule) {
+		s.Logger = logger
 	}
-
-	for _, fn := range optsFn {
-		fn(scheduleAdapter)
-	}
-
-	return scheduleAdapter, nil
 }
 
 /*
 Init a new Opsgenie Schedule [gosync.Adapter].
 
 Required config:
-  - [schedule.OpsgenieAPIKey]
   - [schedule.ScheduleID]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{OpsgenieAPIKey, ScheduleID} {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*Schedule],
+) (*Schedule, error) {
+	for _, key := range []gosync.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
-			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
+			return nil, fmt.Errorf("opsgenie.schedule.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	opsgenieConfig := client.Config{
-		ApiKey: config[OpsgenieAPIKey],
+	adapter := &Schedule{
+		scheduleID: config[ScheduleID],
 	}
 
-	adapter, err := New(&opsgenieConfig, config[ScheduleID])
-	if err != nil {
-		return nil, fmt.Errorf("opsgenie.oncall.init -> %w", err)
+	if _, ok := config[OpsgenieAPIKey]; ok {
+		scheduleClient, err := ogSchedule.NewClient(&client.Config{
+			ApiKey: config[OpsgenieAPIKey],
+		})
+		if err != nil {
+			return nil, fmt.Errorf("opsgenie.schedule.init -> %w", err)
+		}
+
+		WithClient(scheduleClient)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/opsgenie/schedule] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("opsgenie.schedule.init -> %w(%s)", gosync.ErrMissingConfig, OpsgenieAPIKey)
 	}
 
 	return adapter, nil

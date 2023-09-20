@@ -25,16 +25,6 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-/*
-GoogleAuthenticationMechanism sets the authentication mechanism for Google.
-
-Supported options are:
-  - [default]
-
-[default]: https://cloud.google.com/docs/authentication/application-default-credentials
-*/
-const GoogleAuthenticationMechanism gosync.ConfigKey = "google_authentication_mechanism"
-
 // Name is the name of your Google group.
 const Name gosync.ConfigKey = "name"
 
@@ -69,8 +59,8 @@ See `delivery_settings` field in [reference] for more information.
 const DeliverySettings gosync.ConfigKey = "delivery_settings"
 
 var (
-	_ gosync.Adapter = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn  = Init     // Ensure the [group.Init] function fully satisfies the [gosync.InitFn] type.
+	_ gosync.Adapter        = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Group] = Init     // Ensure [group.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // callList allows us to mock the returned struct from the List Google API call.
@@ -175,68 +165,56 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
-/*
-New Google Group [gosync.Adapter].
-
-Recommended reading for parameters:
-  - name: [group.Name]
-*/
-func New(client *admin.Service, name string, optsFn ...func(*Group)) *Group {
-	group := &Group{
-		membersService: client.Members,
-		name:           name,
-		Logger:         log.New(os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix),
-
-		callList:   callList,
-		callInsert: callInsert,
-		callDelete: callDelete,
+// WithAdminService passes a custom Google Admin Service to the adapter.
+func WithAdminService(adminService *admin.Service) gosync.ConfigFn[*Group] {
+	return func(g *Group) {
+		g.membersService = adminService.Members
 	}
+}
 
-	for _, fn := range optsFn {
-		fn(group)
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Group] {
+	return func(g *Group) {
+		g.Logger = logger
 	}
-
-	return group
 }
 
 /*
 Init a new Google Group [gosync.Adapter].
 
 Required config:
-  - [group.GoogleAuthenticationMechanism]
   - [group.Name]
 */
-func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{GoogleAuthenticationMechanism, Name} {
+func Init(
+	ctx context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*Group],
+) (*Group, error) {
+	for _, key := range []gosync.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	var (
-		client *admin.Service
-		err    error
-	)
+	adapter := &Group{
+		name: config[Name],
 
-	scopes := option.WithScopes(admin.AdminDirectoryGroupMemberScope)
-
-	switch config[GoogleAuthenticationMechanism] {
-	case "_testing_":
-		// Only for use in testing in order to prevent failure to fetch default credentials.
-		client, err = admin.NewService(ctx, scopes, option.WithAPIKey("_testing_"))
-		if err != nil {
-			return nil, fmt.Errorf("google.group.init -> %w", err)
-		}
-	case "default":
-		client, err = admin.NewService(ctx, scopes)
-		if err != nil {
-			return nil, fmt.Errorf("google.group.init -> %w", err)
-		}
-	default:
-		return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrInvalidConfig, config[GoogleAuthenticationMechanism])
+		callList:   callList,
+		callInsert: callInsert,
+		callDelete: callDelete,
 	}
 
-	adapter := New(client, config[Name])
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/google/group] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
 
 	if val, ok := config[Role]; ok {
 		adapter.Role = val
@@ -244,6 +222,15 @@ func Init(ctx context.Context, config map[gosync.ConfigKey]string) (gosync.Adapt
 
 	if val, ok := config[DeliverySettings]; ok {
 		adapter.DeliverySettings = val
+	}
+
+	if adapter.membersService == nil {
+		client, err := admin.NewService(ctx, option.WithScopes(admin.AdminDirectoryGroupMemberScope))
+		if err != nil {
+			return nil, fmt.Errorf("google.group.init -> %w", err)
+		}
+
+		WithAdminService(client)(adapter)
 	}
 
 	return adapter, nil

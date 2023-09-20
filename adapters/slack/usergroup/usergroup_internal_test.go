@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"testing"
 
@@ -14,26 +16,18 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
-
-	assert.Equal(t, "test", adapter.userGroupID)
-	assert.False(t, adapter.MuteGroupCannotBeEmpty)
-	assert.Zero(t, slackClient.Calls)
-}
-
 func TestUserGroup_Get(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
 
 	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &UserGroup{
+		client:      slackClient,
+		userGroupID: "test",
+		Logger:      log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	slackClient.EXPECT().GetUserGroupMembersContext(ctx, "test").Return([]string{"foo", "bar"}, nil)
 	slackClient.EXPECT().GetUsersInfoContext(ctx, "foo", "bar").Maybe().Return(&[]slack.User{
@@ -57,8 +51,12 @@ func TestUserGroup_Get_Pagination(t *testing.T) {
 	ctx := context.TODO()
 
 	slackClient := newMockISlackUserGroup(t)
-	adapter := New(&slack.Client{}, "test")
-	adapter.client = slackClient
+
+	adapter := &UserGroup{
+		client:      slackClient,
+		userGroupID: "test",
+		Logger:      log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	incrementingSlice := make([]string, 60)
 	firstPage := make([]interface{}, 30)
@@ -101,8 +99,12 @@ func TestUserGroup_Add(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		err := adapter.Add(ctx, []string{"foo", "bar"})
 
@@ -114,8 +116,12 @@ func TestUserGroup_Add(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "fizz@email").Return(&slack.User{ID: "fizz"}, nil)
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "buzz@email").Return(&slack.User{ID: "buzz"}, nil)
@@ -133,6 +139,7 @@ func TestUserGroup_Add(t *testing.T) {
 	})
 }
 
+//nolint:funlen
 func TestUserGroup_Remove(t *testing.T) {
 	t.Parallel()
 
@@ -142,8 +149,12 @@ func TestUserGroup_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
@@ -155,9 +166,13 @@ func TestUserGroup_Remove(t *testing.T) {
 		t.Parallel()
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			cache:       map[string]string{"foo@email": "foo", "bar@email": "bar"},
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "foo").Return(slack.UserGroup{}, nil)
 
@@ -173,10 +188,14 @@ func TestUserGroup_Remove(t *testing.T) {
 		errInvalidArguments := errors.New("invalid_arguments") //nolint:goerr113
 
 		slackClient := newMockISlackUserGroup(t)
-		adapter := New(&slack.Client{}, "test")
-		adapter.client = slackClient
-		adapter.cache = map[string]string{"foo@email": "foo"}
-		adapter.MuteGroupCannotBeEmpty = false
+
+		adapter := &UserGroup{
+			client:                 slackClient,
+			userGroupID:            "test",
+			cache:                  map[string]string{"foo@email": "foo"},
+			MuteGroupCannotBeEmpty: false,
+			Logger:                 log.New(os.Stdout, "", log.LstdFlags),
+		}
 
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx, "test", "").Return(slack.UserGroup{}, errInvalidArguments)
 
@@ -209,8 +228,8 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &UserGroup{}, adapter)
-		assert.Equal(t, "usergroup", adapter.(*UserGroup).userGroupID)
-		assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty)
+		assert.Equal(t, "usergroup", adapter.userGroupID)
+		assert.False(t, adapter.MuteGroupCannotBeEmpty)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -250,7 +269,7 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.False(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+			assert.False(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
 
 		for _, test := range []string{"true", "True", "TRUE"} {
@@ -261,7 +280,34 @@ func TestInit(t *testing.T) {
 			})
 
 			assert.NoError(t, err)
-			assert.True(t, adapter.(*UserGroup).MuteGroupCannotBeEmpty, test)
+			assert.True(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			SlackAPIKey: "test",
+			UserGroupID: "usergroup",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client := slack.New("test")
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			UserGroupID: "usergroup",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client, adapter.client)
 	})
 }

@@ -60,7 +60,8 @@ const MuteRestrictedErrOnKickFromPublic gosync.ConfigKey = "mute_restricted_err_
 var (
 	// Ensure [conversation.Conversation] fully satisfies the [gosync.Adapter] interface.
 	_ gosync.Adapter = &Conversation{}
-	_ gosync.InitFn  = Init // Ensure the [conversation.Init] function fully satisfies the [gosync.InitFn] type.
+	// Ensure [conversation.Init] fully satisfies the [gosync.InitFn] type.
+	_ gosync.InitFn[*Conversation] = Init
 )
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -253,47 +254,67 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 	return nil
 }
 
-// New Slack Conversation [gosync.Adapter].
-func New(client *slack.Client, conversationName string, optsFn ...func(conversation *Conversation)) *Conversation {
-	conversation := &Conversation{
-		MuteRestrictedErrOnKickFromPublic: false,
-		client:                            client,
-		conversationName:                  conversationName,
-		cache:                             nil,
-		Logger: log.New(
-			os.Stderr,
-			"[go-sync/slack/conversation] ",
-			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
+// WithClient passes a custom Slack client to the adapter.
+func WithClient(client *slack.Client) gosync.ConfigFn[*Conversation] {
+	return func(c *Conversation) {
+		c.client = client
 	}
+}
 
-	for _, fn := range optsFn {
-		fn(conversation)
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Conversation] {
+	return func(c *Conversation) {
+		c.Logger = logger
 	}
-
-	return conversation
 }
 
 /*
 Init a new Slack Conversation [gosync.Adapter].
 
 Required config:
-  - [conversation.SlackAPIKey]
   - [conversation.Name]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{SlackAPIKey, Name} {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*Conversation],
+) (*Conversation, error) {
+	for _, key := range []gosync.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client := slack.New(config[SlackAPIKey])
+	adapter := &Conversation{
+		MuteRestrictedErrOnKickFromPublic: false,
+		conversationName:                  config[Name],
+		cache:                             make(map[string]string),
+	}
 
-	adapter := New(client, config[Name])
+	if _, ok := config[SlackAPIKey]; ok {
+		client := slack.New(config[SlackAPIKey])
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
 
 	if val, ok := config[MuteRestrictedErrOnKickFromPublic]; ok {
 		adapter.MuteRestrictedErrOnKickFromPublic = strings.ToLower(val) == "true"
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/slack/conversation] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	if adapter.client == nil {
+		return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, SlackAPIKey)
 	}
 
 	return adapter, nil

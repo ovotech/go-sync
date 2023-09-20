@@ -2,25 +2,18 @@ package team
 
 import (
 	"context"
+	"log"
+	"os"
 	"testing"
 
 	"github.com/google/go-github/v47/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"golang.org/x/oauth2"
 
 	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 )
-
-func TestNew(t *testing.T) {
-	t.Parallel()
-
-	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-
-	assert.Equal(t, "org", adapter.org)
-	assert.Equal(t, "slug", adapter.slug)
-}
 
 func TestTeam_Get(t *testing.T) {
 	t.Parallel()
@@ -29,8 +22,14 @@ func TestTeam_Get(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	gitHubClient.
 		EXPECT().
@@ -63,8 +62,14 @@ func TestTeam_Add(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	discovery.EXPECT().GetUsernameFromEmail(ctx, []string{"fizz@email", "buzz@email"}).
 		Maybe().Return([]string{"fizz", "buzz"}, nil)
@@ -85,9 +90,15 @@ func TestTeam_Remove(t *testing.T) {
 
 	gitHubClient := newMockIGitHubTeam(t)
 	discovery := NewMockGitHubDiscovery(t)
-	adapter := New(&github.Client{}, discovery, "org", "slug")
-	adapter.teams = gitHubClient
-	adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+
+	adapter := &Team{
+		teams:     gitHubClient,
+		discovery: discovery,
+		org:       "org",
+		slug:      "slug",
+		cache:     map[string]string{"foo@email": "foo", "bar@email": "bar"},
+		Logger:    log.New(os.Stdout, "", log.LstdFlags),
+	}
 
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "foo").Return(nil, nil)
 	gitHubClient.EXPECT().RemoveTeamMembershipBySlug(ctx, "org", "slug", "bar").Return(nil, nil)
@@ -115,9 +126,9 @@ func TestInit(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.IsType(t, &Team{}, adapter)
-		assert.Equal(t, "org", adapter.(*Team).org)
-		assert.Equal(t, "slug", adapter.(*Team).slug)
-		assert.IsType(t, &saml.Saml{}, adapter.(*Team).discovery)
+		assert.Equal(t, "org", adapter.org)
+		assert.Equal(t, "slug", adapter.slug)
+		assert.IsType(t, &saml.Saml{}, adapter.discovery)
 	})
 
 	t.Run("missing config", func(t *testing.T) {
@@ -161,19 +172,6 @@ func TestInit(t *testing.T) {
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, TeamSlug)
 		})
-
-		t.Run("missing discovery", func(t *testing.T) {
-			t.Parallel()
-
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
-				GitHubToken: "token",
-				GitHubOrg:   "org",
-				TeamSlug:    "slug",
-			})
-
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, DiscoveryMechanism)
-		})
 	})
 
 	t.Run("invalid config", func(t *testing.T) {
@@ -186,7 +184,55 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "foo",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrInvalidConfig)
-		assert.ErrorContains(t, err, "foo")
+		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+	})
+
+	t.Run("with logger", func(t *testing.T) {
+		t.Parallel()
+
+		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "saml",
+		}, WithLogger(logger))
+
+		assert.NoError(t, err)
+		assert.Equal(t, logger, adapter.Logger)
+	})
+
+	t.Run("with client", func(t *testing.T) {
+		t.Parallel()
+
+		client := github.NewClient(oauth2.NewClient(ctx, oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: "token"},
+		)))
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken:        "token",
+			GitHubOrg:          "org",
+			TeamSlug:           "slug",
+			DiscoveryMechanism: "saml",
+		}, WithClient(client))
+
+		assert.NoError(t, err)
+		assert.Equal(t, client.Teams, adapter.teams)
+	})
+
+	t.Run("with discovery service", func(t *testing.T) {
+		t.Parallel()
+
+		mockDiscovery := NewMockGitHubDiscovery(t)
+
+		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			GitHubToken: "token",
+			GitHubOrg:   "org",
+			TeamSlug:    "slug",
+		}, WithDiscoveryService(mockDiscovery))
+
+		assert.NoError(t, err)
+		assert.Equal(t, mockDiscovery, adapter.discovery)
 	})
 }

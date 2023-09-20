@@ -298,7 +298,7 @@ func resolveOdataError(err error) error {
 	return err
 }
 
-func getGroupMembers(
+func getGroupMembers( //nolint:ireturn
 	ctx context.Context,
 	builder *groups.GroupItemRequestBuilder,
 	cfg *groups.ItemMembersRequestBuilderGetRequestConfiguration,
@@ -311,7 +311,7 @@ func getGroupMembers(
 	return out, nil
 }
 
-func patchGroup(
+func patchGroup( //nolint:ireturn
 	ctx context.Context,
 	builder *groups.GroupItemRequestBuilder,
 	group models.Groupable,
@@ -339,14 +339,25 @@ func removeGroupMember(
 }
 
 var (
-	_ gosync.Adapter = &GroupMembership{}
-	_ gosync.InitFn  = Init
+	_ gosync.Adapter                  = &GroupMembership{}
+	_ gosync.InitFn[*GroupMembership] = Init
 )
+
+// WithClient provides a mechanism to pass a custom client to the adapter.
+func WithClient(client iClient) func(u *GroupMembership) {
+	return func(u *GroupMembership) {
+		u.client = client
+	}
+}
 
 // Init creates a new adapter. It expects a single configuration entry.
 // Required config:
 //   - groupmembership.GroupName: the name of the AD group to sync members to.
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*GroupMembership],
+) (*GroupMembership, error) {
 	for _, key := range []gosync.ConfigKey{GroupName} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("azuread.groupmembership.init -> %w(%s)", gosync.ErrMissingConfig, key)
@@ -379,6 +390,10 @@ func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter
 			"[go-sync/azuread/groupmembership] ",
 			log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
 		),
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
 	}
 
 	return adapter, nil

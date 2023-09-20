@@ -3,45 +3,37 @@ package gosync_test
 import (
 	"context"
 	"log"
+	"os"
 
 	gosync "github.com/ovotech/go-sync"
-)
-
-type serviceStruct struct {
-	New func(string) serviceStruct
-}
-
-type adapterStruct struct {
-	Init      gosync.InitFn
-	New       func(serviceStruct, string) gosync.Adapter
-	Token     string
-	Something string
-}
-
-//nolint:gochecknoglobals
-var (
-	someAdapter = adapterStruct{}
-	service     = serviceStruct{}
+	"github.com/ovotech/go-sync/adapters/github/team"
+	"github.com/ovotech/go-sync/adapters/slack/conversation"
 )
 
 func ExampleNew() {
-	// Create an adapter using the recommended New method.
-	client := service.New("some-token")
-	source := someAdapter.New(client, "some-value")
+	ctx := context.Background()
 
-	// Initialise an adapter using an Init function.
-	destination, err := someAdapter.Init(context.Background(), map[gosync.ConfigKey]string{
-		someAdapter.Token:     "some-token",
-		someAdapter.Something: "some-value",
-	})
+	// Specify a custom logger for the GitHub adapter.
+	logger := log.New(os.Stderr, "new logger", log.LstdFlags)
+
+	// Create a GitHub team adapter.
+	source, err := team.Init(ctx, map[gosync.ConfigKey]string{
+		team.GitHubToken: "some-token",
+	}, team.WithLogger(logger))
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
 	}
 
-	sync := gosync.New(source)
-
-	err = sync.SyncWith(context.Background(), destination)
+	// Create a Slack conversation adapter.
+	destination, err := conversation.Init(ctx, map[gosync.ConfigKey]string{
+		conversation.Name: "example",
+	})
 	if err != nil {
-		log.Fatal(err)
+		log.Panic(err)
+	}
+
+	err = gosync.New(source).SyncWith(ctx, destination)
+	if err != nil {
+		log.Panic(err)
 	}
 }

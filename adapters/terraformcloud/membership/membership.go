@@ -29,6 +29,11 @@ const Token gosync.ConfigKey = "terraform_cloud_token"
 // Organisation sets the Terraform Cloud organisation.
 const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
 
+var (
+	_ gosync.Adapter             = &Membership{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ gosync.InitFn[*Membership] = Init          // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
+)
+
 // iOrganizationMemberships is a subset of Terraform Enterprise
 // OrganizationMemberships, and used to build mocks for easy testing.
 type iOrganizationMemberships interface {
@@ -165,14 +170,17 @@ func (m *Membership) Remove(ctx context.Context, emails []string) error {
 	return nil
 }
 
-// New Terraform Cloud membership [gosync.Adapter].
-func New(client *tfe.Client, organisation string) *Membership {
-	return &Membership{
-		organisation:            organisation,
-		organizationMemberships: client.OrganizationMemberships,
-		Logger: log.New(
-			os.Stderr, "[go-sync/terraformcloud/membership] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
-		),
+// WithClient passes a custom Terraform Cloud client to the adapter.
+func WithClient(client *tfe.Client) gosync.ConfigFn[*Membership] {
+	return func(u *Membership) {
+		u.organizationMemberships = client.OrganizationMemberships
+	}
+}
+
+// WithLogger passes a custom logger to the adapter.
+func WithLogger(logger *log.Logger) gosync.ConfigFn[*Membership] {
+	return func(u *Membership) {
+		u.Logger = logger
 	}
 }
 
@@ -183,17 +191,41 @@ Required config:
   - [membership.Token]
   - [membership.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string) (gosync.Adapter, error) {
-	for _, key := range []gosync.ConfigKey{Token, Organisation} {
+func Init(
+	_ context.Context,
+	config map[gosync.ConfigKey]string,
+	configFns ...gosync.ConfigFn[*Membership],
+) (*Membership, error) {
+	for _, key := range []gosync.ConfigKey{Organisation} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("terraformcloud.membership.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}
 	}
 
-	client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
-	if err != nil {
-		return nil, fmt.Errorf("terraformcloud.membership.init.newclient -> %w", err)
+	adapter := &Membership{
+		organisation: config[Organisation],
 	}
 
-	return New(client, config[Organisation]), nil
+	if _, ok := config[Token]; ok {
+		client, err := tfe.NewClient(&tfe.Config{Token: config[Token]})
+		if err != nil {
+			return nil, fmt.Errorf("user.init.newclient -> %w", err)
+		}
+
+		WithClient(client)(adapter)
+	}
+
+	for _, configFn := range configFns {
+		configFn(adapter)
+	}
+
+	if adapter.Logger == nil {
+		logger := log.New(
+			os.Stderr, "[go-sync/terraformcloud/membership] ", log.LstdFlags|log.Lshortfile|log.Lmsgprefix,
+		)
+
+		WithLogger(logger)(adapter)
+	}
+
+	return adapter, nil
 }
