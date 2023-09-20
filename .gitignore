@@ -4,14 +4,14 @@
 # Go workspace - checksums for necessary leftover modules
 /go.work.sum
 
-# Binaries
-/hack/bin/
-
-# Makefile things
-/tmp/
+# Taskfile checksums & binaries
+/.task/
 
 # IntelliJ folder
 /.idea/
 
-# Output from 'go-junit-report'
+# Output from test:report
 /report.xml
+
+# Output from test:coverage
+/cover.out

@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  install:
+    desc: A tool for controlling Go package import order & ensuring it is deterministic
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - GCI_VERSION
+    status:
+      - test -f $GOBIN/gci
+    cmds:
+      - go install github.com/daixiang0/gci@{{.GCI_VERSION}}
+
+  default:
+    desc: Fix Go import orders
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    deps:
+      - install
+    cmds:
+      - $GOBIN/gci write . -s standard -s default -s prefix\(github.com/ovotech\) -s blank -s dot

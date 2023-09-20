@@ -1,0 +1,29 @@
+version: '3'
+
+includes:
+  generate: ./.taskfiles/generate.yml
+  lint: ./.taskfiles/lint.yml
+  tests: ./.taskfiles/tests.yml
+  utils: ./.taskfiles/utils.yml
+
+output: prefixed
+
+vars:
+  GCI_VERSION: latest
+  GOFUMPT_VERSION: latest
+  GOLANGCI_LINT_VERSION: latest
+  GO_JUNIT_REPORT_VERSION: f50ae24655f6484f175ceb0672505dfec6565637 # Pin to a specific version that fixes a parsing bug, but has not been released yet.
+  GO_MODULES:
+    sh: find . -name 'go.mod' -exec sh -c 'echo {} | sed -e "s/go.mod/.../"' \; | tr '\n' ' '
+  MOCKERY_VERSION: latest
+
+env:
+  GOBIN: '{{.ROOT_DIR}}/.task/bin'
+
+tasks:
+  default:
+    desc: Generate, lint and unit test the source code
+    cmds:
+      - task: generate
+      - task: lint
+      - task: tests:gotest:unit

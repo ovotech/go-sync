@@ -30,7 +30,6 @@ linters-settings:
       - standard
       - default
       - prefix(github.com/ovotech)
-      - prefix(github.com/ovotech/go-sync)
       - blank
       - dot
     skip-generated: true

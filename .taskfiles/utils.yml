@@ -1,0 +1,40 @@
+version: '3'
+
+tasks:
+  clean:
+    desc: Clean and remove temporary files
+    dir: '{{.ROOT_DIR}}'
+    cmds:
+      - go clean -x -v
+      - rm -rf cover.out report.xml go.work.sum out tmp .task
+
+  go-mod-cmds:
+    desc: Internal command to run against all Go modules
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - ARGS
+    cmds:
+      - find . -name 'go.mod' -execdir {{.ARGS}} \;
+
+
+  tidy:
+    desc: Tidy all Go mod files
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./go.mod
+      - ./**/go.mod
+    cmds:
+      - task: go-mod-cmds
+        vars: { ARGS: 'go mod tidy' }
+
+  download:
+    desc: Download all Go dependencies
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./go.mod
+      - ./**/go.mod
+    cmds:
+      - task: go-mod-cmds
+        vars: { ARGS: 'go mod download' }

@@ -1,0 +1,33 @@
+version: '3'
+
+includes:
+  gci:
+    taskfile: ./gci.yml
+    internal: true
+
+tasks:
+  install:
+    desc: Easily generate mocks for Golang interfaces
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - MOCKERY_VERSION
+    status:
+      - test -f $GOBIN/mockery
+    cmds:
+      - go install github.com/vektra/mockery/v2@{{.MOCKERY_VERSION}}
+
+  default:
+    desc: Generate automatic mocks from interfaces
+    dir: '{{.ROOT_DIR}}'
+    deps:
+      - install
+    preconditions:
+      - sh: test -f .mockery.yaml
+        msg: Mockery config file .mockery.yaml is missing in the root directory
+    sources:
+      - ./**/*.go
+    cmds:
+      - $GOBIN/mockery
+      - task: gci
