@@ -1,0 +1,66 @@
+version: '3'
+
+includes:
+  go-junit-report:
+    taskfile: ./go-junit-report.yml
+    internal: true
+
+
+tasks:
+  gotest:
+    desc: Internal task for running Go tests
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - GO_MODULES
+    cmds:
+      - go test -count=1 {{.ARGS}} -v {{.GO_MODULES}} {{.POSTARGS}}
+
+  benchmark:
+    desc: Run all Go benchmarks
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gotest
+        vars:
+          ARGS: -bench=. -benchmem -benchtime=10s -run='^DoNotRunTests$$'
+
+  coverage:
+    desc: Run tests and generate a coverage report
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gotest
+        vars:
+          ARGS: -covermode=atomic -coverprofile=cover.out
+
+  report:
+    desc: Run tests and generate a JUnit XML report
+    deps:
+      - go-junit-report:install
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gotest
+        vars:
+          POSTARGS: 2>&1 | $GOBIN/go-junit-report -iocopy -out report.xml -set-exit-code
+
+  unit:
+    desc: Run all Go unit tests
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - ./**/*.go
+    cmds:
+      - task: gotest
+
+  default:
+    desc: Run all gotest tasks
+    cmds:
+      - task: unit
+      - task: benchmark
+      - task: coverage
+      - task: report

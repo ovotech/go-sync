@@ -1,0 +1,10 @@
+version: '3'
+
+includes:
+  gotest: ./tools/gotest.yml
+
+tasks:
+  default:
+    desc: Run all test tasks
+    cmds:
+      - task: gotest

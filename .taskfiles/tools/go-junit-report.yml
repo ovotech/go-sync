@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  install:
+    desc: Converts go test output into a JUnit compatible XML report
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - GO_JUNIT_REPORT_VERSION
+    status:
+      - test -f $GOBIN/go-junit-report
+    cmds:
+      - go install github.com/jstemmer/go-junit-report/v2@{{.GO_JUNIT_REPORT_VERSION}}

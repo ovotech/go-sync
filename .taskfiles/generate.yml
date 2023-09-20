@@ -1,0 +1,11 @@
+version: '3'
+
+includes:
+  mockery:
+    taskfile: ./tools/mockery.yml
+
+tasks:
+  default:
+    desc: Run all generate tasks
+    cmds:
+      - task: mockery
