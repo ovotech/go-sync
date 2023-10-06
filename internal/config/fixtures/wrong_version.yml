@@ -1,0 +1,31 @@
+version: '1'
+
+sync:
+  - service: ./fixtures/valid.yml
+    adapter: source_adapter
+    config:
+      foo: bar
+    with:
+      - service: ./fixtures/valid.yml
+        adapter: adapter_one
+        config:
+          some: config
+      - service: ./fixtures/valid.yml
+        adapter: adapter_two
+        config:
+          more: configuration
+      - service: ./fixtures/valid.yml
+        adapter: some_adapter
+        config:
+          even_more: test_values
+  - service: ./fixtures/valid.yml
+    adapter: source_adapter
+    options:
+      operatingMode: add
+    config:
+      foo: bar
+    with:
+      - service: ./fixtures/valid.yml
+        adapter: adapter_one
+        config:
+          some: config

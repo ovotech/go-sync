@@ -1,0 +1,12 @@
+sync:
+  - service: source_service
+    adapter: source_adapter
+    options:
+      an_option: a setting
+    config:
+      foo: bar
+    with:
+      - service: a_destination
+        adapter: adapter_one
+        config:
+          some: config

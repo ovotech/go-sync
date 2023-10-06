@@ -21,3 +21,6 @@ var ErrInvalidConfig = errors.New("invalid configuration")
 
 // ErrTooManyChanges is returned when a change limit has been set, and the number of changes exceeds it.
 var ErrTooManyChanges = errors.New("too many changes")
+
+// ErrDoesNotExist is returned when something does not exist.
+var ErrDoesNotExist = errors.New("does not exist")
