@@ -40,28 +40,29 @@ import (
 
 	"github.com/slack-go/slack"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 /*
 SlackAPIKey is an API key for authenticating with Slack.
 */
-const SlackAPIKey gosync.ConfigKey = "slack_api_key" //nolint:gosec
+const SlackAPIKey types.ConfigKey = "slack_api_key" //nolint:gosec
 
 // Name is the Slack conversation name.
-const Name gosync.ConfigKey = "name"
+const Name types.ConfigKey = "name"
 
 /*
 MuteRestrictedErrOnKickFromPublic mutes an error that occurs when Slack is configured to prevent kicking users from
 public conversations. Set this to true to mute this error and continue syncing.
 */
-const MuteRestrictedErrOnKickFromPublic gosync.ConfigKey = "mute_restricted_err_kick_from_public"
+const MuteRestrictedErrOnKickFromPublic types.ConfigKey = "mute_restricted_err_kick_from_public"
 
 var (
 	// Ensure [conversation.Conversation] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.Adapter = &Conversation{}
+	_ types.Adapter = &Conversation{}
 	// Ensure [conversation.Init] fully satisfies the [gosync.InitFn] type.
-	_ gosync.InitFn[*Conversation] = Init
+	_ types.InitFn[*Conversation] = Init
 )
 
 // iSlackConversation is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -255,14 +256,14 @@ func (c *Conversation) Remove(_ context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Slack client to the adapter.
-func WithClient(client *slack.Client) gosync.ConfigFn[*Conversation] {
+func WithClient(client *slack.Client) types.ConfigFn[*Conversation] {
 	return func(c *Conversation) {
 		c.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*Conversation] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*Conversation] {
 	return func(c *Conversation) {
 		c.Logger = logger
 	}
@@ -276,10 +277,10 @@ Required config:
 */
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*Conversation],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*Conversation],
 ) (*Conversation, error) {
-	for _, key := range []gosync.ConfigKey{Name} {
+	for _, key := range []types.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

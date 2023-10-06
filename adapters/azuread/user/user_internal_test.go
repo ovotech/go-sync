@@ -12,14 +12,15 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 type MockRequestAdapter struct {
 	SerializationWriterFactory serialization.SerializationWriterFactory
 }
 
-func (r *MockRequestAdapter) Send( //nolint: ireturn
+func (r *MockRequestAdapter) Send( //nolint: ireturn,nolintlint
 	_ context.Context,
 	_ *abstractions.RequestInformation,
 	_ serialization.ParsableFactory,
@@ -88,7 +89,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(
 	return nil, nil //nolint:nilnil
 }
 
-func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint: ireturn,lll
+func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint: ireturn,lll,nolintlint
 	return r.SerializationWriterFactory
 }
 
@@ -216,7 +217,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Filter: "filter",
 		})
 
@@ -231,7 +232,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing filter", func(t *testing.T) {
 			t.Parallel()
 
-			adapter, err := Init(ctx, map[gosync.ConfigKey]string{})
+			adapter, err := Init(ctx, map[types.ConfigKey]string{})
 
 			assert.NoError(t, err)
 			assert.Equal(t, "", adapter.filter)

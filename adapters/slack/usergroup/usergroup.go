@@ -50,25 +50,26 @@ import (
 
 	"github.com/slack-go/slack"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 /*
 SlackAPIKey is an API key for authenticating with Slack.
 */
-const SlackAPIKey gosync.ConfigKey = "slack_api_key" //nolint:gosec
+const SlackAPIKey types.ConfigKey = "slack_api_key" //nolint:gosec
 
 // UserGroupID is the Slack UserGroup ID.
-const UserGroupID gosync.ConfigKey = "usergroup_id"
+const UserGroupID types.ConfigKey = "usergroup_id"
 
 // MuteGroupCannotBeEmpty silences errors when removing all users from a UserGroup.
-const MuteGroupCannotBeEmpty gosync.ConfigKey = "mute_group_cannot_be_empty"
+const MuteGroupCannotBeEmpty types.ConfigKey = "mute_group_cannot_be_empty"
 
 var (
 	// Ensure [usergroup.UserGroup] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.Adapter = &UserGroup{}
+	_ types.Adapter = &UserGroup{}
 	// Ensure the [usergroup.Init] function fully satisfies the [gosync.InitFn] type.
-	_ gosync.InitFn[*UserGroup] = Init
+	_ types.InitFn[*UserGroup] = Init
 )
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
@@ -246,14 +247,14 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Slack client to the adapter.
-func WithClient(client *slack.Client) gosync.ConfigFn[*UserGroup] {
+func WithClient(client *slack.Client) types.ConfigFn[*UserGroup] {
 	return func(u *UserGroup) {
 		u.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*UserGroup] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*UserGroup] {
 	return func(u *UserGroup) {
 		u.Logger = logger
 	}
@@ -267,10 +268,10 @@ Required config:
 */
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*UserGroup],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*UserGroup],
 ) (*UserGroup, error) {
-	for _, key := range []gosync.ConfigKey{UserGroupID} {
+	for _, key := range []types.ConfigKey{UserGroupID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("slack.conversation.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

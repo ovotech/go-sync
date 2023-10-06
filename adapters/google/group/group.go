@@ -22,11 +22,12 @@ import (
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/option"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 // Name is the name of your Google group.
-const Name gosync.ConfigKey = "name"
+const Name types.ConfigKey = "name"
 
 /*
 Role sets the role for new users being added to a group.
@@ -40,7 +41,7 @@ See `role` field in [reference] for more information.
 
 [reference]: https://developers.google.com/admin-sdk/directory/reference/rest/v1/members#resource:-member
 */
-const Role gosync.ConfigKey = "role"
+const Role types.ConfigKey = "role"
 
 /*
 DeliverySettings sets the delivery settings.
@@ -56,11 +57,11 @@ See `delivery_settings` field in [reference] for more information.
 
 [reference]: https://developers.google.com/admin-sdk/directory/reference/rest/v1/members#resource:-member
 */
-const DeliverySettings gosync.ConfigKey = "delivery_settings"
+const DeliverySettings types.ConfigKey = "delivery_settings"
 
 var (
-	_ gosync.Adapter        = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*Group] = Init     // Ensure [group.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter        = &Group{} // Ensure [group.Group] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*Group] = Init     // Ensure [group.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // callList allows us to mock the returned struct from the List Google API call.
@@ -166,14 +167,14 @@ func (g *Group) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithAdminService passes a custom Google Admin Service to the adapter.
-func WithAdminService(adminService *admin.Service) gosync.ConfigFn[*Group] {
+func WithAdminService(adminService *admin.Service) types.ConfigFn[*Group] {
 	return func(g *Group) {
 		g.membersService = adminService.Members
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*Group] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*Group] {
 	return func(g *Group) {
 		g.Logger = logger
 	}
@@ -187,10 +188,10 @@ Required config:
 */
 func Init(
 	ctx context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*Group],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*Group],
 ) (*Group, error) {
-	for _, key := range []gosync.ConfigKey{Name} {
+	for _, key := range []types.ConfigKey{Name} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("google.group.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

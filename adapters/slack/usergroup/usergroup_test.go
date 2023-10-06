@@ -7,14 +7,15 @@ import (
 
 	"github.com/slack-go/slack"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/slack/usergroup"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := usergroup.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := usergroup.Init(ctx, map[types.ConfigKey]string{
 		usergroup.SlackAPIKey: "my-slack-token",
 		usergroup.UserGroupID: "S0123ABC456",
 	})
@@ -30,7 +31,7 @@ func ExampleWithClient() {
 
 	client := slack.New("my-slack-token")
 
-	adapter, err := usergroup.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := usergroup.Init(ctx, map[types.ConfigKey]string{
 		usergroup.UserGroupID: "S0123ABC456",
 	}, usergroup.WithClient(client))
 	if err != nil {
@@ -45,7 +46,7 @@ func ExampleWithLogger() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	adapter, err := usergroup.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := usergroup.Init(ctx, map[types.ConfigKey]string{
 		usergroup.SlackAPIKey: "my-slack-token",
 		usergroup.UserGroupID: "S0123ABC456",
 	}, usergroup.WithLogger(logger))

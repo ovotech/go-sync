@@ -1,4 +1,4 @@
-package gosync
+package errors
 
 import "errors"
 

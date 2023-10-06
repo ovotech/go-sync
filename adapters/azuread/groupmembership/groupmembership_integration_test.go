@@ -9,7 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/types"
 )
 
 var group = flag.String("group", "", "Enter the group to adjust group membership of in the Integration test")

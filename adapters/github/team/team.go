@@ -33,16 +33,17 @@ import (
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 /*
 GitHubToken is the token used to authenticate with GitHub.
 See package docs for more information on how to obtain this token.
 */
-const GitHubToken gosync.ConfigKey = "github_token"
+const GitHubToken types.ConfigKey = "github_token"
 
 /*
 GitHubOrg is the name of your GitHub organisation.
@@ -55,7 +56,7 @@ For example:
 
 `ovotech` is the name of our organisation.
 */
-const GitHubOrg gosync.ConfigKey = "github_org"
+const GitHubOrg types.ConfigKey = "github_org"
 
 /*
 TeamSlug is the name of your team slug within your organisation.
@@ -66,22 +67,22 @@ For example:
 
 `foobar` is the name of our team slug.
 */
-const TeamSlug gosync.ConfigKey = "team_slug"
+const TeamSlug types.ConfigKey = "team_slug"
 
 /*
 DiscoveryMechanism for converting emails into GitHub users and vice versa. Supported values are:
   - [saml]
 */
-const DiscoveryMechanism gosync.ConfigKey = "discovery_mechanism"
+const DiscoveryMechanism types.ConfigKey = "discovery_mechanism"
 
 /*
 SamlMuteUserNotFoundErr mutes the UserNotFoundErr if SAML discovery fails to discover a user from GitHub.
 */
-const SamlMuteUserNotFoundErr gosync.ConfigKey = "saml_mute_user_not_found_err"
+const SamlMuteUserNotFoundErr types.ConfigKey = "saml_mute_user_not_found_err"
 
 var (
-	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iSlackConversation is a subset of the Slack Client used to build mocks for easy testing.
@@ -204,21 +205,21 @@ func (t *Team) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom GitHub client to the adapter.
-func WithClient(client *github.Client) gosync.ConfigFn[*Team] {
+func WithClient(client *github.Client) types.ConfigFn[*Team] {
 	return func(t *Team) {
 		t.teams = client.Teams
 	}
 }
 
 // WithDiscoveryService passes a GitHub Discovery Service to the adapter.
-func WithDiscoveryService(discovery discovery.GitHubDiscovery) gosync.ConfigFn[*Team] {
+func WithDiscoveryService(discovery discovery.GitHubDiscovery) types.ConfigFn[*Team] {
 	return func(t *Team) {
 		t.discovery = discovery
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*Team] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*Team] {
 	return func(t *Team) {
 		t.Logger = logger
 	}
@@ -234,10 +235,10 @@ Required config:
 //nolint:cyclop
 func Init(
 	ctx context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*Team],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*Team],
 ) (*Team, error) {
-	for _, key := range []gosync.ConfigKey{GitHubOrg, TeamSlug} {
+	for _, key := range []types.ConfigKey{GitHubOrg, TeamSlug} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("github.team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

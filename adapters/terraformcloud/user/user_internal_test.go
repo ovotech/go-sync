@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/go-tfe"
 	"github.com/stretchr/testify/assert"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func TestUser_Get(t *testing.T) {
@@ -167,7 +168,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Token:        "token",
 			Organisation: "org",
 			Team:         "team",
@@ -180,7 +181,7 @@ func TestInit(t *testing.T) {
 	t.Run("missing token", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
+		_, err := Init(ctx, map[types.ConfigKey]string{
 			Organisation: "org",
 			Team:         "team",
 		})
@@ -192,7 +193,7 @@ func TestInit(t *testing.T) {
 	t.Run("missing organisation", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
+		_, err := Init(ctx, map[types.ConfigKey]string{
 			Token: "token",
 			Team:  "team",
 		})
@@ -204,7 +205,7 @@ func TestInit(t *testing.T) {
 	t.Run("missing team", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
+		_, err := Init(ctx, map[types.ConfigKey]string{
 			Token:        "token",
 			Organisation: "org",
 		})
@@ -218,7 +219,7 @@ func TestInit(t *testing.T) {
 
 		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Token:        "token",
 			Organisation: "org",
 			Team:         "team",
@@ -234,7 +235,7 @@ func TestInit(t *testing.T) {
 		client, err := tfe.NewClient(&tfe.Config{Token: "test"})
 		assert.NoError(t, err)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Organisation: "org",
 			Team:         "team",
 		}, WithClient(client))

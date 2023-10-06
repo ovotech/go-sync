@@ -9,8 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/terraformcloud/membership"
+	gosync "github.com/ovotech/go-sync/pkg/types"
 )
 
 var (

@@ -5,9 +5,10 @@ import (
 	"log"
 	"os"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/team"
 	"github.com/ovotech/go-sync/adapters/slack/conversation"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleNew() {
@@ -17,7 +18,7 @@ func ExampleNew() {
 	logger := log.New(os.Stderr, "new logger", log.LstdFlags)
 
 	// Create a GitHub team adapter.
-	source, err := team.Init(ctx, map[gosync.ConfigKey]string{
+	source, err := team.Init(ctx, map[types.ConfigKey]string{
 		team.GitHubToken: "some-token",
 	}, team.WithLogger(logger))
 	if err != nil {
@@ -25,7 +26,7 @@ func ExampleNew() {
 	}
 
 	// Create a Slack conversation adapter.
-	destination, err := conversation.Init(ctx, map[gosync.ConfigKey]string{
+	destination, err := conversation.Init(ctx, map[types.ConfigKey]string{
 		conversation.Name: "example",
 	})
 	if err != nil {

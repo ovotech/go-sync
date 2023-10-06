@@ -4,12 +4,13 @@ import (
 	"context"
 	"log"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/azuread/user"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
-	adapter, err := user.Init(context.TODO(), map[gosync.ConfigKey]string{
+	adapter, err := user.Init(context.TODO(), map[types.ConfigKey]string{
 		user.Filter: "endsWith(mail, '@example.com')",
 	})
 	if err != nil {

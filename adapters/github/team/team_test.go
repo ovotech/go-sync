@@ -9,15 +9,16 @@ import (
 	"github.com/shurcooL/githubv4"
 	"golang.org/x/oauth2"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
 	"github.com/ovotech/go-sync/adapters/github/team"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := team.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := team.Init(ctx, map[types.ConfigKey]string{
 		team.GitHubToken:        "my-github-token",
 		team.GitHubOrg:          "my-org",
 		team.TeamSlug:           "my-team-slug",
@@ -39,7 +40,7 @@ func ExampleWithClient() {
 
 	gitHubClient := github.NewClient(oauthClient)
 
-	adapter, err := team.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := team.Init(ctx, map[types.ConfigKey]string{
 		team.GitHubToken:        "my-github-token",
 		team.GitHubOrg:          "my-org",
 		team.TeamSlug:           "my-team-slug",
@@ -61,7 +62,7 @@ func ExampleWithDiscoveryService() {
 
 	discoverySvc := saml.New(githubv4.NewClient(oauthClient), "my-org")
 
-	adapter, err := team.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := team.Init(ctx, map[types.ConfigKey]string{
 		team.GitHubToken: "my-github-token",
 		team.GitHubOrg:   "my-org",
 		team.TeamSlug:    "my-team-slug",
@@ -78,7 +79,7 @@ func ExampleWithLogger() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	adapter, err := team.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := team.Init(ctx, map[types.ConfigKey]string{
 		team.GitHubToken:        "my-github-token",
 		team.GitHubOrg:          "my-org",
 		team.TeamSlug:           "my-team-slug",

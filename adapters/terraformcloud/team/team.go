@@ -20,18 +20,19 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 // Token sets the authentication token for Terraform Cloud.
-const Token gosync.ConfigKey = "terraform_cloud_token"
+const Token types.ConfigKey = "terraform_cloud_token"
 
 // Organisation sets the Terraform Cloud organisation.
-const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
+const Organisation types.ConfigKey = "terraform_cloud_organisation"
 
 var (
-	_ gosync.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter       = &Team{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*Team] = Init    // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iTeams is a subset of Terraform Enterprise Teams, and used to build mocks for easy testing.
@@ -121,14 +122,14 @@ func (t *Team) Remove(ctx context.Context, teams []string) error {
 }
 
 // WithClient passes a custom Terraform Cloud client to the adapter.
-func WithClient(client *tfe.Client) gosync.ConfigFn[*Team] {
+func WithClient(client *tfe.Client) types.ConfigFn[*Team] {
 	return func(t *Team) {
 		t.teams = client.Teams
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*Team] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*Team] {
 	return func(t *Team) {
 		t.Logger = logger
 	}
@@ -140,8 +141,8 @@ Init a new Terraform Cloud Team [gosync.Adapter].
 Required config:
   - [team.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn[*Team]) (*Team, error) {
-	for _, key := range []gosync.ConfigKey{Organisation} {
+func Init(_ context.Context, config map[types.ConfigKey]string, configFns ...types.ConfigFn[*Team]) (*Team, error) {
+	for _, key := range []types.ConfigKey{Organisation} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("team.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

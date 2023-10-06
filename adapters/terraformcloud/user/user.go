@@ -21,21 +21,22 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 // Token sets the authentication token for Terraform Cloud.
-const Token gosync.ConfigKey = "terraform_cloud_token"
+const Token types.ConfigKey = "terraform_cloud_token"
 
 // Organisation sets the Terraform Cloud organisation.
-const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
+const Organisation types.ConfigKey = "terraform_cloud_organisation"
 
 // Team is the name of the team to sync with.
-const Team gosync.ConfigKey = "team"
+const Team types.ConfigKey = "team"
 
 var (
-	_ gosync.Adapter       = &User{} // Ensure [User.User] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*User] = Init    // Ensure [user.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter       = &User{} // Ensure [User.User] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*User] = Init    // Ensure [user.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // ErrTeamNotFound is returned if the team cannot be found in the Terraform Cloud organisation.
@@ -208,7 +209,7 @@ func (u *User) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Terraform Cloud client to the adapter.
-func WithClient(client *tfe.Client) gosync.ConfigFn[*User] {
+func WithClient(client *tfe.Client) types.ConfigFn[*User] {
 	return func(u *User) {
 		u.teams = client.Teams
 		u.teamMembers = client.TeamMembers
@@ -217,7 +218,7 @@ func WithClient(client *tfe.Client) gosync.ConfigFn[*User] {
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*User] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*User] {
 	return func(u *User) {
 		u.Logger = logger
 	}
@@ -230,8 +231,8 @@ Required config:
   - [user.Team]
   - [user.Organisation]
 */
-func Init(_ context.Context, config map[gosync.ConfigKey]string, configFns ...gosync.ConfigFn[*User]) (*User, error) {
-	for _, key := range []gosync.ConfigKey{Organisation, Team} {
+func Init(_ context.Context, config map[types.ConfigKey]string, configFns ...types.ConfigFn[*User]) (*User, error) {
+	for _, key := range []types.ConfigKey{Organisation, Team} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("user.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

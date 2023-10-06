@@ -7,14 +7,15 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/terraformcloud/user"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := user.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := user.Init(ctx, map[types.ConfigKey]string{
 		user.Token:        "my-org-token",
 		user.Organisation: "ovotech",
 		user.Team:         "my-team",
@@ -34,7 +35,7 @@ func ExampleWithClient() {
 		log.Fatal(err)
 	}
 
-	adapter, err := user.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := user.Init(ctx, map[types.ConfigKey]string{
 		user.Organisation: "ovotech",
 		user.Team:         "my-team",
 	}, user.WithClient(client))
@@ -50,7 +51,7 @@ func ExampleWithLogger() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	adapter, err := user.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := user.Init(ctx, map[types.ConfigKey]string{
 		user.Token:        "my-org-token",
 		user.Organisation: "ovotech",
 		user.Team:         "my-team",

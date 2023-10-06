@@ -8,14 +8,15 @@ import (
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/option"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/google/group"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := group.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := group.Init(ctx, map[types.ConfigKey]string{
 		group.Name: "my-group",
 	})
 	if err != nil {
@@ -37,7 +38,7 @@ func ExampleWithAdminService() {
 		log.Fatal(err)
 	}
 
-	adapter, err := group.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := group.Init(ctx, map[types.ConfigKey]string{
 		group.Name: "my-group",
 	}, group.WithAdminService(client))
 	if err != nil {
@@ -52,7 +53,7 @@ func ExampleWithLogger() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	adapter, err := group.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := group.Init(ctx, map[types.ConfigKey]string{
 		group.Name: "my-group",
 	}, group.WithLogger(logger))
 	if err != nil {

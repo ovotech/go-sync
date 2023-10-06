@@ -10,7 +10,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/types"
 )
 
 var email = flag.String("email", "test@example.com", "Enter the email of a user to search for in the Integration test")

@@ -4,14 +4,15 @@ import (
 	"context"
 	"log"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/terraformcloud/membership"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := membership.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := membership.Init(ctx, map[types.ConfigKey]string{
 		membership.Token:        "my-org-token",
 		membership.Organisation: "ovotech",
 	})

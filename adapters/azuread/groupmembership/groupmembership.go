@@ -32,11 +32,12 @@ import (
 	"github.com/microsoftgraph/msgraph-sdk-go/models/odataerrors"
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 // GroupName is the name of your group within Azure AD.
-const GroupName gosync.ConfigKey = "group_name"
+const GroupName types.ConfigKey = "group_name"
 
 type iClient interface {
 	GetAdapter() abstractions.RequestAdapter
@@ -339,8 +340,8 @@ func removeGroupMember(
 }
 
 var (
-	_ gosync.Adapter                  = &GroupMembership{}
-	_ gosync.InitFn[*GroupMembership] = Init
+	_ types.Adapter                  = &GroupMembership{}
+	_ types.InitFn[*GroupMembership] = Init
 )
 
 // WithClient provides a mechanism to pass a custom client to the adapter.
@@ -355,10 +356,10 @@ func WithClient(client iClient) func(u *GroupMembership) {
 //   - groupmembership.GroupName: the name of the AD group to sync members to.
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*GroupMembership],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*GroupMembership],
 ) (*GroupMembership, error) {
-	for _, key := range []gosync.ConfigKey{GroupName} {
+	for _, key := range []types.ConfigKey{GroupName} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("azuread.groupmembership.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

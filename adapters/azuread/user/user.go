@@ -30,7 +30,8 @@ import (
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 /*
@@ -39,7 +40,7 @@ See the [reference] for more information on filter queries.
 
 [reference]: https://learn.microsoft.com/en-us/graph/filter-query-parameter
 */
-const Filter gosync.ConfigKey = "filter"
+const Filter types.ConfigKey = "filter"
 
 type iUser interface {
 	Get(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error)
@@ -143,8 +144,8 @@ func (u *User) Remove(_ context.Context, _ []string) error {
 }
 
 var (
-	_ gosync.Adapter       = &User{} // Ensure [user.User] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*User] = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter       = &User{} // Ensure [user.User] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*User] = Init    // Ensure the [user.Init] function fully satisfies the [gosync.InitFn] type.
 )
 
 // WithFilter provides a mechanism to set the Microsoft Graph query filter
@@ -166,8 +167,8 @@ func WithClient(client iClient) func(u *User) {
 // be created using the default credentials in the environment.
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*User],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*User],
 ) (*User, error) {
 	creds, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {

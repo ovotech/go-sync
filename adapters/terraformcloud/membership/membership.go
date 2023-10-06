@@ -20,18 +20,19 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 // Token sets the authentication token for Terraform Cloud.
-const Token gosync.ConfigKey = "terraform_cloud_token"
+const Token types.ConfigKey = "terraform_cloud_token"
 
 // Organisation sets the Terraform Cloud organisation.
-const Organisation gosync.ConfigKey = "terraform_cloud_organisation"
+const Organisation types.ConfigKey = "terraform_cloud_organisation"
 
 var (
-	_ gosync.Adapter             = &Membership{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*Membership] = Init          // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter             = &Membership{} // Ensure [team.Team] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*Membership] = Init          // Ensure [team.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 // iOrganizationMemberships is a subset of Terraform Enterprise
@@ -171,14 +172,14 @@ func (m *Membership) Remove(ctx context.Context, emails []string) error {
 }
 
 // WithClient passes a custom Terraform Cloud client to the adapter.
-func WithClient(client *tfe.Client) gosync.ConfigFn[*Membership] {
+func WithClient(client *tfe.Client) types.ConfigFn[*Membership] {
 	return func(u *Membership) {
 		u.organizationMemberships = client.OrganizationMemberships
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*Membership] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*Membership] {
 	return func(u *Membership) {
 		u.Logger = logger
 	}
@@ -193,10 +194,10 @@ Required config:
 */
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*Membership],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*Membership],
 ) (*Membership, error) {
-	for _, key := range []gosync.ConfigKey{Organisation} {
+	for _, key := range []types.ConfigKey{Organisation} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("terraformcloud.membership.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

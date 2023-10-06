@@ -11,8 +11,9 @@ import (
 	"github.com/stretchr/testify/mock"
 	"golang.org/x/oauth2"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/github/discovery/saml"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func TestTeam_Get(t *testing.T) {
@@ -117,7 +118,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			GitHubToken:        "token",
 			GitHubOrg:          "org",
 			TeamSlug:           "slug",
@@ -137,7 +138,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing token", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				GitHubOrg:          "org",
 				TeamSlug:           "slug",
 				DiscoveryMechanism: "saml",
@@ -150,7 +151,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing org", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				GitHubToken:        "token",
 				TeamSlug:           "slug",
 				DiscoveryMechanism: "saml",
@@ -163,7 +164,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing slug", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				GitHubToken:        "token",
 				GitHubOrg:          "org",
 				DiscoveryMechanism: "saml",
@@ -177,7 +178,7 @@ func TestInit(t *testing.T) {
 	t.Run("invalid config", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := Init(ctx, map[gosync.ConfigKey]string{
+		_, err := Init(ctx, map[types.ConfigKey]string{
 			GitHubToken:        "token",
 			GitHubOrg:          "org",
 			TeamSlug:           "slug",
@@ -192,7 +193,7 @@ func TestInit(t *testing.T) {
 
 		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			GitHubToken:        "token",
 			GitHubOrg:          "org",
 			TeamSlug:           "slug",
@@ -210,7 +211,7 @@ func TestInit(t *testing.T) {
 			&oauth2.Token{AccessToken: "token"},
 		)))
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			GitHubToken:        "token",
 			GitHubOrg:          "org",
 			TeamSlug:           "slug",
@@ -226,7 +227,7 @@ func TestInit(t *testing.T) {
 
 		mockDiscovery := NewMockGitHubDiscovery(t)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			GitHubToken: "token",
 			GitHubOrg:   "org",
 			TeamSlug:    "slug",

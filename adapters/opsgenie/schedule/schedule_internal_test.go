@@ -14,7 +14,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 var errResponse = errors.New("an example error")
@@ -24,7 +25,7 @@ func createMockedAdapter(ctx context.Context, t *testing.T) (*Schedule, *mockIOp
 
 	scheduleClient := newMockIOpsgenieSchedule(t)
 
-	adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := Init(ctx, map[types.ConfigKey]string{
 		OpsgenieAPIKey: "test",
 		ScheduleID:     "test",
 	})
@@ -340,7 +341,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			OpsgenieAPIKey: "test",
 			ScheduleID:     "schedule",
 		})
@@ -356,7 +357,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				ScheduleID: "schedule",
 			})
 
@@ -367,7 +368,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing schedule ID", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				OpsgenieAPIKey: "test",
 			})
 
@@ -381,7 +382,7 @@ func TestInit(t *testing.T) {
 
 		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			OpsgenieAPIKey: "test",
 			ScheduleID:     "schedule",
 		}, WithLogger(logger))
@@ -398,7 +399,7 @@ func TestInit(t *testing.T) {
 		})
 		assert.NoError(t, err)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			ScheduleID: "schedule",
 		}, WithClient(scheduleClient))
 

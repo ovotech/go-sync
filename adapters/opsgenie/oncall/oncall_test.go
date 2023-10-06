@@ -8,14 +8,15 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 
-	gosync "github.com/ovotech/go-sync"
 	"github.com/ovotech/go-sync/adapters/opsgenie/oncall"
+	"github.com/ovotech/go-sync/internal/gosync"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func ExampleInit() {
 	ctx := context.Background()
 
-	adapter, err := oncall.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := oncall.Init(ctx, map[types.ConfigKey]string{
 		oncall.OpsgenieAPIKey: "default",
 		oncall.ScheduleID:     "opsgenie-schedule-id",
 	})
@@ -36,7 +37,7 @@ func ExampleWithClient() {
 		log.Fatal(err)
 	}
 
-	adapter, err := oncall.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := oncall.Init(ctx, map[types.ConfigKey]string{
 		oncall.ScheduleID: "opsgenie-schedule-id",
 	}, oncall.WithClient(scheduleClient))
 	if err != nil {
@@ -51,7 +52,7 @@ func ExampleWithLogger() {
 
 	logger := log.New(os.Stdout, "", log.LstdFlags)
 
-	adapter, err := oncall.Init(ctx, map[gosync.ConfigKey]string{
+	adapter, err := oncall.Init(ctx, map[types.ConfigKey]string{
 		oncall.OpsgenieAPIKey: "default",
 		oncall.ScheduleID:     "opsgenie-schedule-id",
 	}, oncall.WithLogger(logger))

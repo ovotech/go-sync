@@ -11,10 +11,11 @@ import (
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/option"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
-func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn[*Group] {
+func withMockAdminService(ctx context.Context, t *testing.T) types.ConfigFn[*Group] {
 	t.Helper()
 
 	client, err := admin.NewService(
@@ -210,7 +211,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Name: "name",
 		}, withMockAdminService(ctx, t))
 
@@ -227,7 +228,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{}, withMockAdminService(ctx, t))
+			_, err := Init(ctx, map[types.ConfigKey]string{}, withMockAdminService(ctx, t))
 
 			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
 			assert.ErrorContains(t, err, Name)
@@ -237,7 +238,7 @@ func TestInit(t *testing.T) {
 	t.Run("role", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Name: "name",
 			Role: "role",
 		}, withMockAdminService(ctx, t))
@@ -249,7 +250,7 @@ func TestInit(t *testing.T) {
 	t.Run("delivery settings", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Name:             "name",
 			DeliverySettings: "delivery",
 		}, withMockAdminService(ctx, t))
@@ -263,7 +264,7 @@ func TestInit(t *testing.T) {
 
 		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Name: "name",
 		}, withMockAdminService(ctx, t), WithLogger(logger))
 
@@ -274,7 +275,7 @@ func TestInit(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			Name: "name",
 		}, withMockAdminService(ctx, t))
 

@@ -27,20 +27,21 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 /*
 OpsgenieAPIKey is an API key for authenticating with Opsgenie.
 */
-const OpsgenieAPIKey gosync.ConfigKey = "opsgenie_api_key" //nolint:gosec
+const OpsgenieAPIKey types.ConfigKey = "opsgenie_api_key" //nolint:gosec
 
 // ScheduleID is the name of the Opsgenie Schedule ID.
-const ScheduleID gosync.ConfigKey = "schedule_id"
+const ScheduleID types.ConfigKey = "schedule_id"
 
 var (
-	_ gosync.Adapter         = &OnCall{} // Ensure [oncall.OnCall] fully satisfies the [gosync.Adapter] interface.
-	_ gosync.InitFn[*OnCall] = Init      // Ensure [oncall.Init] fully satisfies the [gosync.InitFn] type.
+	_ types.Adapter         = &OnCall{} // Ensure [oncall.OnCall] fully satisfies the [gosync.Adapter] interface.
+	_ types.InitFn[*OnCall] = Init      // Ensure [oncall.Init] fully satisfies the [gosync.InitFn] type.
 )
 
 type iOpsgenieSchedule interface {
@@ -88,14 +89,14 @@ func (o *OnCall) Remove(_ context.Context, _ []string) error {
 }
 
 // WithClient passes a custom Opsgenie Schedule client to the adapter.
-func WithClient(client *schedule.Client) gosync.ConfigFn[*OnCall] {
+func WithClient(client *schedule.Client) types.ConfigFn[*OnCall] {
 	return func(o *OnCall) {
 		o.client = client
 	}
 }
 
 // WithLogger passes a custom logger to the adapter.
-func WithLogger(logger *log.Logger) gosync.ConfigFn[*OnCall] {
+func WithLogger(logger *log.Logger) types.ConfigFn[*OnCall] {
 	return func(o *OnCall) {
 		o.Logger = logger
 	}
@@ -109,10 +110,10 @@ Required config:
 */
 func Init(
 	_ context.Context,
-	config map[gosync.ConfigKey]string,
-	configFns ...gosync.ConfigFn[*OnCall],
+	config map[types.ConfigKey]string,
+	configFns ...types.ConfigFn[*OnCall],
 ) (*OnCall, error) {
-	for _, key := range []gosync.ConfigKey{ScheduleID} {
+	for _, key := range []types.ConfigKey{ScheduleID} {
 		if _, ok := config[key]; !ok {
 			return nil, fmt.Errorf("opsgenie.oncall.init -> %w(%s)", gosync.ErrMissingConfig, key)
 		}

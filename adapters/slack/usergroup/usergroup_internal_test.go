@@ -13,7 +13,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	gosync "github.com/ovotech/go-sync"
+	gosync "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 func TestUserGroup_Get(t *testing.T) {
@@ -221,7 +222,7 @@ func TestInit(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		t.Parallel()
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			SlackAPIKey: "test",
 			UserGroupID: "usergroup",
 		})
@@ -238,7 +239,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing authentication", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				UserGroupID: "usergroup",
 			})
 
@@ -249,7 +250,7 @@ func TestInit(t *testing.T) {
 		t.Run("missing name", func(t *testing.T) {
 			t.Parallel()
 
-			_, err := Init(ctx, map[gosync.ConfigKey]string{
+			_, err := Init(ctx, map[types.ConfigKey]string{
 				SlackAPIKey: "test",
 			})
 
@@ -262,7 +263,7 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		for _, test := range []string{"", "false", "FALSE", "False", "foobar", "test"} {
-			adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			adapter, err := Init(ctx, map[types.ConfigKey]string{
 				SlackAPIKey:            "test",
 				UserGroupID:            "usergroup",
 				MuteGroupCannotBeEmpty: test,
@@ -273,7 +274,7 @@ func TestInit(t *testing.T) {
 		}
 
 		for _, test := range []string{"true", "True", "TRUE"} {
-			adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+			adapter, err := Init(ctx, map[types.ConfigKey]string{
 				SlackAPIKey:            "test",
 				UserGroupID:            "usergroup",
 				MuteGroupCannotBeEmpty: test,
@@ -289,7 +290,7 @@ func TestInit(t *testing.T) {
 
 		logger := log.New(os.Stderr, "custom logger", log.LstdFlags)
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			SlackAPIKey: "test",
 			UserGroupID: "usergroup",
 		}, WithLogger(logger))
@@ -303,7 +304,7 @@ func TestInit(t *testing.T) {
 
 		client := slack.New("test")
 
-		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
+		adapter, err := Init(ctx, map[types.ConfigKey]string{
 			UserGroupID: "usergroup",
 		}, WithClient(client))
 
