@@ -27,5 +27,6 @@ tasks:
     desc: Generate, lint and unit test the source code
     cmds:
       - task: generate
+      - task: lint:fix
       - task: lint
       - task: tests:gotest:unit
