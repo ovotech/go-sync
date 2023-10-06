@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/azuread
 go 1.21
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.2
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.8.0
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.1
 	github.com/microsoft/kiota-abstractions-go v1.2.1
 	github.com/microsoftgraph/msgraph-sdk-go v1.19.0
