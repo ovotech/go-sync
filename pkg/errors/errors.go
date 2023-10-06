@@ -24,3 +24,6 @@ var ErrTooManyChanges = errors.New("too many changes")
 
 // ErrDoesNotExist is returned when something does not exist.
 var ErrDoesNotExist = errors.New("does not exist")
+
+// ErrNotInitialised is returned when running Get/Add/Remove on an uninitialised plugin.
+var ErrNotInitialised = errors.New("not initialised, call Init first")

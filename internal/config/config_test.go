@@ -1,13 +1,13 @@
 package config_test
 
 import (
-	"github.com/ovotech/go-sync/pkg/types"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
 	"github.com/ovotech/go-sync/internal/config"
 	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
 
 //nolint:funlen
