@@ -18,6 +18,8 @@ vars:
   GO_MODULES:
     sh: find . -name 'go.mod' -exec sh -c 'echo {} | sed -e "s/go.mod/.../"' \; | tr '\n' ' '
   MOCKERY_VERSION: latest
+  PROTOC_GEN_GO_VERSION: latest
+  PROTOC_GEN_GO_GRPC_VERSION: latest
 
 env:
   GOBIN: '{{.ROOT_DIR}}/.task/bin'

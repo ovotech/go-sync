@@ -1,0 +1,40 @@
+syntax = "proto3";
+option go_package = "github.com/ovotech/go-sync/internal/proto";
+
+message InitRequest {
+  map<string, string> config = 1;
+}
+
+message InitResponse {}
+
+message GetRequest {}
+
+message GetResponse {
+  repeated string things = 1;
+}
+
+message AddRequest {
+  repeated string things = 1;
+}
+
+message AddResponse {}
+
+message RemoveRequest {
+  repeated string things = 1;
+}
+
+message RemoveResponse {}
+
+service Adapter {
+  // Initialise the adapter with a specific configuration.
+  rpc Init(InitRequest) returns (InitResponse) {}
+
+  // Get the things.
+  rpc Get(GetRequest) returns (GetResponse) {}
+
+  // Add things.
+  rpc Add(AddRequest) returns (AddResponse) {}
+
+  // Remove things.
+  rpc Remove(RemoveRequest) returns (RemoveResponse) {}
+}

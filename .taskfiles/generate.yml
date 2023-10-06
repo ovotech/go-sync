@@ -1,11 +1,12 @@
 version: '3'
 
 includes:
-  mockery:
-    taskfile: ./tools/mockery.yml
+  mockery: ./tools/mockery.yml
+  protoc-gen: ./tools/protoc-gen.yml
 
 tasks:
   default:
     desc: Run all generate tasks
     cmds:
       - task: mockery
+      - task: protoc-gen

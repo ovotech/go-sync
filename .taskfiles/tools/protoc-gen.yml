@@ -1,0 +1,42 @@
+version: '3'
+
+tasks:
+  install-protoc-gen-go:
+    desc: Plugin to generate Go code from protocol buffer files
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - PROTOC_GEN_GO_VERSION
+    status:
+      - test -f $GOBIN/protoc-gen-go
+    cmds:
+      - go install google.golang.org/protobuf/cmd/protoc-gen-go@{{.PROTOC_GEN_GO_VERSION}}
+
+  install-protoc-gen-go-grpc:
+    desc: Plugin for protocol buffer compiler to work with GRPC
+    dir: '{{.ROOT_DIR}}'
+    internal: true
+    requires:
+      vars:
+        - PROTOC_GEN_GO_GRPC_VERSION
+    status:
+      - test -f $GOBIN/protoc-gen-go-grpc
+    cmds:
+      - go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@{{.PROTOC_GEN_GO_GRPC_VERSION}}
+
+  default:
+    desc: Generate Go protocol buffer files from proto files
+    dir: '{{.ROOT_DIR}}'
+    deps:
+      - install-protoc-gen-go
+      - install-protoc-gen-go-grpc
+    preconditions:
+      - sh: which protoc
+        msg: 'Please install the protocol buffer compiler from https://grpc.io/docs/protoc-installation/'
+    sources:
+      - proto/*.proto
+    generates:
+      - internal/proto/*.go
+    cmds:
+      - protoc proto/*.proto --plugin=$GOBIN/protoc-gen-go --plugin=$GOBIN/protoc-gen-go-grpc --proto_path=proto --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --go_out=internal/proto --go-grpc_out=internal/proto
