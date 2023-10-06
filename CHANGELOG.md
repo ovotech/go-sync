@@ -15,3 +15,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
  - `InitFn` signature has been updated to allow adapters to take an arbitrary number of `ConfigFn`.
+ - Types have been moved from `github.com/ovotech/go-sync` to `github.com/ovotech/go-sync/pkg/types`
+ - Errors have been moved from `github.com/ovotech/go-sync` to `github.com/ovotech/go-sync/pkg/errors`
