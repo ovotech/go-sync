@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/ovotech/go-sync/adapters/test/inmem"
+	"github.com/ovotech/go-sync/adapters/azuread/user"
 	"github.com/ovotech/go-sync/pkg/plugin"
 )
 
 func main() {
-	plugin.Serve(inmem.Init)
+	plugin.Serve(user.Init)
 }
