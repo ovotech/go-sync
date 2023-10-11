@@ -1,6 +1,7 @@
 version: '3'
 
 includes:
+  compile: ./.taskfiles/compile.yml
   generate: ./.taskfiles/generate.yml
   lint: ./.taskfiles/lint.yml
   tests: ./.taskfiles/tests.yml

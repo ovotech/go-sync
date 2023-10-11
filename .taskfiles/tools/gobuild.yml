@@ -1,0 +1,70 @@
+version: '3'
+
+tasks:
+  gobuild:
+    desc: Build a Go binary
+    dir: '{{.ROOT_DIR}}'
+    generates:
+      - bin/{{.OUTPUT}}
+    internal: true
+    requires:
+      vars:
+        - OUTPUT
+        - PATH
+    cmd: go build -o bin/{{.OUTPUT}} {{.PATH}}
+
+  gosync:
+    desc: Build Go Sync
+    dir: '{{.ROOT_DIR}}'
+    sources:
+      - go.{mod,sum}
+      - cmd/**/*.go
+      - internal/**/*.go
+      - pkg/**/*.go
+    generates:
+      - bin/gosync
+    cmds:
+      - task: gobuild
+        vars:
+          OUTPUT: gosync
+          PATH: cmd/main.go
+
+  adapter:
+    desc: Build a single adapter
+    dir: '{{.ROOT_DIR}}'
+    label: 'adapter-{{.MODULE}}'
+    requires:
+      vars:
+        - MODULE
+    sources:
+      - ./internal/**/*.go
+      - ./pkg/**/*.go
+      - ./adapters/{{.MODULE}}/**/*.{go,mod,sum}
+    vars:
+      FOLDERS:
+        sh: find adapters/{{.MODULE}}/cmd/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
+    cmds:
+      - for: { var: FOLDERS }
+        task: gobuild
+        vars:
+          OUTPUT: '{{.MODULE}}_{{.ITEM}}'
+          PATH: 'adapters/{{.MODULE}}/cmd/{{.ITEM}}/main.go'
+
+  adapters:
+    desc: Compile all adapters
+    dir: '{{.ROOT_DIR}}'
+    requires:
+      vars:
+        - ADAPTERS
+    cmds:
+      - for: { var: ADAPTERS }
+        task: adapter
+        vars:
+          MODULE: '{{.ITEM}}'
+
+  default:
+    desc: Compile Go Sync and adapters
+    dir: '{{.ROOT_DIR}}'
+    deps:
+      - gosync
+      - adapters

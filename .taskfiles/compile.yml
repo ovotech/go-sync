@@ -1,0 +1,10 @@
+version: '3'
+
+includes:
+  gobuild: ./tools/gobuild.yml
+
+tasks:
+  default:
+    desc: Run all compilation tasks
+    cmds:
+      - task: gobuild

@@ -8,5 +8,5 @@ tasks:
   default:
     desc: Run all generate tasks
     cmds:
-      - task: mockery
       - task: protoc-gen
+      - task: mockery
