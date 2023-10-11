@@ -15,3 +15,6 @@
 
 # Output from test:coverage
 /cover.out
+
+# Binaries
+/bin
