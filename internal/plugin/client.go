@@ -9,17 +9,16 @@ import (
 )
 
 // adapterClient is a duplicate to enable mocking.
-//
-//goland:noinspection GoUnusedType
-type adapterClient interface { //nolint:unused
+type adapterClient interface {
 	proto.AdapterClient
 }
 
 // Ensure the Client struct matches the Go Sync adapter spec.
 var _ types.Adapter = &Client{}
 
+// A Client for calling a Go Sync adapter.
 type Client struct {
-	AdapterClient proto.AdapterClient
+	AdapterClient adapterClient
 }
 
 func (c *Client) Init(ctx context.Context, config map[types.ConfigKey]string) error {
