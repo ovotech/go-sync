@@ -8,4 +8,5 @@ use (
 	./adapters/opsgenie
 	./adapters/slack
 	./adapters/terraformcloud
+	./adapters/test
 )

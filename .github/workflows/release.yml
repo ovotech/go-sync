@@ -14,6 +14,7 @@ on:
           - adapters/opsgenie
           - adapters/slack
           - adapters/terraformcloud
+          - adapters/test
       version:
         description: 'Version'
         required: true
