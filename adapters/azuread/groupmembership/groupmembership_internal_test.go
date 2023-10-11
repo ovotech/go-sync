@@ -392,7 +392,7 @@ type MockRequestAdapter struct {
 	SerializationWriterFactory serialization.SerializationWriterFactory
 }
 
-func (r *MockRequestAdapter) Send( //nolint:ireturn
+func (r *MockRequestAdapter) Send(
 	_ context.Context,
 	_ *abstractions.RequestInformation,
 	_ serialization.ParsableFactory,
@@ -461,7 +461,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(
 	return nil, nil //nolint:nilnil
 }
 
-func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint:ireturn,lll
+func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory {
 	return r.SerializationWriterFactory
 }
 

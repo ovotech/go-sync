@@ -17,7 +17,7 @@ type initFn struct {
 	mock.Mock
 }
 
-func (i *initFn) InitFn(ctx context.Context, config map[types.ConfigKey]string) (types.Adapter, error) { //nolint:ireturn,lll
+func (i *initFn) InitFn(ctx context.Context, config map[types.ConfigKey]string) (types.Adapter, error) {
 	args := i.Called(ctx, config)
 
 	return args.Get(0).(types.Adapter), args.Error(1) //nolint:wrapcheck

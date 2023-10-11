@@ -11,6 +11,7 @@ linters:
     - gomoddirectives
     - ifshort # deprecated
     - interfacer # deprecated
+    - ireturn # used a lot due to the plugin system
     - maligned # deprecated
     - nosnakecase # deprecated
     - rowserrcheck # disabled because of generics

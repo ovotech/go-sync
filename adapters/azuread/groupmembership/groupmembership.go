@@ -299,7 +299,7 @@ func resolveOdataError(err error) error {
 	return err
 }
 
-func getGroupMembers( //nolint:ireturn
+func getGroupMembers(
 	ctx context.Context,
 	builder *groups.GroupItemRequestBuilder,
 	cfg *groups.ItemMembersRequestBuilderGetRequestConfiguration,
@@ -312,7 +312,7 @@ func getGroupMembers( //nolint:ireturn
 	return out, nil
 }
 
-func patchGroup( //nolint:ireturn
+func patchGroup(
 	ctx context.Context,
 	builder *groups.GroupItemRequestBuilder,
 	group models.Groupable,
