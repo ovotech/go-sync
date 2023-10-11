@@ -1,11 +1,10 @@
-package config_test
+package config
 
 import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/ovotech/go-sync/internal/config"
 	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 	"github.com/ovotech/go-sync/pkg/types"
 )
@@ -17,28 +16,27 @@ func TestLoad(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		t.Parallel()
 
-		expected := &config.Config{
+		add := "add"
+
+		expected := &Config{
 			Version: "1",
-			Sync: []config.Source{
+			Jobs: []*Job{
 				{
-					Adapter: &config.Adapter{
+					Adapter: &Adapter{
 						Plugin: "./fixtures/valid.yml",
-						Name:   "some_adapter",
 						Config: map[types.ConfigKey]string{
 							"foo": "bar",
 						},
 					},
-					With: []*config.Adapter{
+					With: []*Adapter{
 						{
 							Plugin: "./fixtures/valid.yml",
-							Name:   "adapter_one",
 							Config: map[types.ConfigKey]string{
 								"some": "config",
 							},
 						},
 						{
 							Plugin: "./fixtures/valid.yml",
-							Name:   "adapter_two",
 							Config: map[types.ConfigKey]string{
 								"more": "config",
 							},
@@ -46,17 +44,15 @@ func TestLoad(t *testing.T) {
 					},
 				},
 				{
-					Adapter: &config.Adapter{
+					Adapter: &Adapter{
 						Plugin: "./fixtures/valid.yml",
-						Name:   "a_different_adapter",
 					},
-					Options: &config.Options{
-						OperatingMode: "add",
+					Options: &Options{
+						OperatingMode: &add,
 					},
-					With: []*config.Adapter{
+					With: []*Adapter{
 						{
 							Plugin: "./fixtures/valid.yml",
-							Name:   "adapter_one",
 							Config: map[string]string{
 								"some": "config",
 							},
@@ -66,7 +62,7 @@ func TestLoad(t *testing.T) {
 			},
 		}
 
-		actual, err := config.Load("fixtures/valid.yml")
+		actual, err := Load("fixtures/valid.yml")
 
 		assert.NoError(t, err)
 		assert.Equal(t, expected, actual)
@@ -75,7 +71,7 @@ func TestLoad(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := config.Load("fixtures/invalid.yml")
+		_, err := Load("fixtures/invalid.yml")
 
 		assert.ErrorIs(t, err, gosyncerrors.ErrInvalidConfig)
 	})
@@ -83,7 +79,7 @@ func TestLoad(t *testing.T) {
 	t.Run("missing", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := config.Load("fixtures/missing.yml")
+		_, err := Load("fixtures/missing.yml")
 
 		assert.ErrorIs(t, err, gosyncerrors.ErrInvalidConfig)
 	})
@@ -91,7 +87,7 @@ func TestLoad(t *testing.T) {
 	t.Run("non-existent", func(t *testing.T) {
 		t.Parallel()
 
-		_, err := config.Load("fixtures/__NOT_A_FILE__.yml")
+		_, err := Load("fixtures/__NOT_A_FILE__.yml")
 
 		assert.ErrorIs(t, err, gosyncerrors.ErrDoesNotExist)
 	})
@@ -104,7 +100,7 @@ func TestGetEnvironmentVariables(t *testing.T) { //nolint:paralleltest
 
 	t.Setenv("GOSYNC_TEST_VAR", "true")
 
-	actual := config.GetEnvironmentVariables()
+	actual := getEnvironmentVariables()
 
 	assert.Equal(t, expected, actual)
 }

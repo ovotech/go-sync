@@ -1,27 +1,22 @@
 version: '1'
 
-sync:
+jobs:
   - adapter:
       plugin: ./fixtures/valid.yml
-      name: some_adapter
       config:
         foo: bar
     with:
       - plugin: ./fixtures/valid.yml
-        name: adapter_one
         config:
           some: config
       - plugin: ./fixtures/valid.yml
-        name: adapter_two
         config:
           more: config
   - adapter:
       plugin: ./fixtures/valid.yml
-      name: a_different_adapter
     options:
       operatingMode: add
     with:
       - plugin: ./fixtures/valid.yml
-        name: adapter_one
         config:
           some: config

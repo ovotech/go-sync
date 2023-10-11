@@ -2,56 +2,35 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
-	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"gopkg.in/yaml.v3"
 
 	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
-	"github.com/ovotech/go-sync/pkg/types"
 )
 
-type Options struct {
-	OperatingMode  string `yaml:"operatingMode"`
-	MaximumChanges uint16 `yaml:"maximumChanges"`
-}
-
-type Adapter struct {
-	Plugin string                     `validate:"required,file" yaml:"plugin"`
-	Name   string                     `validate:"required"      yaml:"name"`
-	Config map[types.ConfigKey]string `yaml:"config,omitempty"`
-}
-
-type Source struct {
-	Options *Options   `yaml:"options,omitempty"`
-	Adapter *Adapter   `validate:"required"                     yaml:"adapter"`
-	With    []*Adapter `validate:"required,gte=1,dive,required" yaml:"with"`
-}
-
 type Config struct {
-	Version string   `validate:"required,eq=1"                yaml:"version"`
-	Sync    []Source `validate:"required,gte=1,dive,required" yaml:"sync"`
+	Version string `validate:"required,eq=1"                yaml:"version"`
+	Jobs    []*Job `validate:"required,gte=1,dive,required" yaml:"jobs"`
 }
 
-// GetEnvironmentVariables intended for use with Go Sync.
-func GetEnvironmentVariables() map[types.ConfigKey]string {
-	vars := os.Environ()
-	out := make(map[string]string)
+// Run the configuration, and execute all the jobs.
+func (c *Config) Run(ctx context.Context, dryRun bool) {
+	for _, job := range c.Jobs {
+		errs := job.Run(ctx, dryRun)
+		if len(errs) > 0 {
+			log.Println("Encountered the following errors:")
 
-	for _, envVar := range vars {
-		if strings.HasPrefix(envVar, "GOSYNC_") {
-			if key, value, ok := strings.Cut(envVar, "="); ok {
-				key, _ = strings.CutPrefix(key, "GOSYNC_")
-
-				out[key] = value
+			for _, err := range errs {
+				log.Println(err)
 			}
 		}
 	}
-
-	return out
 }
 
 // Load a configuration file in, parse and validate it into a Config struct.
