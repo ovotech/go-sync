@@ -31,5 +31,6 @@ tasks:
     cmds:
       - task: generate
       - task: lint:fix
+      - task: compile
       - task: lint
       - task: tests:gotest:unit
