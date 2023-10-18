@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/opsgenie
 go 1.21
 
 require (
-	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.20
+	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
 	github.com/ovotech/go-sync v0.14.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
