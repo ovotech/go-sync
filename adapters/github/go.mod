@@ -7,7 +7,7 @@ require (
 	github.com/ovotech/go-sync v0.13.2
 	github.com/shurcooL/githubv4 v0.0.0-20230704064427-599ae7bbf278
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/oauth2 v0.12.0
+	golang.org/x/oauth2 v0.14.0
 )
 
 require (
