@@ -182,8 +182,12 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		if err != nil {
 			return fmt.Errorf("slack.usergroup.add.getuserbyemail(%s) -> %w", email, err)
 		}
+
 		// Add the new email user IDs to the list.
 		updatedUserGroup = append(updatedUserGroup, user.ID)
+
+		// Add the new email user ID to the cache
+		u.cache[email] = user.ID
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
 		time.Sleep(2 * time.Second) //nolint:gomnd
