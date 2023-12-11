@@ -225,6 +225,7 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	if cpcty < 0 {
 		cpcty = 0
 	}
+
 	updatedUserGroup := make([]string, 0, cpcty)
 
 	for email, slackID := range u.cache {
