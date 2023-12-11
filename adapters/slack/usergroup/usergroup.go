@@ -221,12 +221,18 @@ func (u *UserGroup) Remove(ctx context.Context, emails []string) error {
 	}
 
 	// Iterate over the cached map of emails to Slack IDs, and only include those that aren't in the removal map.
-	updatedUserGroup := make([]string, 0, len(u.cache)-len(emails))
+	cpcty := len(u.cache) - len(emails)
+	if cpcty < 0 {
+		cpcty = 0
+	}
+	updatedUserGroup := make([]string, 0, cpcty)
 
 	for email, slackID := range u.cache {
 		// Only include the Slack ID if it's not in the map of emails to remove.
 		if !mapOfEmailsToRemove[email] {
 			updatedUserGroup = append(updatedUserGroup, slackID)
+		} else {
+			delete(u.cache, email)
 		}
 	}
 
