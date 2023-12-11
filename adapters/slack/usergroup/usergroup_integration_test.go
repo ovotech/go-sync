@@ -13,9 +13,11 @@ import (
 	gosync "github.com/ovotech/go-sync"
 )
 
-var group = flag.String("group", "", "Enter the user group ID to adjust group membership of in the Integration test")
-var email = flag.String("email", "", "Enter the email of a user to add to the user group membership of in the Integration test")
-var key = os.Getenv("SLACK_API_KEY")
+var (
+	group = flag.String("group", "", "Enter the user group ID to adjust group membership of in the Integration test")
+	email = flag.String("email", "", "Enter the email of a user to add to the user group membership of in the Integration test")
+	key   = os.Getenv("SLACK_API_KEY")
+)
 
 func TestIntegration(t *testing.T) {
 	if *group == "" {
