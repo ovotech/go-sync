@@ -139,6 +139,8 @@ func TestUserGroup_Add(t *testing.T) {
 		err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
 		require.NoError(t, err)
+		assert.Contains(t, adapter.cache, "fizz@email")
+		assert.Contains(t, adapter.cache, "buzz@email")
 	})
 }
 
@@ -181,6 +183,8 @@ func TestUserGroup_Remove(t *testing.T) {
 		err := adapter.Remove(ctx, []string{"bar@email"})
 
 		require.NoError(t, err)
+		assert.Contains(t, adapter.cache, "foo@email")
+		assert.NotContains(t, adapter.cache, "bar@email")
 	})
 
 	t.Run("Return/mute error if number of accounts reaches zero", func(t *testing.T) {
