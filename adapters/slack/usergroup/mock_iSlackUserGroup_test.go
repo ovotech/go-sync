@@ -26,6 +26,10 @@ func (_m *mockISlackUserGroup) EXPECT() *mockISlackUserGroup_Expecter {
 func (_m *mockISlackUserGroup) GetUserByEmailContext(ctx context.Context, email string) (*slack.User, error) {
 	ret := _m.Called(ctx, email)
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserByEmailContext")
+	}
+
 	var r0 *slack.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) (*slack.User, error)); ok {
@@ -80,6 +84,10 @@ func (_c *mockISlackUserGroup_GetUserByEmailContext_Call) RunAndReturn(run func(
 // GetUserGroupMembersContext provides a mock function with given fields: ctx, userGroup
 func (_m *mockISlackUserGroup) GetUserGroupMembersContext(ctx context.Context, userGroup string) ([]string, error) {
 	ret := _m.Called(ctx, userGroup)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserGroupMembersContext")
+	}
 
 	var r0 []string
 	var r1 error
@@ -143,6 +151,10 @@ func (_m *mockISlackUserGroup) GetUsersInfoContext(ctx context.Context, users ..
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetUsersInfoContext")
+	}
+
 	var r0 *[]slack.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, ...string) (*[]slack.User, error)); ok {
@@ -204,6 +216,10 @@ func (_c *mockISlackUserGroup_GetUsersInfoContext_Call) RunAndReturn(run func(co
 // UpdateUserGroupMembersContext provides a mock function with given fields: ctx, userGroup, members
 func (_m *mockISlackUserGroup) UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string) (slack.UserGroup, error) {
 	ret := _m.Called(ctx, userGroup, members)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserGroupMembersContext")
+	}
 
 	var r0 slack.UserGroup
 	var r1 error

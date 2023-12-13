@@ -26,6 +26,10 @@ func (_m *mockIOrganizationMemberships) EXPECT() *mockIOrganizationMemberships_E
 func (_m *mockIOrganizationMemberships) List(ctx context.Context, organization string, options *tfe.OrganizationMembershipListOptions) (*tfe.OrganizationMembershipList, error) {
 	ret := _m.Called(ctx, organization, options)
 
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
 	var r0 *tfe.OrganizationMembershipList
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, *tfe.OrganizationMembershipListOptions) (*tfe.OrganizationMembershipList, error)); ok {
