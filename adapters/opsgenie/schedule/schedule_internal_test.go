@@ -13,6 +13,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -28,7 +29,7 @@ func createMockedAdapter(ctx context.Context, t *testing.T) (*Schedule, *mockIOp
 		OpsgenieAPIKey: "test",
 		ScheduleID:     "test",
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	adapter.client = scheduleClient
 
@@ -105,7 +106,7 @@ func testBuildScheduleGetResult(numRotations int, emails ...string) *schedule.Ge
 	}
 }
 
-func TestSchedule_Get(t *testing.T) { //nolint:funlen
+func TestSchedule_Get(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -123,7 +124,7 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 		emails, err := adapter.Get(ctx)
 
 		assert.Nil(t, emails)
-		assert.ErrorContains(t, err, "an example error")
+		require.ErrorContains(t, err, "an example error")
 	})
 
 	t.Run("successful response", func(t *testing.T) {
@@ -138,8 +139,8 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 
 		emails, err := adapter.Get(ctx)
 
-		assert.Nil(t, err)
-		assert.Equal(t, emails, []string{"example1@example.com", "example2@example.com", "example3@example.com"})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"example1@example.com", "example2@example.com", "example3@example.com"}, emails)
 	})
 
 	t.Run("should handle multiple rotations", func(t *testing.T) {
@@ -154,8 +155,8 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 
 		emails, err := adapter.Get(ctx)
 
-		assert.Nil(t, err)
-		assert.Equal(t, emails, []string{"example1@example.com", "example2@example.com", "example3@example.com"})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"example1@example.com", "example2@example.com", "example3@example.com"}, emails)
 	})
 
 	t.Run("should not duplicate participants across multiple rotations", func(t *testing.T) {
@@ -170,12 +171,12 @@ func TestSchedule_Get(t *testing.T) { //nolint:funlen
 
 		emails, err := adapter.Get(ctx)
 
-		assert.Nil(t, err)
-		assert.Equal(t, emails, []string{"example1@example.com", "example2@example.com", "example3@example.com"})
+		require.NoError(t, err)
+		assert.Equal(t, []string{"example1@example.com", "example2@example.com", "example3@example.com"}, emails)
 	})
 }
 
-func TestSchedule_Add(t *testing.T) { //nolint:funlen
+func TestSchedule_Add(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -190,7 +191,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 		err := adapter.Add(ctx, []string{"example2@example.com"})
 
-		assert.ErrorContains(t, err, "an example error")
+		require.ErrorContains(t, err, "an example error")
 	})
 
 	t.Run("an error should be returned if no rotations exist", func(t *testing.T) {
@@ -202,7 +203,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 		err := adapter.Add(ctx, []string{"example2@example.com"})
 
-		assert.ErrorContains(t, err, "gosync cannot create rotations")
+		require.ErrorContains(t, err, "gosync cannot create rotations")
 	})
 
 	t.Run("an error should be returned if the schedule has more than 1 rotation", func(t *testing.T) {
@@ -217,7 +218,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 		err := adapter.Add(ctx, []string{"example2@example.com"})
 
-		assert.ErrorContains(t, err, "gosync can only manage schedules with a single rotation")
+		require.ErrorContains(t, err, "gosync can only manage schedules with a single rotation")
 	})
 
 	t.Run("should add new participants to the rotation", func(t *testing.T) {
@@ -236,7 +237,7 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 		err := adapter.Add(ctx, []string{"example3@example.com"})
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("should not add duplicates to the rota", func(t *testing.T) {
@@ -252,11 +253,11 @@ func TestSchedule_Add(t *testing.T) { //nolint:funlen
 
 		err := adapter.Add(ctx, []string{"example2@example.com"})
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 }
 
-func TestSchedule_Remove(t *testing.T) { //nolint:funlen
+func TestSchedule_Remove(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -271,7 +272,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 		err := adapter.Remove(ctx, []string{"example@example.com"})
 
-		assert.ErrorContains(t, err, "an example error")
+		require.ErrorContains(t, err, "an example error")
 	})
 
 	t.Run("an error should be returned if no rotations exist", func(t *testing.T) {
@@ -283,7 +284,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 		err := adapter.Remove(ctx, []string{})
 
-		assert.ErrorContains(t, err, "gosync cannot create rotations")
+		require.ErrorContains(t, err, "gosync cannot create rotations")
 	})
 
 	t.Run("an error should be returned if the schedule has more than 1 rotation", func(t *testing.T) {
@@ -295,7 +296,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 		err := adapter.Remove(ctx, []string{"example2@example.com"})
 
-		assert.ErrorContains(t, err, "gosync can only manage schedules with a single rotation")
+		require.ErrorContains(t, err, "gosync can only manage schedules with a single rotation")
 	})
 
 	t.Run("should remove existing participants from the rotation", func(t *testing.T) {
@@ -311,7 +312,7 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 		err := adapter.Remove(ctx, []string{"example2@example.com"})
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("should ignore nonexistent participants", func(t *testing.T) {
@@ -327,11 +328,10 @@ func TestSchedule_Remove(t *testing.T) { //nolint:funlen
 
 		err := adapter.Remove(ctx, []string{"example3@example.com"})
 
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -345,7 +345,7 @@ func TestInit(t *testing.T) {
 			ScheduleID:     "schedule",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &Schedule{}, adapter)
 		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
@@ -360,8 +360,8 @@ func TestInit(t *testing.T) {
 				ScheduleID: "schedule",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, OpsgenieAPIKey)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, OpsgenieAPIKey)
 		})
 
 		t.Run("missing schedule ID", func(t *testing.T) {
@@ -371,8 +371,8 @@ func TestInit(t *testing.T) {
 				OpsgenieAPIKey: "test",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, ScheduleID)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, ScheduleID)
 		})
 	})
 
@@ -386,7 +386,7 @@ func TestInit(t *testing.T) {
 			ScheduleID:     "schedule",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -396,13 +396,13 @@ func TestInit(t *testing.T) {
 		scheduleClient, err := schedule.NewClient(&client.Config{
 			ApiKey: "test",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			ScheduleID: "schedule",
 		}, WithClient(scheduleClient))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

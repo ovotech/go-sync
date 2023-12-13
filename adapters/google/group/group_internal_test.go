@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	admin "google.golang.org/api/admin/directory/v1"
 	"google.golang.org/api/option"
 
@@ -22,7 +23,7 @@ func withMockAdminService(ctx context.Context, t *testing.T) gosync.ConfigFn[*Gr
 		option.WithScopes(admin.AdminDirectoryGroupMemberScope),
 		option.WithAPIKey("_testing_"),
 	)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	return func(g *Group) {
 		g.membersService = client.Members
@@ -40,19 +41,19 @@ func (m *mockCalls) callList(
 ) (*admin.Members, error) {
 	args := m.Called(ctx, call, pageToken)
 
-	return args.Get(0).(*admin.Members), args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(*admin.Members), args.Error(1)
 }
 
 func (m *mockCalls) callInsert(ctx context.Context, call *admin.MembersInsertCall) (*admin.Member, error) {
 	args := m.Called(ctx, call)
 
-	return args.Get(0).(*admin.Member), args.Error(1) //nolint:wrapcheck
+	return args.Get(0).(*admin.Member), args.Error(1)
 }
 
 func (m *mockCalls) callDelete(ctx context.Context, call *admin.MembersDeleteCall) error {
 	args := m.Called(ctx, call)
 
-	return args.Error(0) //nolint:wrapcheck
+	return args.Error(0)
 }
 
 func TestGroups_Get(t *testing.T) {
@@ -87,7 +88,7 @@ func TestGroups_Get(t *testing.T) {
 
 	emails, err := group.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, []string{"foo@email", "bar@email"}, emails)
 }
 
@@ -114,7 +115,7 @@ func TestGroups_Add(t *testing.T) {
 
 	err := group.Add(ctx, []string{"foo@email", "bar@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestGroups_Remove(t *testing.T) {
@@ -140,7 +141,7 @@ func TestGroups_Remove(t *testing.T) {
 
 	err := group.Remove(ctx, []string{"foo@email", "bar@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestRole(t *testing.T) {
@@ -169,7 +170,7 @@ func TestRole(t *testing.T) {
 
 	err := group.Add(ctx, []string{"foo@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestDeliverySettings(t *testing.T) {
@@ -198,10 +199,9 @@ func TestDeliverySettings(t *testing.T) {
 
 	err := group.Add(ctx, []string{"foo@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -214,7 +214,7 @@ func TestInit(t *testing.T) {
 			Name: "name",
 		}, withMockAdminService(ctx, t))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
 		assert.Equal(t, "name", adapter.name)
 		assert.Equal(t, "", adapter.DeliverySettings)
@@ -229,8 +229,8 @@ func TestInit(t *testing.T) {
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{}, withMockAdminService(ctx, t))
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, Name)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, Name)
 		})
 	})
 
@@ -242,7 +242,7 @@ func TestInit(t *testing.T) {
 			Role: "role",
 		}, withMockAdminService(ctx, t))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "role", adapter.Role)
 	})
 
@@ -254,7 +254,7 @@ func TestInit(t *testing.T) {
 			DeliverySettings: "delivery",
 		}, withMockAdminService(ctx, t))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "delivery", adapter.DeliverySettings)
 	})
 
@@ -267,7 +267,7 @@ func TestInit(t *testing.T) {
 			Name: "name",
 		}, withMockAdminService(ctx, t), WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -278,7 +278,7 @@ func TestInit(t *testing.T) {
 			Name: "name",
 		}, withMockAdminService(ctx, t))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, adapter.membersService)
 	})
 }

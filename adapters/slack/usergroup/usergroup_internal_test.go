@@ -3,15 +3,16 @@ package usergroup
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -41,7 +42,7 @@ func TestUserGroup_Get(t *testing.T) {
 
 	users, err := adapter.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Equal(t, []string{"foo@email", "bar@email"}, users)
 }
 
@@ -65,17 +66,17 @@ func TestUserGroup_Get_Pagination(t *testing.T) {
 	secondResponse := make([]slack.User, 30)
 
 	for idx := range incrementingSlice {
-		incrementingSlice[idx] = fmt.Sprint(idx)
+		incrementingSlice[idx] = strconv.Itoa(idx)
 
 		if idx < 30 {
-			firstPage[idx] = fmt.Sprint(idx)
+			firstPage[idx] = strconv.Itoa(idx)
 			firstResponse[idx] = slack.User{
-				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+				ID: strconv.Itoa(idx), IsBot: false, Profile: slack.UserProfile{Email: strconv.Itoa(idx)},
 			}
 		} else {
-			secondPage[idx-30] = fmt.Sprint(idx)
+			secondPage[idx-30] = strconv.Itoa(idx)
 			secondResponse[idx-30] = slack.User{
-				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+				ID: strconv.Itoa(idx), IsBot: false, Profile: slack.UserProfile{Email: strconv.Itoa(idx)},
 			}
 		}
 	}
@@ -87,7 +88,7 @@ func TestUserGroup_Get_Pagination(t *testing.T) {
 
 	_, err := adapter.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUserGroup_Add(t *testing.T) {
@@ -108,8 +109,8 @@ func TestUserGroup_Add(t *testing.T) {
 
 		err := adapter.Add(ctx, []string{"foo", "bar"})
 
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, gosync.ErrCacheEmpty)
+		require.Error(t, err)
+		require.ErrorIs(t, err, gosync.ErrCacheEmpty)
 	})
 
 	t.Run("Add accounts", func(t *testing.T) {
@@ -135,11 +136,10 @@ func TestUserGroup_Add(t *testing.T) {
 		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
 		err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
-//nolint:funlen
 func TestUserGroup_Remove(t *testing.T) {
 	t.Parallel()
 
@@ -158,8 +158,8 @@ func TestUserGroup_Remove(t *testing.T) {
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, gosync.ErrCacheEmpty)
+		require.Error(t, err)
+		require.ErrorIs(t, err, gosync.ErrCacheEmpty)
 	})
 
 	t.Run("Remove accounts", func(t *testing.T) {
@@ -178,7 +178,7 @@ func TestUserGroup_Remove(t *testing.T) {
 
 		err := adapter.Remove(ctx, []string{"bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("Return/mute error if number of accounts reaches zero", func(t *testing.T) {
@@ -201,18 +201,17 @@ func TestUserGroup_Remove(t *testing.T) {
 
 		err := adapter.Remove(ctx, []string{"foo@email"})
 
-		assert.ErrorIs(t, err, errInvalidArguments)
+		require.ErrorIs(t, err, errInvalidArguments)
 
 		// Reset the cache and mute the empty group error.
 		adapter.MuteGroupCannotBeEmpty = true
 
 		err = adapter.Remove(ctx, []string{"foo@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -226,7 +225,7 @@ func TestInit(t *testing.T) {
 			UserGroupID: "usergroup",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &UserGroup{}, adapter)
 		assert.Equal(t, "usergroup", adapter.userGroupID)
 		assert.False(t, adapter.MuteGroupCannotBeEmpty)
@@ -242,8 +241,8 @@ func TestInit(t *testing.T) {
 				UserGroupID: "usergroup",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, SlackAPIKey)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, SlackAPIKey)
 		})
 
 		t.Run("missing name", func(t *testing.T) {
@@ -253,8 +252,8 @@ func TestInit(t *testing.T) {
 				SlackAPIKey: "test",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, UserGroupID)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, UserGroupID)
 		})
 	})
 
@@ -268,7 +267,7 @@ func TestInit(t *testing.T) {
 				MuteGroupCannotBeEmpty: test,
 			})
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.False(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
 
@@ -279,7 +278,7 @@ func TestInit(t *testing.T) {
 				MuteGroupCannotBeEmpty: test,
 			})
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.True(t, adapter.MuteGroupCannotBeEmpty, test)
 		}
 	})
@@ -294,7 +293,7 @@ func TestInit(t *testing.T) {
 			UserGroupID: "usergroup",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -307,7 +306,7 @@ func TestInit(t *testing.T) {
 			UserGroupID: "usergroup",
 		}, WithClient(client))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, client, adapter.client)
 	})
 }
