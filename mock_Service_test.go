@@ -25,6 +25,10 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 func (_m *MockService) SyncWith(ctx context.Context, adapter Adapter) error {
 	ret := _m.Called(ctx, adapter)
 
+	if len(ret) == 0 {
+		panic("no return value specified for SyncWith")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, Adapter) error); ok {
 		r0 = rf(ctx, adapter)

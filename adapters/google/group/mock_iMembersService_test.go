@@ -24,6 +24,10 @@ func (_m *mockIMembersService) EXPECT() *mockIMembersService_Expecter {
 func (_m *mockIMembersService) Delete(groupKey string, memberKey string) *admin.MembersDeleteCall {
 	ret := _m.Called(groupKey, memberKey)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
 	var r0 *admin.MembersDeleteCall
 	if rf, ok := ret.Get(0).(func(string, string) *admin.MembersDeleteCall); ok {
 		r0 = rf(groupKey, memberKey)
@@ -69,6 +73,10 @@ func (_c *mockIMembersService_Delete_Call) RunAndReturn(run func(string, string)
 func (_m *mockIMembersService) Insert(groupKey string, member *admin.Member) *admin.MembersInsertCall {
 	ret := _m.Called(groupKey, member)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Insert")
+	}
+
 	var r0 *admin.MembersInsertCall
 	if rf, ok := ret.Get(0).(func(string, *admin.Member) *admin.MembersInsertCall); ok {
 		r0 = rf(groupKey, member)
@@ -113,6 +121,10 @@ func (_c *mockIMembersService_Insert_Call) RunAndReturn(run func(string, *admin.
 // List provides a mock function with given fields: groupKey
 func (_m *mockIMembersService) List(groupKey string) *admin.MembersListCall {
 	ret := _m.Called(groupKey)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
 
 	var r0 *admin.MembersListCall
 	if rf, ok := ret.Get(0).(func(string) *admin.MembersListCall); ok {
