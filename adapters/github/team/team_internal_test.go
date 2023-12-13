@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-github/v47/github"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
 
 	gosync "github.com/ovotech/go-sync"
@@ -50,7 +51,7 @@ func TestTeam_Get(t *testing.T) {
 
 	users, err := adapter.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, users, []string{"foo@email", "bar@email"})
 	assert.Equal(t, map[string]string{"foo@email": "foo", "bar@email": "bar"}, adapter.cache)
 }
@@ -80,7 +81,7 @@ func TestTeam_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"fizz@email", "buzz@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestTeam_Remove(t *testing.T) {
@@ -105,10 +106,9 @@ func TestTeam_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -124,7 +124,7 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "saml",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &Team{}, adapter)
 		assert.Equal(t, "org", adapter.org)
 		assert.Equal(t, "slug", adapter.slug)
@@ -143,8 +143,8 @@ func TestInit(t *testing.T) {
 				DiscoveryMechanism: "saml",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GitHubToken)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, GitHubToken)
 		})
 
 		t.Run("missing org", func(t *testing.T) {
@@ -156,8 +156,8 @@ func TestInit(t *testing.T) {
 				DiscoveryMechanism: "saml",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, GitHubOrg)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, GitHubOrg)
 		})
 
 		t.Run("missing slug", func(t *testing.T) {
@@ -169,8 +169,8 @@ func TestInit(t *testing.T) {
 				DiscoveryMechanism: "saml",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, TeamSlug)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, TeamSlug)
 		})
 	})
 
@@ -184,7 +184,7 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "foo",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+		require.ErrorIs(t, err, gosync.ErrMissingConfig)
 	})
 
 	t.Run("with logger", func(t *testing.T) {
@@ -199,7 +199,7 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "saml",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -217,7 +217,7 @@ func TestInit(t *testing.T) {
 			DiscoveryMechanism: "saml",
 		}, WithClient(client))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, client.Teams, adapter.teams)
 	})
 
@@ -232,7 +232,7 @@ func TestInit(t *testing.T) {
 			TeamSlug:    "slug",
 		}, WithDiscoveryService(mockDiscovery))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, mockDiscovery, adapter.discovery)
 	})
 }

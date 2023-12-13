@@ -12,25 +12,13 @@ We recommend `asdf`, it's our recommended way of managing our runtime CLIs:
 Alternatively install Go from the [official documentation](https://go.dev/doc/install).
 The version of Go you want can be [found here](https://github.com/ovotech/go-sync/blob/main/go.mod#L3).
 
-We also run the following tooling to ensure code quality:
+For common tasks, we recommend installing [Taskfile](https://taskfile.dev). We run linters to ensure that code being 
+checked in matches our quality standards, and have included a Taskfile in this repo containing common commands to assist 
+with this.  All tools necessary to action the various Taskfile tasks will be automatically installed on-demand under the
+`.task/bin/` sub-directory within this project.
 
-1. [golangci-lint](https://golangci-lint.run/) for code quality.
-2. [mockery](https://github.com/vektra/mockery) generates mocks for easy testing.
-3. [gci](https://github.com/daixiang0/gci) for consistent, deterministic imports.
-
-We run linters to ensure that code being checked in matches our quality standards, and have included a Makefile in this
-repo containing common commands to assist with this.
-All tools necessary to action the various Makefile targets will be automatically installed on-demand under the
-`hack/bin/` sub-directory within this project.
-
-| Command         | Description                    |
-|-----------------|--------------------------------|
-| `make generate` | Generate automated code.       |
-| `make lint`     | Lint Go Sync.                  |
-| `make lint-fix` | Fix some common linter errors. |
-
-The above is a small subset of available Makefile targets.
-Running `make` or `make help` will display a more complete list of available targets.
+To see what tasks are available, run `task --list-all`. As a bare minimum, we recommend running `task` against your
+changes before checking in.
 
 ## Developing an adapter 🔌
 
@@ -117,8 +105,8 @@ if err != nil {
 
 ### Testing
 
-When writing tests, you can autogenerate the mocked clients using [Mockery](#preparation-):
+When writing tests, you can autogenerate the mocked clients from interfaces using [Mockery](https://github.com/vektra/mockery):
 
 ```sh
-make generate
+task generate
 ```

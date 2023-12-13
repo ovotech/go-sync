@@ -42,7 +42,10 @@ See the [reference] for more information on filter queries.
 const Filter gosync.ConfigKey = "filter"
 
 type iUser interface {
-	Get(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error)
+	Get(
+		ctx context.Context,
+		config *users.UsersRequestBuilderGetRequestConfiguration,
+	) (models.UserCollectionResponseable, error)
 }
 
 type iClient interface {

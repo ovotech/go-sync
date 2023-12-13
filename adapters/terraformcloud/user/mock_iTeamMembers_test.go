@@ -26,6 +26,10 @@ func (_m *mockITeamMembers) EXPECT() *mockITeamMembers_Expecter {
 func (_m *mockITeamMembers) Add(ctx context.Context, teamID string, options tfe.TeamMemberAddOptions) error {
 	ret := _m.Called(ctx, teamID, options)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Add")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, tfe.TeamMemberAddOptions) error); ok {
 		r0 = rf(ctx, teamID, options)
@@ -69,6 +73,10 @@ func (_c *mockITeamMembers_Add_Call) RunAndReturn(run func(context.Context, stri
 // List provides a mock function with given fields: ctx, teamID
 func (_m *mockITeamMembers) List(ctx context.Context, teamID string) ([]*tfe.User, error) {
 	ret := _m.Called(ctx, teamID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
 
 	var r0 []*tfe.User
 	var r1 error
@@ -124,6 +132,10 @@ func (_c *mockITeamMembers_List_Call) RunAndReturn(run func(context.Context, str
 // Remove provides a mock function with given fields: ctx, teamID, options
 func (_m *mockITeamMembers) Remove(ctx context.Context, teamID string, options tfe.TeamMemberRemoveOptions) error {
 	ret := _m.Called(ctx, teamID, options)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Remove")
+	}
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, tfe.TeamMemberRemoveOptions) error); ok {

@@ -9,6 +9,8 @@ includes:
 output: prefixed
 
 vars:
+  ADAPTERS:
+    sh: find adapters/ -mindepth 1 -maxdepth 1 -type d -exec basename {} \;
   GCI_VERSION: latest
   GOFUMPT_VERSION: latest
   GOLANGCI_LINT_VERSION: latest
@@ -25,5 +27,6 @@ tasks:
     desc: Generate, lint and unit test the source code
     cmds:
       - task: generate
+      - task: lint:fix
       - task: lint
       - task: tests:gotest:unit

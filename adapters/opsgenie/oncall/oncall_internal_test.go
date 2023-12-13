@@ -11,6 +11,7 @@ import (
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -26,7 +27,7 @@ func createMockedAdapter(ctx context.Context, t *testing.T, mockedTime time.Time
 		OpsgenieAPIKey: "test",
 		ScheduleID:     "test",
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	adapter.client = scheduleClient
 	adapter.getTime = func() time.Time {
@@ -59,7 +60,7 @@ func TestOnCall_Get(t *testing.T) {
 
 		emails, err := adapter.Get(ctx)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, []string{"foo@email.com", "bar@email.com"}, emails)
 	})
 
@@ -78,7 +79,7 @@ func TestOnCall_Get(t *testing.T) {
 		emails, err := adapter.Get(ctx)
 
 		assert.Nil(t, emails)
-		assert.ErrorContains(t, err, "an example error")
+		require.ErrorContains(t, err, "an example error")
 	})
 }
 
@@ -90,7 +91,7 @@ func TestOnCall_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, gosync.ErrReadOnly)
+	require.ErrorIs(t, err, gosync.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
 
@@ -102,11 +103,10 @@ func TestOnCall_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"example@bar.com"})
 
-	assert.ErrorIs(t, err, gosync.ErrReadOnly)
+	require.ErrorIs(t, err, gosync.ErrReadOnly)
 	assert.Zero(t, scheduleClient.Calls)
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -120,7 +120,7 @@ func TestInit(t *testing.T) {
 			ScheduleID:     "schedule",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &OnCall{}, adapter)
 		assert.Equal(t, "schedule", adapter.scheduleID)
 	})
@@ -135,8 +135,8 @@ func TestInit(t *testing.T) {
 				ScheduleID: "schedule",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, OpsgenieAPIKey)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, OpsgenieAPIKey)
 		})
 
 		t.Run("missing schedule ID", func(t *testing.T) {
@@ -146,8 +146,8 @@ func TestInit(t *testing.T) {
 				OpsgenieAPIKey: "test",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, ScheduleID)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, ScheduleID)
 		})
 	})
 
@@ -161,7 +161,7 @@ func TestInit(t *testing.T) {
 			ScheduleID:     "schedule",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -171,13 +171,13 @@ func TestInit(t *testing.T) {
 		scheduleClient, err := schedule.NewClient(&client.Config{
 			ApiKey: "test",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			ScheduleID: "schedule",
 		}, WithClient(scheduleClient))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, scheduleClient, adapter.client)
 	})
 }

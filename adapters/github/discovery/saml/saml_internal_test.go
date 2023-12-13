@@ -7,6 +7,7 @@ import (
 	"github.com/shurcooL/githubv4"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func emailQueryFunc(names ...string) func(ctx context.Context, q interface{}, variables map[string]interface{}) {
@@ -50,7 +51,6 @@ func TestNew(t *testing.T) {
 	assert.Zero(t, gitHubClient.Calls)
 }
 
-//nolint:funlen
 func TestSaml_GetUsernameFromEmail(t *testing.T) {
 	t.Parallel()
 
@@ -76,7 +76,7 @@ func TestSaml_GetUsernameFromEmail(t *testing.T) {
 
 		usernames, err := discovery.GetUsernameFromEmail(ctx, []string{"foo@email", "bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.ElementsMatch(t, usernames, []string{"foo", "bar"})
 	})
 
@@ -100,7 +100,7 @@ func TestSaml_GetUsernameFromEmail(t *testing.T) {
 
 		_, err := discovery.GetUsernameFromEmail(ctx, []string{"foo@email", "bar@email"})
 
-		assert.ErrorIs(t, err, ErrUserNotFound)
+		require.ErrorIs(t, err, ErrUserNotFound)
 	})
 
 	t.Run("MuteUserNotFoundErr true returns all non-failing results", func(t *testing.T) { //nolint: dupl
@@ -123,12 +123,12 @@ func TestSaml_GetUsernameFromEmail(t *testing.T) {
 
 		usernames, err := discovery.GetUsernameFromEmail(ctx, []string{"foo@email", "bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.ElementsMatch(t, usernames, []string{"foo"})
 	})
 }
 
-func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint: funlen
+func TestSaml_GetEmailFromUsername(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.TODO()
@@ -152,7 +152,7 @@ func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint: funlen
 
 		usernames, err := discovery.GetEmailFromUsername(ctx, []string{"foo", "bar"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.ElementsMatch(t, usernames, []string{"foo@email", "bar@email"})
 	})
 
@@ -176,7 +176,7 @@ func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint: funlen
 
 		_, err := discovery.GetEmailFromUsername(ctx, []string{"foo", "bar"})
 
-		assert.ErrorIs(t, err, ErrUserNotFound)
+		require.ErrorIs(t, err, ErrUserNotFound)
 	})
 
 	t.Run("MuteUserNotFoundErr true returns all non-failing results", func(t *testing.T) { //nolint: dupl
@@ -199,7 +199,7 @@ func TestSaml_GetEmailFromUsername(t *testing.T) { //nolint: funlen
 
 		usernames, err := discovery.GetEmailFromUsername(ctx, []string{"foo", "bar"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.ElementsMatch(t, usernames, []string{"foo@email"})
 	})
 }
