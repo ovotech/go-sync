@@ -45,14 +45,20 @@ type iClient interface {
 var _ iClient = &msgraphsdkgo.GraphServiceClient{}
 
 type iGroupClient interface {
-	Get(context.Context, *groups.GroupsRequestBuilderGetRequestConfiguration) (models.GroupCollectionResponseable, error)
-	ByGroupId(string) *groups.GroupItemRequestBuilder
+	Get(
+		ctx context.Context,
+		config *groups.GroupsRequestBuilderGetRequestConfiguration,
+	) (models.GroupCollectionResponseable, error)
+	ByGroupId(id string) *groups.GroupItemRequestBuilder
 }
 
 var _ iGroupClient = &groups.GroupsRequestBuilder{}
 
 type iUserClient interface {
-	Get(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error)
+	Get(
+		ctx context.Context,
+		config *users.UsersRequestBuilderGetRequestConfiguration,
+	) (models.UserCollectionResponseable, error)
 }
 
 var _ iUserClient = &users.UsersRequestBuilder{}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -44,7 +45,7 @@ func TestUser_Get(t *testing.T) {
 
 	things, err := adapter.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, things, []string{"foo@email", "bar@email"})
 }
 
@@ -108,7 +109,7 @@ func TestUser_Add(t *testing.T) {
 
 	err := adapter.Add(ctx, []string{"foo@email", "bar@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestUser_Remove(t *testing.T) {
@@ -155,10 +156,9 @@ func TestUser_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"foo@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -173,7 +173,7 @@ func TestInit(t *testing.T) {
 			Team:         "team",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &User{}, adapter)
 	})
 
@@ -185,8 +185,8 @@ func TestInit(t *testing.T) {
 			Team:         "team",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-		assert.ErrorContains(t, err, Token)
+		require.ErrorIs(t, err, gosync.ErrMissingConfig)
+		require.ErrorContains(t, err, Token)
 	})
 
 	t.Run("missing organisation", func(t *testing.T) {
@@ -197,8 +197,8 @@ func TestInit(t *testing.T) {
 			Team:  "team",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-		assert.ErrorContains(t, err, Organisation)
+		require.ErrorIs(t, err, gosync.ErrMissingConfig)
+		require.ErrorContains(t, err, Organisation)
 	})
 
 	t.Run("missing team", func(t *testing.T) {
@@ -209,8 +209,8 @@ func TestInit(t *testing.T) {
 			Organisation: "org",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-		assert.ErrorContains(t, err, Team)
+		require.ErrorIs(t, err, gosync.ErrMissingConfig)
+		require.ErrorContains(t, err, Team)
 	})
 
 	t.Run("with logger", func(t *testing.T) {
@@ -224,7 +224,7 @@ func TestInit(t *testing.T) {
 			Team:         "team",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -232,14 +232,14 @@ func TestInit(t *testing.T) {
 		t.Parallel()
 
 		client, err := tfe.NewClient(&tfe.Config{Token: "test"})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 			Organisation: "org",
 			Team:         "team",
 		}, WithClient(client))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, client.Teams, adapter.teams)
 		assert.Equal(t, client.TeamMembers, adapter.teamMembers)
 		assert.Equal(t, client.OrganizationMemberships, adapter.organizationMemberships)

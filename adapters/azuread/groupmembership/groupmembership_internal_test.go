@@ -16,6 +16,7 @@ import (
 	"github.com/microsoftgraph/msgraph-sdk-go/users"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -32,7 +33,7 @@ func TestInit(t *testing.T) {
 			GroupName: "example",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &GroupMembership{}, adapter)
 		assert.Equal(t, "example", adapter.group)
 	})
@@ -45,7 +46,7 @@ func TestInit(t *testing.T) {
 
 			_, err := Init(ctx, map[gosync.ConfigKey]string{})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
 		})
 	})
 }
@@ -87,7 +88,7 @@ func Test_resolveGroupID(t *testing.T) {
 
 		gid, err := resolveGroupID(ctx, client, group)
 		assert.Empty(t, gid)
-		assert.ErrorIs(t, err, ErrNoResults)
+		require.ErrorIs(t, err, ErrNoResults)
 	})
 
 	t.Run("one found", func(t *testing.T) {
@@ -97,7 +98,7 @@ func Test_resolveGroupID(t *testing.T) {
 
 		gid, err := resolveGroupID(ctx, client, group)
 		assert.Contains(t, gid, "00000001-0000-0000-0000-000123456789")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("multiple found", func(t *testing.T) {
@@ -110,7 +111,7 @@ func Test_resolveGroupID(t *testing.T) {
 
 		gid, err := resolveGroupID(ctx, client, group)
 		assert.Empty(t, gid)
-		assert.ErrorIs(t, err, ErrTooManyResults)
+		require.ErrorIs(t, err, ErrTooManyResults)
 	})
 }
 
@@ -151,7 +152,7 @@ func Test_resolveUserID(t *testing.T) {
 
 		gid, err := resolveUserID(ctx, client, email)
 		assert.Empty(t, gid)
-		assert.ErrorIs(t, err, ErrNoResults)
+		require.ErrorIs(t, err, ErrNoResults)
 	})
 
 	t.Run("one found", func(t *testing.T) {
@@ -161,7 +162,7 @@ func Test_resolveUserID(t *testing.T) {
 
 		gid, err := resolveUserID(ctx, client, email)
 		assert.Contains(t, gid, "00000001-1000-0000-0000-000123456789")
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("multiple found", func(t *testing.T) {
@@ -171,7 +172,7 @@ func Test_resolveUserID(t *testing.T) {
 
 		gid, err := resolveUserID(ctx, client, email)
 		assert.Empty(t, gid)
-		assert.ErrorIs(t, err, ErrTooManyResults)
+		require.ErrorIs(t, err, ErrTooManyResults)
 	})
 }
 
@@ -229,11 +230,10 @@ func TestGroupMembership_Get(t *testing.T) {
 	}
 
 	out, err := adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, out, expected)
 }
 
-//nolint:funlen
 func TestGroupMembership_Add(t *testing.T) {
 	t.Parallel()
 
@@ -312,10 +312,9 @@ func TestGroupMembership_Add(t *testing.T) {
 
 	expected := []string{userMail1, userMail2}
 	err := adapter.Add(ctx, expected)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-//nolint:funlen
 func TestGroupMembership_Remove(t *testing.T) {
 	t.Parallel()
 
@@ -384,7 +383,7 @@ func TestGroupMembership_Remove(t *testing.T) {
 	}
 
 	err := adapter.Remove(ctx, []string{userMail1, userMail2})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 type MockRequestAdapter struct {
@@ -467,11 +466,11 @@ func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.Seria
 func (r *MockRequestAdapter) EnableBackingStore(_ store.BackingStoreFactory) {
 }
 
-//nolint:revive,stylecheck
+//nolint:stylecheck
 func (r *MockRequestAdapter) SetBaseUrl(_ string) {
 }
 
-//nolint:revive,stylecheck
+//nolint:stylecheck
 func (r *MockRequestAdapter) GetBaseUrl() string {
 	return ""
 }

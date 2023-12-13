@@ -11,6 +11,7 @@ import (
 	"github.com/microsoftgraph/msgraph-sdk-go/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -95,11 +96,11 @@ func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.Seria
 func (r *MockRequestAdapter) EnableBackingStore(_ store.BackingStoreFactory) {
 }
 
-//nolint:revive,stylecheck
+//nolint:stylecheck
 func (r *MockRequestAdapter) SetBaseUrl(_ string) {
 }
 
-//nolint:revive,stylecheck
+//nolint:stylecheck
 func (r *MockRequestAdapter) GetBaseUrl() string {
 	return ""
 }
@@ -115,7 +116,7 @@ func TestTeam_Get(t *testing.T) {
 	mockClient.EXPECT().GetAdapter().Return(&MockRequestAdapter{})
 
 	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	adapter.users = mockUser
 
@@ -149,11 +150,11 @@ func TestTeam_Add(t *testing.T) {
 	mockClient := newMockIClient(t)
 
 	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = adapter.Add(context.TODO(), []string{"foo@email", "bar@email"})
 
-	assert.ErrorIs(t, err, gosync.ErrReadOnly)
+	require.ErrorIs(t, err, gosync.ErrReadOnly)
 }
 
 func TestTeam_Remove(t *testing.T) {
@@ -162,11 +163,11 @@ func TestTeam_Remove(t *testing.T) {
 	mockClient := newMockIClient(t)
 
 	adapter, err := Init(context.TODO(), nil, WithClient(mockClient))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	err = adapter.Remove(context.TODO(), []string{"foo@email", "bar@email"})
 
-	assert.ErrorIs(t, err, gosync.ErrReadOnly)
+	require.ErrorIs(t, err, gosync.ErrReadOnly)
 }
 
 func Test_isAdvancedQuery(t *testing.T) {
@@ -220,7 +221,7 @@ func TestInit(t *testing.T) {
 			Filter: "filter",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &User{}, adapter)
 		assert.Equal(t, "filter", adapter.filter)
 	})
@@ -233,7 +234,7 @@ func TestInit(t *testing.T) {
 
 			adapter, err := Init(ctx, map[gosync.ConfigKey]string{})
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, "", adapter.filter)
 		})
 	})

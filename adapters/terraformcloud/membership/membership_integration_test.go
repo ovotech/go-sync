@@ -26,23 +26,23 @@ func TestIntegration(t *testing.T) {
 		membership.Token:        *token,
 		membership.Organisation: *organisation,
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Create a membership
 	err = adapter.Add(ctx, []string{*email})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Assert the membership has been created
 	members, err := adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, members, *email)
 
 	// Delete the membership
 	err = adapter.Remove(ctx, []string{*email})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Assert the membership has been deleted
 	members, err = adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotContains(t, members, *email)
 }
