@@ -26,6 +26,10 @@ func (_m *mockITeams) EXPECT() *mockITeams_Expecter {
 func (_m *mockITeams) Create(ctx context.Context, organization string, options tfe.TeamCreateOptions) (*tfe.Team, error) {
 	ret := _m.Called(ctx, organization, options)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
 	var r0 *tfe.Team
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, tfe.TeamCreateOptions) (*tfe.Team, error)); ok {
@@ -82,6 +86,10 @@ func (_c *mockITeams_Create_Call) RunAndReturn(run func(context.Context, string,
 func (_m *mockITeams) Delete(ctx context.Context, teamID string) error {
 	ret := _m.Called(ctx, teamID)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
 		r0 = rf(ctx, teamID)
@@ -124,6 +132,10 @@ func (_c *mockITeams_Delete_Call) RunAndReturn(run func(context.Context, string)
 // List provides a mock function with given fields: ctx, organization, options
 func (_m *mockITeams) List(ctx context.Context, organization string, options *tfe.TeamListOptions) (*tfe.TeamList, error) {
 	ret := _m.Called(ctx, organization, options)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
 
 	var r0 *tfe.TeamList
 	var r1 error

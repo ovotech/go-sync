@@ -40,4 +40,4 @@ tasks:
       - ./**/*.go
     cmds:
       - task: golangci-lint
-        vars: { ARGS: '--fix --timeout=10m' }
+        vars: { ARGS: '--fix' }

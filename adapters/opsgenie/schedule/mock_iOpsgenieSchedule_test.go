@@ -26,6 +26,10 @@ func (_m *mockIOpsgenieSchedule) EXPECT() *mockIOpsgenieSchedule_Expecter {
 func (_m *mockIOpsgenieSchedule) Get(ctx context.Context, request *opsgenie_go_sdk_v2schedule.GetRequest) (*opsgenie_go_sdk_v2schedule.GetResult, error) {
 	ret := _m.Called(ctx, request)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
 	var r0 *opsgenie_go_sdk_v2schedule.GetResult
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *opsgenie_go_sdk_v2schedule.GetRequest) (*opsgenie_go_sdk_v2schedule.GetResult, error)); ok {
@@ -80,6 +84,10 @@ func (_c *mockIOpsgenieSchedule_Get_Call) RunAndReturn(run func(context.Context,
 // UpdateRotation provides a mock function with given fields: ctx, request
 func (_m *mockIOpsgenieSchedule) UpdateRotation(ctx context.Context, request *opsgenie_go_sdk_v2schedule.UpdateRotationRequest) (*opsgenie_go_sdk_v2schedule.UpdateRotationResult, error) {
 	ret := _m.Called(ctx, request)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateRotation")
+	}
 
 	var r0 *opsgenie_go_sdk_v2schedule.UpdateRotationResult
 	var r1 error

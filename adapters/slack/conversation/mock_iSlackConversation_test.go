@@ -24,6 +24,10 @@ func (_m *mockISlackConversation) EXPECT() *mockISlackConversation_Expecter {
 func (_m *mockISlackConversation) GetUserByEmail(email string) (*slack.User, error) {
 	ret := _m.Called(email)
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetUserByEmail")
+	}
+
 	var r0 *slack.User
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string) (*slack.User, error)); ok {
@@ -77,6 +81,10 @@ func (_c *mockISlackConversation_GetUserByEmail_Call) RunAndReturn(run func(stri
 // GetUsersInConversation provides a mock function with given fields: params
 func (_m *mockISlackConversation) GetUsersInConversation(params *slack.GetUsersInConversationParameters) ([]string, string, error) {
 	ret := _m.Called(params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUsersInConversation")
+	}
 
 	var r0 []string
 	var r1 string
@@ -144,6 +152,10 @@ func (_m *mockISlackConversation) GetUsersInfo(users ...string) (*[]slack.User, 
 	var _ca []interface{}
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUsersInfo")
+	}
 
 	var r0 *[]slack.User
 	var r1 error
@@ -213,6 +225,10 @@ func (_m *mockISlackConversation) InviteUsersToConversation(channelID string, us
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
+	if len(ret) == 0 {
+		panic("no return value specified for InviteUsersToConversation")
+	}
+
 	var r0 *slack.Channel
 	var r1 error
 	if rf, ok := ret.Get(0).(func(string, ...string) (*slack.Channel, error)); ok {
@@ -274,6 +290,10 @@ func (_c *mockISlackConversation_InviteUsersToConversation_Call) RunAndReturn(ru
 // KickUserFromConversation provides a mock function with given fields: channelID, user
 func (_m *mockISlackConversation) KickUserFromConversation(channelID string, user string) error {
 	ret := _m.Called(channelID, user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for KickUserFromConversation")
+	}
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(string, string) error); ok {

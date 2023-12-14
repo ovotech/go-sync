@@ -1,24 +1,46 @@
+issues:
+  exclude-rules:
+    # Test functions tend to be quite long due to the large amount of fixtures & test data etc.
+    - linters:
+        - funlen
+      path: _test\.go
+      text: "is too long"
+    # There's no need to wrap errors in a test.
+    - linters:
+        - wrapcheck
+      path: _test\.go
+      text: "error returned from external package is unwrapped"
+
 linters:
   enable-all: true
   disable:
-    - deadcode # deprecated
+    # tmpfix - currently breaking things
+    - musttag
+
     - depguard
     - exhaustruct
-    - exhaustivestruct # deprecated
     - forcetypeassert
-    - golint # deprecated
-    - gomodguard
+    - godox
     - gomoddirectives
-    - ifshort # deprecated
-    - interfacer # deprecated
-    - maligned # deprecated
-    - nosnakecase # deprecated
-    - rowserrcheck # disabled because of generics
-    - scopelint # deprecated
-    - structcheck # deprecated
-    - testableexamples # deprecated
+    - gomodguard
+    - ireturn
     - varcheck
-    - wastedassign # disabled because of generics
+
+    # deprecated
+    - deadcode
+    - exhaustivestruct
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - testableexamples
+
+    # disabled because of generics
+    - rowserrcheck
+    - wastedassign
 
 linters-settings:
   gomoddirectives:
@@ -34,9 +56,15 @@ linters-settings:
     skip-generated: true
     custom-order: true
 
-  varnamelen:
-    ignore-names:
-      - ID
+  revive:
+    confidence: 0.1
+    severity: warning
+    rules:
+      - name: exported
+        severity: error
+        disabled: false
+        arguments:
+          - checkPrivateReceivers
 
 run:
-  timeout: 30m
+  timeout: "5m"

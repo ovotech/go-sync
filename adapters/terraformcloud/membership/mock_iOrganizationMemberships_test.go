@@ -26,6 +26,10 @@ func (_m *mockIOrganizationMemberships) EXPECT() *mockIOrganizationMemberships_E
 func (_m *mockIOrganizationMemberships) Create(ctx context.Context, organization string, options tfe.OrganizationMembershipCreateOptions) (*tfe.OrganizationMembership, error) {
 	ret := _m.Called(ctx, organization, options)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Create")
+	}
+
 	var r0 *tfe.OrganizationMembership
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, tfe.OrganizationMembershipCreateOptions) (*tfe.OrganizationMembership, error)); ok {
@@ -82,6 +86,10 @@ func (_c *mockIOrganizationMemberships_Create_Call) RunAndReturn(run func(contex
 func (_m *mockIOrganizationMemberships) Delete(ctx context.Context, organizationMembershipID string) error {
 	ret := _m.Called(ctx, organizationMembershipID)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Delete")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
 		r0 = rf(ctx, organizationMembershipID)
@@ -124,6 +132,10 @@ func (_c *mockIOrganizationMemberships_Delete_Call) RunAndReturn(run func(contex
 // List provides a mock function with given fields: ctx, organization, options
 func (_m *mockIOrganizationMemberships) List(ctx context.Context, organization string, options *tfe.OrganizationMembershipListOptions) (*tfe.OrganizationMembershipList, error) {
 	ret := _m.Called(ctx, organization, options)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
 
 	var r0 *tfe.OrganizationMembershipList
 	var r1 error
@@ -180,6 +192,10 @@ func (_c *mockIOrganizationMemberships_List_Call) RunAndReturn(run func(context.
 // Read provides a mock function with given fields: ctx, organizationMembershipID
 func (_m *mockIOrganizationMemberships) Read(ctx context.Context, organizationMembershipID string) (*tfe.OrganizationMembership, error) {
 	ret := _m.Called(ctx, organizationMembershipID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Read")
+	}
 
 	var r0 *tfe.OrganizationMembership
 	var r1 error
