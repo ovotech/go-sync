@@ -25,6 +25,10 @@ func (_m *mockIClient) EXPECT() *mockIClient_Expecter {
 func (_m *mockIClient) GetAdapter() abstractions.RequestAdapter {
 	ret := _m.Called()
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetAdapter")
+	}
+
 	var r0 abstractions.RequestAdapter
 	if rf, ok := ret.Get(0).(func() abstractions.RequestAdapter); ok {
 		r0 = rf()
@@ -67,6 +71,10 @@ func (_c *mockIClient_GetAdapter_Call) RunAndReturn(run func() abstractions.Requ
 // Users provides a mock function with given fields:
 func (_m *mockIClient) Users() *users.UsersRequestBuilder {
 	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for Users")
+	}
 
 	var r0 *users.UsersRequestBuilder
 	if rf, ok := ret.Get(0).(func() *users.UsersRequestBuilder); ok {

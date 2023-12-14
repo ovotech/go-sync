@@ -3,13 +3,14 @@ package conversation
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/slack-go/slack"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -63,7 +64,7 @@ func TestConversation_Get(t *testing.T) {
 
 	accounts, err := adapter.Get(context.TODO())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, accounts, []string{"foo@email", "bar@email"})
 	assert.Equal(t, map[string]string{"foo@email": "foo", "bar@email": "bar"}, adapter.cache)
 }
@@ -86,17 +87,17 @@ func TestConversation_Get_Pagination(t *testing.T) {
 	secondResponse := make([]slack.User, 30)
 
 	for idx := range incrementingSlice {
-		incrementingSlice[idx] = fmt.Sprint(idx)
+		incrementingSlice[idx] = strconv.Itoa(idx)
 
 		if idx < 30 {
-			firstPage[idx] = fmt.Sprint(idx)
+			firstPage[idx] = strconv.Itoa(idx)
 			firstResponse[idx] = slack.User{
-				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+				ID: strconv.Itoa(idx), IsBot: false, Profile: slack.UserProfile{Email: strconv.Itoa(idx)},
 			}
 		} else {
-			secondPage[idx-30] = fmt.Sprint(idx)
+			secondPage[idx-30] = strconv.Itoa(idx)
 			secondResponse[idx-30] = slack.User{
-				ID: fmt.Sprint(idx), IsBot: false, Profile: slack.UserProfile{Email: fmt.Sprint(idx)},
+				ID: strconv.Itoa(idx), IsBot: false, Profile: slack.UserProfile{Email: strconv.Itoa(idx)},
 			}
 		}
 	}
@@ -112,7 +113,7 @@ func TestConversation_Get_Pagination(t *testing.T) {
 
 	_, err := adapter.Get(context.TODO())
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestConversation_Add(t *testing.T) {
@@ -136,10 +137,9 @@ func TestConversation_Add(t *testing.T) {
 
 	err := adapter.Add(context.TODO(), []string{"foo@email", "bar@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
-//nolint:funlen
 func TestConversation_Remove(t *testing.T) {
 	t.Parallel()
 
@@ -162,7 +162,7 @@ func TestConversation_Remove(t *testing.T) {
 
 		err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("Restricted kick from public conversation", func(t *testing.T) {
@@ -185,14 +185,14 @@ func TestConversation_Remove(t *testing.T) {
 
 		err := adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
-		assert.Error(t, err)
-		assert.ErrorIs(t, err, restrictedAction)
+		require.Error(t, err)
+		require.ErrorIs(t, err, restrictedAction)
 
 		adapter.MuteRestrictedErrOnKickFromPublic = true
 
 		err = adapter.Remove(ctx, []string{"foo@email", "bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("Check case sensitivity", func(t *testing.T) {
@@ -226,11 +226,10 @@ func TestConversation_Remove(t *testing.T) {
 		// Capitalise the first letter of each email.
 		err := adapter.Remove(ctx, []string{"Foo@email", "Bar@email"})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
-//nolint:funlen
 func TestInit(t *testing.T) {
 	t.Parallel()
 
@@ -244,7 +243,7 @@ func TestInit(t *testing.T) {
 			Name:        "conversation",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &Conversation{}, adapter)
 		assert.Equal(t, "conversation", adapter.conversationName)
 		assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic)
@@ -260,8 +259,8 @@ func TestInit(t *testing.T) {
 				Name: "conversation",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, SlackAPIKey)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, SlackAPIKey)
 		})
 
 		t.Run("missing name", func(t *testing.T) {
@@ -271,8 +270,8 @@ func TestInit(t *testing.T) {
 				SlackAPIKey: "test",
 			})
 
-			assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-			assert.ErrorContains(t, err, Name)
+			require.ErrorIs(t, err, gosync.ErrMissingConfig)
+			require.ErrorContains(t, err, Name)
 		})
 
 		t.Run("MuteRestrictedErrOnKickFromPublic", func(t *testing.T) {
@@ -285,7 +284,7 @@ func TestInit(t *testing.T) {
 					MuteRestrictedErrOnKickFromPublic: test,
 				})
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.False(t, adapter.MuteRestrictedErrOnKickFromPublic, test)
 			}
 
@@ -296,7 +295,7 @@ func TestInit(t *testing.T) {
 					MuteRestrictedErrOnKickFromPublic: test,
 				})
 
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.True(t, adapter.MuteRestrictedErrOnKickFromPublic, test)
 			}
 		})
@@ -312,7 +311,7 @@ func TestInit(t *testing.T) {
 			Name:        "conversation",
 		}, WithLogger(logger))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, logger, adapter.Logger)
 	})
 
@@ -325,7 +324,7 @@ func TestInit(t *testing.T) {
 			Name: "conversation",
 		}, WithClient(client))
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, client, adapter.client)
 	})
 }

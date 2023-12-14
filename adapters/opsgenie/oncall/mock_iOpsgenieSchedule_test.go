@@ -26,6 +26,10 @@ func (_m *mockIOpsgenieSchedule) EXPECT() *mockIOpsgenieSchedule_Expecter {
 func (_m *mockIOpsgenieSchedule) GetOnCalls(_a0 context.Context, request *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error) {
 	ret := _m.Called(_a0, request)
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetOnCalls")
+	}
+
 	var r0 *schedule.GetOnCallsResult
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *schedule.GetOnCallsRequest) (*schedule.GetOnCallsResult, error)); ok {
