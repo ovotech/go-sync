@@ -23,17 +23,21 @@ func (_m *mockIUser) EXPECT() *mockIUser_Expecter {
 	return &mockIUser_Expecter{mock: &_m.Mock}
 }
 
-// Get provides a mock function with given fields: _a0, _a1
-func (_m *mockIUser) Get(_a0 context.Context, _a1 *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error) {
-	ret := _m.Called(_a0, _a1)
+// Get provides a mock function with given fields: ctx, config
+func (_m *mockIUser) Get(ctx context.Context, config *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error) {
+	ret := _m.Called(ctx, config)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
 
 	var r0 models.UserCollectionResponseable
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) (models.UserCollectionResponseable, error)); ok {
-		return rf(_a0, _a1)
+		return rf(ctx, config)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) models.UserCollectionResponseable); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, config)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(models.UserCollectionResponseable)
@@ -41,7 +45,7 @@ func (_m *mockIUser) Get(_a0 context.Context, _a1 *users.UsersRequestBuilderGetR
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *users.UsersRequestBuilderGetRequestConfiguration) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, config)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -55,13 +59,13 @@ type mockIUser_Get_Call struct {
 }
 
 // Get is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 *users.UsersRequestBuilderGetRequestConfiguration
-func (_e *mockIUser_Expecter) Get(_a0 interface{}, _a1 interface{}) *mockIUser_Get_Call {
-	return &mockIUser_Get_Call{Call: _e.mock.On("Get", _a0, _a1)}
+//   - ctx context.Context
+//   - config *users.UsersRequestBuilderGetRequestConfiguration
+func (_e *mockIUser_Expecter) Get(ctx interface{}, config interface{}) *mockIUser_Get_Call {
+	return &mockIUser_Get_Call{Call: _e.mock.On("Get", ctx, config)}
 }
 
-func (_c *mockIUser_Get_Call) Run(run func(_a0 context.Context, _a1 *users.UsersRequestBuilderGetRequestConfiguration)) *mockIUser_Get_Call {
+func (_c *mockIUser_Get_Call) Run(run func(ctx context.Context, config *users.UsersRequestBuilderGetRequestConfiguration)) *mockIUser_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*users.UsersRequestBuilderGetRequestConfiguration))
 	})

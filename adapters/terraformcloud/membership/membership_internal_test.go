@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/go-tfe"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	gosync "github.com/ovotech/go-sync"
 )
@@ -58,7 +59,7 @@ func TestMembership_Get(t *testing.T) {
 
 	things, err := adapter.Get(ctx)
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, things, []string{
 		"foo@email",
 		"bar@email",
@@ -89,7 +90,7 @@ func TestMembership_Add(t *testing.T) {
 	}, nil)
 
 	err := adapter.Add(ctx, []string{"foo@email"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestMembership_Remove(t *testing.T) {
@@ -122,7 +123,7 @@ func TestMembership_Remove(t *testing.T) {
 
 	err := adapter.Remove(ctx, []string{"foo@email"})
 
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestInit(t *testing.T) {
@@ -138,7 +139,7 @@ func TestInit(t *testing.T) {
 			Organisation: "org",
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.IsType(t, &Membership{}, adapter)
 	})
 
@@ -149,7 +150,7 @@ func TestInit(t *testing.T) {
 			Token: "token",
 		})
 
-		assert.ErrorIs(t, err, gosync.ErrMissingConfig)
-		assert.ErrorContains(t, err, Organisation)
+		require.ErrorIs(t, err, gosync.ErrMissingConfig)
+		require.ErrorContains(t, err, Organisation)
 	})
 }
