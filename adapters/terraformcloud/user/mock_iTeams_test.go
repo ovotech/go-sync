@@ -26,6 +26,10 @@ func (_m *mockITeams) EXPECT() *mockITeams_Expecter {
 func (_m *mockITeams) List(ctx context.Context, organization string, options *tfe.TeamListOptions) (*tfe.TeamList, error) {
 	ret := _m.Called(ctx, organization, options)
 
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
 	var r0 *tfe.TeamList
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, *tfe.TeamListOptions) (*tfe.TeamList, error)); ok {

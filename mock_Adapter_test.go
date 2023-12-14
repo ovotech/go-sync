@@ -25,6 +25,10 @@ func (_m *MockAdapter) EXPECT() *MockAdapter_Expecter {
 func (_m *MockAdapter) Add(ctx context.Context, things []string) error {
 	ret := _m.Called(ctx, things)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Add")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {
 		r0 = rf(ctx, things)
@@ -67,6 +71,10 @@ func (_c *MockAdapter_Add_Call) RunAndReturn(run func(context.Context, []string)
 // Get provides a mock function with given fields: ctx
 func (_m *MockAdapter) Get(ctx context.Context) ([]string, error) {
 	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
 
 	var r0 []string
 	var r1 error
@@ -121,6 +129,10 @@ func (_c *MockAdapter_Get_Call) RunAndReturn(run func(context.Context) ([]string
 // Remove provides a mock function with given fields: ctx, things
 func (_m *MockAdapter) Remove(ctx context.Context, things []string) error {
 	ret := _m.Called(ctx, things)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Remove")
+	}
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) error); ok {

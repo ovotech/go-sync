@@ -26,6 +26,10 @@ func (_m *mockIGitHubTeam) EXPECT() *mockIGitHubTeam_Expecter {
 func (_m *mockIGitHubTeam) AddTeamMembershipBySlug(ctx context.Context, org string, slug string, user string, opts *github.TeamAddTeamMembershipOptions) (*github.Membership, *github.Response, error) {
 	ret := _m.Called(ctx, org, slug, user, opts)
 
+	if len(ret) == 0 {
+		panic("no return value specified for AddTeamMembershipBySlug")
+	}
+
 	var r0 *github.Membership
 	var r1 *github.Response
 	var r2 error
@@ -93,6 +97,10 @@ func (_c *mockIGitHubTeam_AddTeamMembershipBySlug_Call) RunAndReturn(run func(co
 func (_m *mockIGitHubTeam) ListTeamMembersBySlug(ctx context.Context, org string, slug string, opts *github.TeamListTeamMembersOptions) ([]*github.User, *github.Response, error) {
 	ret := _m.Called(ctx, org, slug, opts)
 
+	if len(ret) == 0 {
+		panic("no return value specified for ListTeamMembersBySlug")
+	}
+
 	var r0 []*github.User
 	var r1 *github.Response
 	var r2 error
@@ -158,6 +166,10 @@ func (_c *mockIGitHubTeam_ListTeamMembersBySlug_Call) RunAndReturn(run func(cont
 // RemoveTeamMembershipBySlug provides a mock function with given fields: ctx, org, slug, user
 func (_m *mockIGitHubTeam) RemoveTeamMembershipBySlug(ctx context.Context, org string, slug string, user string) (*github.Response, error) {
 	ret := _m.Called(ctx, org, slug, user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveTeamMembershipBySlug")
+	}
 
 	var r0 *github.Response
 	var r1 error

@@ -20,9 +20,9 @@ func TestIntegration(t *testing.T) {
 	adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 		Filter: fmt.Sprintf("mail eq '%s'", *email),
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	emails, err := adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.ElementsMatch(t, emails, []string{*email})
 }
