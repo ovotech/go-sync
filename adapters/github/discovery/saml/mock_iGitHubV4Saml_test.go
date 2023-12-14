@@ -25,6 +25,10 @@ func (_m *mockIGitHubV4Saml) EXPECT() *mockIGitHubV4Saml_Expecter {
 func (_m *mockIGitHubV4Saml) Query(ctx context.Context, q interface{}, variables map[string]interface{}) error {
 	ret := _m.Called(ctx, q, variables)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Query")
+	}
+
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, interface{}, map[string]interface{}) error); ok {
 		r0 = rf(ctx, q, variables)

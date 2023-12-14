@@ -32,6 +32,10 @@ func (_m *MockInitFn[T]) Execute(_a0 context.Context, _a1 map[string]string, _a2
 	_ca = append(_ca, _va...)
 	ret := _m.Called(_ca...)
 
+	if len(ret) == 0 {
+		panic("no return value specified for Execute")
+	}
+
 	var r0 T
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, map[string]string, ...ConfigFn[T]) (T, error)); ok {
