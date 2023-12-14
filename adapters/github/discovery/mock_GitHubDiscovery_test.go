@@ -21,17 +21,21 @@ func (_m *MockGitHubDiscovery) EXPECT() *MockGitHubDiscovery_Expecter {
 	return &MockGitHubDiscovery_Expecter{mock: &_m.Mock}
 }
 
-// GetEmailFromUsername provides a mock function with given fields: _a0, _a1
-func (_m *MockGitHubDiscovery) GetEmailFromUsername(_a0 context.Context, _a1 []string) ([]string, error) {
-	ret := _m.Called(_a0, _a1)
+// GetEmailFromUsername provides a mock function with given fields: ctx, usernames
+func (_m *MockGitHubDiscovery) GetEmailFromUsername(ctx context.Context, usernames []string) ([]string, error) {
+	ret := _m.Called(ctx, usernames)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetEmailFromUsername")
+	}
 
 	var r0 []string
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) ([]string, error)); ok {
-		return rf(_a0, _a1)
+		return rf(ctx, usernames)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []string); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, usernames)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -39,7 +43,7 @@ func (_m *MockGitHubDiscovery) GetEmailFromUsername(_a0 context.Context, _a1 []s
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, usernames)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -53,13 +57,13 @@ type MockGitHubDiscovery_GetEmailFromUsername_Call struct {
 }
 
 // GetEmailFromUsername is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 []string
-func (_e *MockGitHubDiscovery_Expecter) GetEmailFromUsername(_a0 interface{}, _a1 interface{}) *MockGitHubDiscovery_GetEmailFromUsername_Call {
-	return &MockGitHubDiscovery_GetEmailFromUsername_Call{Call: _e.mock.On("GetEmailFromUsername", _a0, _a1)}
+//   - ctx context.Context
+//   - usernames []string
+func (_e *MockGitHubDiscovery_Expecter) GetEmailFromUsername(ctx interface{}, usernames interface{}) *MockGitHubDiscovery_GetEmailFromUsername_Call {
+	return &MockGitHubDiscovery_GetEmailFromUsername_Call{Call: _e.mock.On("GetEmailFromUsername", ctx, usernames)}
 }
 
-func (_c *MockGitHubDiscovery_GetEmailFromUsername_Call) Run(run func(_a0 context.Context, _a1 []string)) *MockGitHubDiscovery_GetEmailFromUsername_Call {
+func (_c *MockGitHubDiscovery_GetEmailFromUsername_Call) Run(run func(ctx context.Context, usernames []string)) *MockGitHubDiscovery_GetEmailFromUsername_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].([]string))
 	})
@@ -76,17 +80,21 @@ func (_c *MockGitHubDiscovery_GetEmailFromUsername_Call) RunAndReturn(run func(c
 	return _c
 }
 
-// GetUsernameFromEmail provides a mock function with given fields: _a0, _a1
-func (_m *MockGitHubDiscovery) GetUsernameFromEmail(_a0 context.Context, _a1 []string) ([]string, error) {
-	ret := _m.Called(_a0, _a1)
+// GetUsernameFromEmail provides a mock function with given fields: ctx, emails
+func (_m *MockGitHubDiscovery) GetUsernameFromEmail(ctx context.Context, emails []string) ([]string, error) {
+	ret := _m.Called(ctx, emails)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetUsernameFromEmail")
+	}
 
 	var r0 []string
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, []string) ([]string, error)); ok {
-		return rf(_a0, _a1)
+		return rf(ctx, emails)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, []string) []string); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, emails)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
@@ -94,7 +102,7 @@ func (_m *MockGitHubDiscovery) GetUsernameFromEmail(_a0 context.Context, _a1 []s
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, emails)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -108,13 +116,13 @@ type MockGitHubDiscovery_GetUsernameFromEmail_Call struct {
 }
 
 // GetUsernameFromEmail is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 []string
-func (_e *MockGitHubDiscovery_Expecter) GetUsernameFromEmail(_a0 interface{}, _a1 interface{}) *MockGitHubDiscovery_GetUsernameFromEmail_Call {
-	return &MockGitHubDiscovery_GetUsernameFromEmail_Call{Call: _e.mock.On("GetUsernameFromEmail", _a0, _a1)}
+//   - ctx context.Context
+//   - emails []string
+func (_e *MockGitHubDiscovery_Expecter) GetUsernameFromEmail(ctx interface{}, emails interface{}) *MockGitHubDiscovery_GetUsernameFromEmail_Call {
+	return &MockGitHubDiscovery_GetUsernameFromEmail_Call{Call: _e.mock.On("GetUsernameFromEmail", ctx, emails)}
 }
 
-func (_c *MockGitHubDiscovery_GetUsernameFromEmail_Call) Run(run func(_a0 context.Context, _a1 []string)) *MockGitHubDiscovery_GetUsernameFromEmail_Call {
+func (_c *MockGitHubDiscovery_GetUsernameFromEmail_Call) Run(run func(ctx context.Context, emails []string)) *MockGitHubDiscovery_GetUsernameFromEmail_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].([]string))
 	})

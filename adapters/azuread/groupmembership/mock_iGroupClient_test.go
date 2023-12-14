@@ -23,13 +23,17 @@ func (_m *mockIGroupClient) EXPECT() *mockIGroupClient_Expecter {
 	return &mockIGroupClient_Expecter{mock: &_m.Mock}
 }
 
-// ByGroupId provides a mock function with given fields: _a0
-func (_m *mockIGroupClient) ByGroupId(_a0 string) *groups.GroupItemRequestBuilder {
-	ret := _m.Called(_a0)
+// ByGroupId provides a mock function with given fields: id
+func (_m *mockIGroupClient) ByGroupId(id string) *groups.GroupItemRequestBuilder {
+	ret := _m.Called(id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ByGroupId")
+	}
 
 	var r0 *groups.GroupItemRequestBuilder
 	if rf, ok := ret.Get(0).(func(string) *groups.GroupItemRequestBuilder); ok {
-		r0 = rf(_a0)
+		r0 = rf(id)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*groups.GroupItemRequestBuilder)
@@ -45,12 +49,12 @@ type mockIGroupClient_ByGroupId_Call struct {
 }
 
 // ByGroupId is a helper method to define mock.On call
-//   - _a0 string
-func (_e *mockIGroupClient_Expecter) ByGroupId(_a0 interface{}) *mockIGroupClient_ByGroupId_Call {
-	return &mockIGroupClient_ByGroupId_Call{Call: _e.mock.On("ByGroupId", _a0)}
+//   - id string
+func (_e *mockIGroupClient_Expecter) ByGroupId(id interface{}) *mockIGroupClient_ByGroupId_Call {
+	return &mockIGroupClient_ByGroupId_Call{Call: _e.mock.On("ByGroupId", id)}
 }
 
-func (_c *mockIGroupClient_ByGroupId_Call) Run(run func(_a0 string)) *mockIGroupClient_ByGroupId_Call {
+func (_c *mockIGroupClient_ByGroupId_Call) Run(run func(id string)) *mockIGroupClient_ByGroupId_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(string))
 	})
@@ -67,17 +71,21 @@ func (_c *mockIGroupClient_ByGroupId_Call) RunAndReturn(run func(string) *groups
 	return _c
 }
 
-// Get provides a mock function with given fields: _a0, _a1
-func (_m *mockIGroupClient) Get(_a0 context.Context, _a1 *groups.GroupsRequestBuilderGetRequestConfiguration) (models.GroupCollectionResponseable, error) {
-	ret := _m.Called(_a0, _a1)
+// Get provides a mock function with given fields: ctx, config
+func (_m *mockIGroupClient) Get(ctx context.Context, config *groups.GroupsRequestBuilderGetRequestConfiguration) (models.GroupCollectionResponseable, error) {
+	ret := _m.Called(ctx, config)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
 
 	var r0 models.GroupCollectionResponseable
 	var r1 error
 	if rf, ok := ret.Get(0).(func(context.Context, *groups.GroupsRequestBuilderGetRequestConfiguration) (models.GroupCollectionResponseable, error)); ok {
-		return rf(_a0, _a1)
+		return rf(ctx, config)
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, *groups.GroupsRequestBuilderGetRequestConfiguration) models.GroupCollectionResponseable); ok {
-		r0 = rf(_a0, _a1)
+		r0 = rf(ctx, config)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(models.GroupCollectionResponseable)
@@ -85,7 +93,7 @@ func (_m *mockIGroupClient) Get(_a0 context.Context, _a1 *groups.GroupsRequestBu
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, *groups.GroupsRequestBuilderGetRequestConfiguration) error); ok {
-		r1 = rf(_a0, _a1)
+		r1 = rf(ctx, config)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -99,13 +107,13 @@ type mockIGroupClient_Get_Call struct {
 }
 
 // Get is a helper method to define mock.On call
-//   - _a0 context.Context
-//   - _a1 *groups.GroupsRequestBuilderGetRequestConfiguration
-func (_e *mockIGroupClient_Expecter) Get(_a0 interface{}, _a1 interface{}) *mockIGroupClient_Get_Call {
-	return &mockIGroupClient_Get_Call{Call: _e.mock.On("Get", _a0, _a1)}
+//   - ctx context.Context
+//   - config *groups.GroupsRequestBuilderGetRequestConfiguration
+func (_e *mockIGroupClient_Expecter) Get(ctx interface{}, config interface{}) *mockIGroupClient_Get_Call {
+	return &mockIGroupClient_Get_Call{Call: _e.mock.On("Get", ctx, config)}
 }
 
-func (_c *mockIGroupClient_Get_Call) Run(run func(_a0 context.Context, _a1 *groups.GroupsRequestBuilderGetRequestConfiguration)) *mockIGroupClient_Get_Call {
+func (_c *mockIGroupClient_Get_Call) Run(run func(ctx context.Context, config *groups.GroupsRequestBuilderGetRequestConfiguration)) *mockIGroupClient_Get_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		run(args[0].(context.Context), args[1].(*groups.GroupsRequestBuilderGetRequestConfiguration))
 	})
