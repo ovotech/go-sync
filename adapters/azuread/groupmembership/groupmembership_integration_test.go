@@ -29,23 +29,23 @@ func TestIntegration(t *testing.T) {
 	adapter, err := Init(ctx, map[gosync.ConfigKey]string{
 		GroupName: *group,
 	})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	emails, err := adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotContainsf(t, emails, *email, "Email %s already exists in the group %s", *email, *group)
 
 	err = adapter.Add(ctx, []string{*email})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	emails, err = adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.Containsf(t, emails, *email, "Email %s not found after adding it to the group", *email)
 
 	err = adapter.Remove(ctx, []string{*email})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	emails, err = adapter.Get(ctx)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotContainsf(t, emails, *email, "Email %s still exists after removing it from the group %s", *email, *group)
 }

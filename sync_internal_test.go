@@ -7,6 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNew(t *testing.T) {
@@ -21,7 +22,6 @@ func TestNew(t *testing.T) {
 	assert.Zero(t, adapter.Calls)
 }
 
-//nolint:funlen
 func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 	t.Parallel()
 
@@ -45,7 +45,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("Add failure", func(t *testing.T) {
@@ -65,8 +65,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, testErr)
+			require.Error(t, err)
+			require.ErrorIs(t, err, testErr)
 		})
 
 		t.Run("Add error get", func(t *testing.T) {
@@ -85,7 +85,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.ErrorIs(t, err, testErr)
+			require.ErrorIs(t, err, testErr)
 		})
 	})
 
@@ -107,7 +107,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("Remove failure", func(t *testing.T) {
@@ -127,8 +127,8 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.Error(t, err)
-			assert.ErrorIs(t, err, testErr)
+			require.Error(t, err)
+			require.ErrorIs(t, err, testErr)
 		})
 
 		t.Run("Remove error get", func(t *testing.T) {
@@ -146,7 +146,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.ErrorIs(t, err, testErr)
+			require.ErrorIs(t, err, testErr)
 		})
 
 		t.Run("Remove error remove", func(t *testing.T) {
@@ -166,7 +166,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.ErrorIs(t, err, testErr)
+			require.ErrorIs(t, err, testErr)
 		})
 	})
 
@@ -187,7 +187,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 		err := syncService.SyncWith(ctx, destination)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("DryRun", func(t *testing.T) {
@@ -206,7 +206,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination.EXPECT().Get(ctx).Once().Return([]string{}, nil)
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("Remove", func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			destination.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	})
 
@@ -239,7 +239,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 		err := syncService.SyncWith(ctx, destination)
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("OperatingMode", func(t *testing.T) {
@@ -260,7 +260,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("RemoveOnly", func(t *testing.T) {
@@ -278,7 +278,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("RemoveAdd", func(t *testing.T) { //nolint:dupl
@@ -297,7 +297,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, "Get", destination.Calls[0].Method)
 			assert.Equal(t, "Remove", destination.Calls[1].Method)
 			assert.Equal(t, "Add", destination.Calls[2].Method)
@@ -319,7 +319,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, "Get", destination.Calls[0].Method)
 			assert.Equal(t, "Add", destination.Calls[1].Method)
 			assert.Equal(t, "Remove", destination.Calls[2].Method)
@@ -354,7 +354,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("false", func(t *testing.T) {
@@ -372,7 +372,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	})
 
@@ -395,7 +395,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.ErrorIs(t, err, ErrTooManyChanges)
+			require.ErrorIs(t, err, ErrTooManyChanges)
 		})
 
 		t.Run("1", func(t *testing.T) {
@@ -406,14 +406,14 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.ErrorIs(t, err, ErrTooManyChanges)
+			require.ErrorIs(t, err, ErrTooManyChanges)
 
 			// Set the operating mode to Remove only (only 1 addition), which should pass successfully.
 			syncService.OperatingMode = RemoveOnly
 
 			err = syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 
 		t.Run("2", func(t *testing.T) {
@@ -424,7 +424,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			err := syncService.SyncWith(ctx, destination)
 
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	})
 }

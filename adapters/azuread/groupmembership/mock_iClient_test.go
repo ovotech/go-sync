@@ -24,6 +24,10 @@ func (_m *mockIClient) EXPECT() *mockIClient_Expecter {
 func (_m *mockIClient) GetAdapter() abstractions.RequestAdapter {
 	ret := _m.Called()
 
+	if len(ret) == 0 {
+		panic("no return value specified for GetAdapter")
+	}
+
 	var r0 abstractions.RequestAdapter
 	if rf, ok := ret.Get(0).(func() abstractions.RequestAdapter); ok {
 		r0 = rf()
