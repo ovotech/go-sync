@@ -21,11 +21,8 @@ tasks:
     internal: true
     deps:
       - install
-    requires:
-      vars:
-        - GO_MODULES
     cmds:
-      - $GOBIN/golangci-lint run {{.ARGS}} {{.GO_MODULES}}
+      - $GOBIN/golangci-lint run {{.ARGS}} ./...
 
   default:
     desc: Lint your code with golangci-lint

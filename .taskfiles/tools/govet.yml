@@ -4,10 +4,7 @@ tasks:
   default:
     desc: Runs go vet against Go source code
     dir: '{{.ROOT_DIR}}'
-    requires:
-      vars:
-        - GO_MODULES
     sources:
       - ./**/*.go
     cmds:
-      - go vet {{.GO_MODULES}}
+      - go vet ./...
