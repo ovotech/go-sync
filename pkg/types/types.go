@@ -9,11 +9,6 @@ type Adapter interface {
 	Remove(ctx context.Context, things []string) error    // Remove things from a service.
 }
 
-// Service can be used for downstream services that implement Sync in your own workflow.
-type Service interface {
-	SyncWith(ctx context.Context, adapter Adapter) error // Sync the things in a source service with this service.
-}
-
 // ConfigKey is a configuration key to Init a new adapter.
 type ConfigKey = string
 
