@@ -1,10 +1,10 @@
 all: true
 with-expecter: true
 disable-version-string: true
-dir: internal/mocks
-outpkg: mocks
 
 packages:
   github.com/ovotech/go-sync:
     config:
+      dir: internal/mocks
+      outpkg: mocks
       recursive: true
