@@ -7,12 +7,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ovotech/go-sync/internal/errors"
-	"github.com/ovotech/go-sync/internal/types"
+	"github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 )
-
-// Ensure Sync fully satisfies the Service interface.
-var _ types.Service = &Sync{}
 
 // OperatingMode specifies how Sync operates, which sync operations are run and in what order.
 type OperatingMode string

@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	gosyncerrors "github.com/ovotech/go-sync/internal/errors"
 	"github.com/ovotech/go-sync/internal/mocks"
+	gosyncerrors "github.com/ovotech/go-sync/pkg/errors"
 )
 
 func TestNew(t *testing.T) {
