@@ -16,7 +16,7 @@
 
 </div>
 
-![Summary of Go-Sync](assets/sync-architecture.png)
+![Summary of Go Sync](assets/sync-architecture.png)
 
 You have people*. You have places you want them to be. Go Sync makes it happen.
 
