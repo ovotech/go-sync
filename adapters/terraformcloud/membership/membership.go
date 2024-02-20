@@ -158,8 +158,8 @@ func (m *Membership) Remove(ctx context.Context, emails []string) error {
 
 	for _, id := range ids {
 		id := id
-		err = m.organizationMemberships.Delete(ctx, id)
 
+		err = m.organizationMemberships.Delete(ctx, id)
 		if err != nil {
 			return fmt.Errorf("terraformcloud.membership.remove(%s).delete(%s) -> %w", emails, id, err)
 		}
