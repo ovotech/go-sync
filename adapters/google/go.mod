@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/ovotech/go-sync v0.14.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	google.golang.org/api v0.155.0
 )
 
@@ -24,7 +24,7 @@ require (
 	github.com/ovotech/go-sync/adapters/github v0.13.2 // indirect
 	github.com/ovotech/go-sync/adapters/slack v0.13.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/objx v0.5.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.46.1 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
