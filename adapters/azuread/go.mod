@@ -9,7 +9,7 @@ require (
 	github.com/microsoftgraph/msgraph-sdk-go v1.30.0
 	github.com/microsoftgraph/msgraph-sdk-go-core v1.0.1
 	github.com/ovotech/go-sync v0.14.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
@@ -33,7 +33,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/std-uritemplate/std-uritemplate/go v0.0.50 // indirect
-	github.com/stretchr/objx v0.5.1 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	go.opentelemetry.io/otel v1.22.0 // indirect
 	go.opentelemetry.io/otel/metric v1.22.0 // indirect
 	go.opentelemetry.io/otel/trace v1.22.0 // indirect
