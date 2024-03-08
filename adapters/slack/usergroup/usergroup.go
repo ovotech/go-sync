@@ -45,7 +45,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"reflect"
 	"slices"
 	"strings"
 	"time"
@@ -171,8 +170,9 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	}
 
 	// The updatedUserGroup is existing users + new users.
-	initialUserGroup := make([]string, 0, len(u.cache)+len(emails))
-	updatedUserGroup := initialUserGroup
+	updatedUserGroup := make([]string, 0, len(u.cache)+len(emails))
+
+	isUserGroupUpdated := false
 
 	// Prefill the updatedUserGroup with everyone currently in the group.
 	for _, id := range u.cache {
@@ -192,13 +192,16 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 
 			// Add the new email user ID to the cache
 			u.cache[email] = user.ID
+
+			// Set flag so we know to update Slack API
+			isUserGroupUpdated = true
 		}
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
 		time.Sleep(2 * time.Second) //nolint:gomnd
 	}
 
-	if reflect.DeepEqual(updatedUserGroup, initialUserGroup) {
+	if isUserGroupUpdated {
 		// Add the members to the Slack UserGroup.
 		joinedSlackIds := strings.Join(updatedUserGroup, ",")
 
