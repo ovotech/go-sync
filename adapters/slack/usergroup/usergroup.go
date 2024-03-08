@@ -45,6 +45,8 @@ import (
 	"log"
 	"math"
 	"os"
+	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -169,7 +171,8 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 	}
 
 	// The updatedUserGroup is existing users + new users.
-	updatedUserGroup := make([]string, 0, len(u.cache)+len(emails))
+	initialUserGroup := make([]string, 0, len(u.cache)+len(emails))
+	updatedUserGroup := initialUserGroup
 
 	// Prefill the updatedUserGroup with everyone currently in the group.
 	for _, id := range u.cache {
@@ -183,25 +186,31 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 			return fmt.Errorf("slack.usergroup.add.getuserbyemail(%s) -> %w", email, err)
 		}
 
-		// Add the new email user IDs to the list.
-		updatedUserGroup = append(updatedUserGroup, user.ID)
+		if !(slices.Contains(updatedUserGroup, user.ID)) {
+			// Add the new email user IDs to the list.
+			updatedUserGroup = append(updatedUserGroup, user.ID)
 
-		// Add the new email user ID to the cache
-		u.cache[email] = user.ID
+			// Add the new email user ID to the cache
+			u.cache[email] = user.ID
+		}
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
 		time.Sleep(2 * time.Second) //nolint:gomnd
 	}
 
-	// Add the members to the Slack UserGroup.
-	joinedSlackIds := strings.Join(updatedUserGroup, ",")
+	if reflect.DeepEqual(updatedUserGroup, initialUserGroup) {
+		// Add the members to the Slack UserGroup.
+		joinedSlackIds := strings.Join(updatedUserGroup, ",")
 
-	_, err := u.client.UpdateUserGroupMembersContext(ctx, u.userGroupID, joinedSlackIds)
-	if err != nil {
-		return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupID, err)
+		_, err := u.client.UpdateUserGroupMembersContext(ctx, u.userGroupID, joinedSlackIds)
+		if err != nil {
+			return fmt.Errorf("slack.usergroup.add.updateusergroupmembers(%s) -> %w", u.userGroupID, err)
+		}
+
+		u.Logger.Println("Finished adding accounts successfully")
+	} else {
+		u.Logger.Println("No change to UserGroup")
 	}
-
-	u.Logger.Println("Finished adding accounts successfully")
 
 	return nil
 }
