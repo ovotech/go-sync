@@ -45,7 +45,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"slices"
 	"strings"
 	"time"
 
@@ -186,7 +185,8 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 			return fmt.Errorf("slack.usergroup.add.getuserbyemail(%s) -> %w", email, err)
 		}
 
-		if !(slices.Contains(updatedUserGroup, user.ID)) {
+		_, ok := u.cache[email]
+		if !ok {
 			// Add the new email user IDs to the list.
 			updatedUserGroup = append(updatedUserGroup, user.ID)
 
