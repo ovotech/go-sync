@@ -142,6 +142,29 @@ func TestUserGroup_Add(t *testing.T) {
 		assert.Contains(t, adapter.cache, "fizz@email")
 		assert.Contains(t, adapter.cache, "buzz@email")
 	})
+
+	t.Run("Doesn't call API if no changes", func(t *testing.T) {
+		t.Parallel()
+
+		slackClient := newMockISlackUserGroup(t)
+
+		adapter := &UserGroup{
+			client:      slackClient,
+			userGroupID: "test",
+			Logger:      log.New(os.Stdout, "", log.LstdFlags),
+		}
+
+		slackClient.EXPECT().GetUserByEmailContext(ctx, "foo@email").Return(&slack.User{ID: "foo"}, nil)
+		slackClient.EXPECT().GetUserByEmailContext(ctx, "bar@email").Return(&slack.User{ID: "bar"}, nil)
+
+		adapter.cache = map[string]string{"foo@email": "foo", "bar@email": "bar"}
+		err := adapter.Add(ctx, []string{"foo@email", "bar@email"})
+
+		require.NoError(t, err)
+		assert.Contains(t, adapter.cache, "foo@email")
+		assert.Contains(t, adapter.cache, "bar@email")
+		slackClient.AssertNotCalled(t, "UpdateUserGroupMembersContext")
+	})
 }
 
 func TestUserGroup_Remove(t *testing.T) {
