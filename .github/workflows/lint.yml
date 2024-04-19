@@ -30,7 +30,7 @@ jobs:
         run: task lint
       - name: Check for changes
         id: check-changed-files
-        uses: tj-actions/verify-changed-files@v13.1
+        uses: tj-actions/verify-changed-files@v17
         with:
           files: |
             *
