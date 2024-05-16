@@ -198,7 +198,7 @@ func (u *UserGroup) Add(ctx context.Context, emails []string) error {
 		}
 
 		// Calls to GetUserByEmail are heavily rate limited, so sleep to avoid this.
-		time.Sleep(2 * time.Second) //nolint:gomnd
+		time.Sleep(2 * time.Second) //nolint:gomnd,mnd
 	}
 
 	if isUserGroupUpdated {

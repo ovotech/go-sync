@@ -65,7 +65,7 @@ var (
 
 // callList allows us to mock the returned struct from the List Google API call.
 func callList(ctx context.Context, call *admin.MembersListCall, pageToken string) (*admin.Members, error) {
-	return call.Context(ctx).PageToken(pageToken).MaxResults(200).Do() //nolint:wrapcheck,gomnd
+	return call.Context(ctx).PageToken(pageToken).MaxResults(200).Do() //nolint:wrapcheck,gomnd,mnd
 }
 
 // callInsert allows us to mock the returned struct from the Insert Google API call.

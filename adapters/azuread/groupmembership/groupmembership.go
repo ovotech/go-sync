@@ -177,7 +177,7 @@ func (g *GroupMembership) Add(ctx context.Context, members []string) error {
 				)
 			}
 
-			payload = append(payload, fmt.Sprintf("https://graph.microsoft.com/v1.0/directoryObjects/%s", uid))
+			payload = append(payload, "https://graph.microsoft.com/v1.0/directoryObjects/"+uid)
 		}
 
 		payloads = append(payloads, payload)
