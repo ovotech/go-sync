@@ -298,12 +298,12 @@ func TestGroupMembership_Add(t *testing.T) {
 			assert.Contains(
 				t,
 				req.GetAdditionalData()["members@odata.bind"],
-				fmt.Sprintf("https://graph.microsoft.com/v1.0/directoryObjects/%s", uid1),
+				"https://graph.microsoft.com/v1.0/directoryObjects/"+uid1,
 			)
 			assert.Contains(
 				t,
 				req.GetAdditionalData()["members@odata.bind"],
-				fmt.Sprintf("https://graph.microsoft.com/v1.0/directoryObjects/%s", uid2),
+				"https://graph.microsoft.com/v1.0/directoryObjects/"+uid2,
 			)
 
 			return req, nil

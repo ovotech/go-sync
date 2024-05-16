@@ -94,7 +94,7 @@ func (c *Conversation) getListOfSlackUsernames() ([]string, error) {
 		params := &slack.GetUsersInConversationParameters{
 			ChannelID: c.conversationName,
 			Cursor:    cursor,
-			Limit:     50, //nolint:gomnd
+			Limit:     50, //nolint:gomnd,mnd
 		}
 
 		var pageOfUsers []string
