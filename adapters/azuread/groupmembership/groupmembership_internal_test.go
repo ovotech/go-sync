@@ -405,7 +405,7 @@ func (r *MockRequestAdapter) SendEnum(
 	_ serialization.EnumFactory,
 	_ abstractions.ErrorMappings,
 ) (any, error) {
-	return nil, nil //nolint:nilnil
+	return nil, nil
 }
 
 func (r *MockRequestAdapter) SendCollection(
@@ -432,7 +432,7 @@ func (r *MockRequestAdapter) SendPrimitive(
 	_ string,
 	_ abstractions.ErrorMappings,
 ) (any, error) {
-	return nil, nil //nolint:nilnil
+	return nil, nil
 }
 
 func (r *MockRequestAdapter) SendPrimitiveCollection(
@@ -456,7 +456,7 @@ func (r *MockRequestAdapter) ConvertToNativeRequest(
 	_ context.Context,
 	_ *abstractions.RequestInformation,
 ) (any, error) {
-	return nil, nil //nolint:nilnil
+	return nil, nil
 }
 
 func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.SerializationWriterFactory { //nolint:ireturn,lll
