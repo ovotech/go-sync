@@ -62,7 +62,6 @@ func Test_resolveGroupID(t *testing.T) {
 		coll := make([]models.Groupable, 0, len(ids))
 
 		for _, id := range ids {
-			id := id
 			g := models.NewGroup()
 			g.SetId(&id)
 			coll = append(coll, g)
@@ -126,7 +125,6 @@ func Test_resolveUserID(t *testing.T) {
 		coll := make([]models.Userable, 0, len(ids))
 
 		for _, id := range ids {
-			id := id
 			u := models.NewUser()
 			u.SetId(&id)
 			coll = append(coll, u)
