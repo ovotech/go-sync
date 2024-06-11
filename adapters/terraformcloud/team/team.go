@@ -91,8 +91,6 @@ func (t *Team) Add(ctx context.Context, teams []string) error {
 	t.Logger.Printf("Adding %s to Terraform Cloud organisation %s", teams, t.organisation)
 
 	for _, team := range teams {
-		team := team
-
 		_, err := t.teams.Create(ctx, t.organisation, tfe.TeamCreateOptions{Name: &team})
 		if err != nil {
 			return fmt.Errorf("terraformcloud.team.add -> %w", err)

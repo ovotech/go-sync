@@ -127,7 +127,6 @@ func (m *Membership) Add(ctx context.Context, emails []string) error {
 	m.Logger.Printf("Adding %s to Terraform Cloud organisation %s", emails, m.organisation)
 
 	for _, email := range emails {
-		email := email
 		options := tfe.OrganizationMembershipCreateOptions{
 			Email: &email,
 			Type:  "organization-memberships",
@@ -157,8 +156,6 @@ func (m *Membership) Remove(ctx context.Context, emails []string) error {
 	}
 
 	for _, id := range ids {
-		id := id
-
 		err = m.organizationMemberships.Delete(ctx, id)
 		if err != nil {
 			return fmt.Errorf("terraformcloud.membership.remove(%s).delete(%s) -> %w", emails, id, err)

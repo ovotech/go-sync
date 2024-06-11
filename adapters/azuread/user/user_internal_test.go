@@ -198,7 +198,6 @@ func Test_isAdvancedQuery(t *testing.T) {
 		{"extensionAttribute16", args{"onPremisesExtensionAttributes/extensionAttribute16 eq 'Full'"}, false},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
