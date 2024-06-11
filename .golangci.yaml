@@ -29,18 +29,8 @@ linters:
     - gomoddirectives
     - gomodguard
     - ireturn
-    - varcheck
 
     # deprecated
-    - deadcode
-    - exhaustivestruct
-    - golint
-    - ifshort
-    - interfacer
-    - maligned
-    - nosnakecase
-    - scopelint
-    - structcheck
     - testableexamples
 
     # disabled because of generics
