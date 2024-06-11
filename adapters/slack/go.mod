@@ -1,6 +1,6 @@
 module github.com/ovotech/go-sync/adapters/slack
 
-go 1.21
+go 1.22
 
 require (
 	github.com/ovotech/go-sync v0.14.0

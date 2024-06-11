@@ -1,6 +1,6 @@
 module github.com/ovotech/go-sync/adapters/opsgenie
 
-go 1.21
+go 1.22
 
 require (
 	github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22
