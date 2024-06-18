@@ -3,13 +3,12 @@ package gosync
 import (
 	"context"
 	"fmt"
+	"github.com/ovotech/go-sync/pkg/errors"
+	"github.com/ovotech/go-sync/pkg/types"
 	"log"
 	"os"
 	"strings"
 )
-
-// Ensure Sync fully satisfies the Service interface.
-var _ Service = &Sync{}
 
 // OperatingMode specifies how Sync operates, which sync operations are run and in what order.
 type OperatingMode string
@@ -31,7 +30,7 @@ type Sync struct {
 	DryRun        bool            // DryRun mode calculates membership, but doesn't add or remove.
 	OperatingMode OperatingMode   // Change the order of Sync's operation. Default is RemoveAdd.
 	CaseSensitive bool            // CaseSensitive sets if Go Sync is case-sensitive. Default is true.
-	source        Adapter         // The source adapter.
+	source        types.Adapter   // The source adapter.
 	cache         map[string]bool // cache prevents polling the source more than once.
 	/*
 		MaximumChanges sets the maximum number of allowed changes per add/remove operation. It is not a cumulative
@@ -49,7 +48,7 @@ type Sync struct {
 }
 
 // New creates a new Sync service.
-func New(source Adapter, optsFn ...func(*Sync)) *Sync {
+func New(source types.Adapter, optsFn ...func(*Sync)) *Sync {
 	sync := &Sync{
 		DryRun:         false,
 		OperatingMode:  RemoveAdd,
@@ -141,7 +140,7 @@ func (s *Sync) perform(
 
 		// If the changes exceed the maximum change limit, fail with the ErrTooManyChanges error.
 		if len(thingsToChange) > s.MaximumChanges && s.MaximumChanges != NoChangeLimit {
-			return fmt.Errorf("%s(%v) -> %w(%v)", action, thingsToChange, ErrTooManyChanges, s.MaximumChanges)
+			return fmt.Errorf("%s(%v) -> %w(%v)", action, thingsToChange, errors.ErrTooManyChanges, s.MaximumChanges)
 		}
 
 		if s.DryRun {
@@ -166,7 +165,7 @@ func (s *Sync) perform(
 }
 
 // SyncWith synchronises the destination service with the source service, adding & removing things as necessary.
-func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
+func (s *Sync) SyncWith(ctx context.Context, adapter types.Adapter) error {
 	s.Logger.Println("Starting sync")
 
 	// Call to populate the cache from the source adapter.
