@@ -1,0 +1,43 @@
+syntax = "proto3";
+option go_package = "internal/proto";
+
+import "shared.proto";
+
+message Add {
+  message Request {
+    Metadata metadata = 1;
+    repeated string things = 2;
+  }
+  message Response {}
+}
+
+message Remove {
+  message Request {
+    Metadata metadata = 1;
+    repeated string things = 2;
+  }
+  message Response {}
+}
+
+message Get {
+  message Request {
+    Metadata metadata = 1;
+  }
+  message Response {
+    repeated string things = 1;
+  }
+}
+
+service Adapter {
+  // Initialise the adapter with a specific configuration.
+  rpc Init(Init.Request) returns (Init.Response) {}
+
+  // Get the things.
+  rpc Get(Get.Request) returns (Get.Response) {}
+
+  // Add things.
+  rpc Add(Add.Request) returns (Add.Response) {}
+
+  // Remove things.
+  rpc Remove(Remove.Request) returns (Remove.Response) {}
+}

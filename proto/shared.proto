@@ -1,0 +1,14 @@
+syntax = "proto3";
+option go_package = "internal/proto";
+
+message Metadata {
+  map<string, string> tags = 1;
+}
+
+message Init {
+  message Request {
+    Metadata metadata = 1;
+    map<string, string> config = 2;
+  }
+  message Response {}
+}
