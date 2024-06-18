@@ -4,20 +4,12 @@ First of all, thank you for wanting to contribute to Go Sync ✨
 
 ## Preparation 🍳
 
-We recommend `asdf`, it's our recommended way of managing our runtime CLIs:
+We recommend using [Mise](https://mise.jdx.dev/) to manage your runtime CLIs.
 
-1. [asdf](https://asdf-vm.com/)
-2. [asdf-golang](https://github.com/kennyp/asdf-golang) (install via `asdf plugin-add golang`)
+We run linters to ensure that code being checked in matches our quality standards, and we use Mise tasks to assist 
+with this.  All tools necessary to action the various Taskfile tasks will be automatically installed by Mise.
 
-Alternatively install Go from the [official documentation](https://go.dev/doc/install).
-The version of Go you want can be [found here](https://github.com/ovotech/go-sync/blob/main/go.mod#L3).
-
-For common tasks, we recommend installing [Taskfile](https://taskfile.dev). We run linters to ensure that code being 
-checked in matches our quality standards, and have included a Taskfile in this repo containing common commands to assist 
-with this.  All tools necessary to action the various Taskfile tasks will be automatically installed on-demand under the
-`.task/bin/` sub-directory within this project.
-
-To see what tasks are available, run `task --list-all`. As a bare minimum, we recommend running `task` against your
+To see what tasks are available, run `mise tasks`. As a bare minimum, we recommend running `mise run lint` against your
 changes before checking in.
 
 ## Developing an adapter 🔌
@@ -26,11 +18,9 @@ An adapter's basic functionality is to provide a common interface to a third par
 synchronisation simple, Sync only works with strings. For users, we recommend email addresses as these are usually
 common between services.
 
-[Adapter interface documentation](https://pkg.go.dev/github.com/ovotech/go-sync/pkg/ports#Adapter)
+[Adapter interface documentation](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter)
 
 Following our specification, your adapter will be compatible with Sync.
-
-We've built a command-line tool to automatically scaffold a new adapter: <https://github.com/ovotech/go-sync-adapter-gen>
 
 <details>
 <summary>Example adapter</summary>
@@ -43,7 +33,6 @@ import (
 	"errors"
 	"fmt"
 	gosync "github.com/ovotech/go-sync"
-	"github.com/ovotech/go-sync/pkg/ports"
 )
 
 var (
@@ -92,21 +81,3 @@ func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn
 The slice of strings passed to the Add/Remove methods are the diff between the source and destination adapters. If your
 service needs a list of users, cache the response from Get in your adapter, and combine the results in your Add/Remove
 methods.
-
-### Error handling
-
-Go Sync's error handling convention is to wrap all errors:
-
-```go
-if err != nil {
-	return fmt.Errorf("some.context.here -> %w", err)
-}
-```
-
-### Testing
-
-When writing tests, you can autogenerate the mocked clients from interfaces using [Mockery](https://github.com/vektra/mockery):
-
-```sh
-task generate
-```
