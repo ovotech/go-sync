@@ -1,5 +1,7 @@
-all: true
-with-expecter: true
-inpackage: true
-testonly: true
-disable-version-string: true
+with-expecter: True
+disable-version-string: True
+dir: "mocks/{{.PackageName}}"
+packages:
+  github.com/ovotech/go-sync/pkg/types:
+    interfaces:
+      Adapter:

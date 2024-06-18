@@ -1,0 +1,80 @@
+[tools]
+go = "1.22"
+gofumpt = "latest"
+golangci-lint = "latest"
+goreleaser = "latest"
+mockery = "2"
+protoc = "latest"
+protoc-gen-go = "latest"
+protoc-gen-go-grpc = "latest"
+
+[settings]
+jobs = 1
+
+[tasks."build:local"]
+description = "Build the current repo"
+run = "goreleaser build --snapshot --single-target"
+
+[tasks."build:release"]
+description = "Create a new release"
+run = "goreleaser release"
+
+[tasks."generate:mockery"]
+description = "Generate automatic mocks from interfaces"
+run = "mockery"
+
+[tasks."generate:proto"]
+description = "Generate Go protocol buffer files from proto files"
+run = "protoc proto/*.proto --plugin=$(which protoc-gen-go) --plugin=$(which protoc-gen-go-grpc) --proto_path=proto --go_opt=paths=source_relative --go-grpc_opt=paths=source_relative --go_out=internal/proto --go-grpc_out=internal/proto"
+
+[tasks."lint:gofumpt:check"]
+description = "Check Go formatting"
+run = "gofumpt -l ."
+
+[tasks."lint:gofumpt:fix"]
+description = "Fix Go formatting errors"
+run = "gofumpt -l -w ."
+
+[tasks."lint:golangci-lint:check"]
+description = "Check Go formatting"
+run = "golangci-lint run ./..."
+
+[tasks."lint:golangci-lint:fix"]
+description = "Fix Go formatting errors"
+run = "golangci-lint run --fix --timeout=10m ./..."
+
+[tasks."lint:govet:check"]
+description = "Run go vet against Go source code"
+run = "go vet ./..."
+
+[tasks."lint:gci:fix"]
+description = "Fix Go import orders"
+run = "go run github.com/daixiang0/gci@latest write . -s standard -s default -s prefix\\(github.com/ovotech\\) -s blank -s dot"
+
+[tasks."test:unit"]
+description = "Run unit tests"
+run = "go test -count=1 $(go list ./... | grep -v /mocks/)"
+
+[tasks."test:benchmark"]
+description = "Run benchmark tests"
+run = "go test -count=1 -bench=. -benchmem -benchtime=10s -run='^DoNotRunTests$$' $(go list ./... | grep -v /mocks/)"
+
+[tasks."test:coverage"]
+description = "Run tests and generate a coverage report"
+run = "go test -count=1 -covermode=atomic -coverprofile=cover.out $(go list ./... | grep -v /mocks/)"
+
+[tasks."test:report"]
+description = "Run tests and generate a JUnit XML report"
+run = "go test $(go list ./... | grep -v /mocks/) 2>&1 | go run github.com/jstemmer/go-junit-report/v2@latest -iocopy -out report.xml -set-exit-code"
+
+[tasks.generate]
+depends = ["generate:*"]
+
+[tasks.lint]
+depends = ["lint:*:check"]
+
+[tasks.lint-fix]
+depends = ["lint:*:fix"]
+
+[tasks.test]
+depends = ["test:*"]

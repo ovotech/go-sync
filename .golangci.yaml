@@ -19,9 +19,6 @@ issues:
 linters:
   enable-all: true
   disable:
-    # tmpfix - currently breaking things
-    - musttag
-
     - depguard
     - exhaustruct
     - forcetypeassert
@@ -32,6 +29,8 @@ linters:
 
     # deprecated
     - testableexamples
+    - execinquery
+    - gomnd
 
     # disabled because of generics
     - rowserrcheck
@@ -40,7 +39,6 @@ linters:
 linters-settings:
   gomoddirectives:
     replace-local: true
-
   gci:
     sections:
       - standard
@@ -50,7 +48,6 @@ linters-settings:
       - dot
     skip-generated: true
     custom-order: true
-
   revive:
     confidence: 0.1
     severity: warning
