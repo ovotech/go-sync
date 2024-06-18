@@ -28,7 +28,7 @@ _* Doesn't have to be people._
 go get github.com/ovotech/go-sync@latest
 
 # Then get the adapters you need.
-go get github.com/ovotech/go-sync/adapters/slack@latest
+go get github.com/ovotech/go-sync-adapter-slack@latest
 ```
 
 You're ready to Go Sync! 🎉
@@ -45,11 +45,7 @@ Go Sync consists of two fundamental parts:
 As long as your adapters are compatible, you can synchronise anything.
 
 ```go
-// Create an adapter using the recommended method.
-client := service.New("some-token")
-source := myAdapter.New(client, "some-value")
-
-// Initialise an adapter using an Init function.
+// Initialise an adapter.
 destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
 	myAdapter.Token:     "some-token",
 	myAdapter.Something: "some-value",
@@ -66,12 +62,6 @@ if err != nil {
 }
 ```
 
-### Init
-
-While we recommend using `New` to create an adapter in most cases, some plugins may provide an `Init` function for
-instantiating them too. Init functions are intended for programmatically creating adapters either via environment
-variables or some other dynamic configuration.
-
 ## Sync 🔄
 
 Sync is the logic that powers the automation. It accepts a source adapter, and synchronises it with destination
@@ -86,7 +76,7 @@ Sync is only uni-directional by design. You know where your things are, and wher
 4. Remove the things that shouldn't be there.
 5. Repeat from 2 for further adapters.
 
-## [Adapters](./adapters) 🔌
+## Adapters 🔌
 
 Adapters provide a common interface to services.
 Adapters must implement our [Adapter interface](https://pkg.go.dev/github.com/ovotech/go-sync#Adapter) and functionally
