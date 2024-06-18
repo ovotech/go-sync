@@ -1,67 +1,21 @@
-name: release
+name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      module:
-        description: 'Module'
-        required: true
-        type: choice
-        options:
-          - gosync
-          - adapters/azuread
-          - adapters/github
-          - adapters/opsgenie
-          - adapters/slack
-          - adapters/terraformcloud
-      version:
-        description: 'Version'
-        required: true
-        type: string
+  push:
+    tags:
+      - '*'
 
 permissions:
   contents: write
 
 jobs:
   release:
+    name: Release
     runs-on: ubuntu-latest
     steps:
-      - name: Validate
-        run: |
-          if ! [[ "${{ inputs.version }}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              exit 1
-          fi
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           show-progress: false
-      - name: Bump Go Sync version
-        if: inputs.module == 'gosync'
-        run: git tag ${{ inputs.version }}
-      - name: Bump Adapter version
-        if: inputs.module != 'gosync'
-        run: git tag ${{ inputs.module }}/${{ inputs.version }}
-      - name: Push
-        run: git push origin --tags
-      - name: Create Go Sync Release
-        if: inputs.module == 'gosync'
-        id: create_gosync_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ inputs.version }}
-          release_name: ${{ inputs.module }} ${{ inputs.version }}
-          draft: false
-          prerelease: false
-      - name: Create Adapter Release
-        if: inputs.module != 'gosync'
-        id: create_adapter_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ inputs.module }}/${{ inputs.version }}
-          release_name: ${{ inputs.module }} ${{ inputs.version }}
-          draft: false
-          prerelease: false
+      - uses: jdx/mise-action@v2
+      - run: mise run build:release

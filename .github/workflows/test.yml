@@ -12,32 +12,20 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: [1.22]
     steps:
       - uses: actions/checkout@v4
         with:
           show-progress: false
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            *.sum
-            **/*.sum
-      - uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-      - name: Run Go tests and generate report
-        run: task tests:gotest:report
+      - uses: jdx/mise-action@v2
+      - run: mise run test
       - name: Upload Test Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Test Results (Go ${{ matrix.go-version }})
+          name: Test Results
           path: |
             report.xml
+
   event_file:
     name: "Event File"
     runs-on: ubuntu-latest

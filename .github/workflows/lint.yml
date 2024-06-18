@@ -1,4 +1,4 @@
-name: lint
+name: Lint
 
 on:
   pull_request:
@@ -6,28 +6,18 @@ on:
       - main
 
 jobs:
-  golangci:
-    name: lint
+  task:
+    name: Task
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        task: ["generate", "lint-fix", "lint"]
     steps:
       - uses: actions/checkout@v4
         with:
           show-progress: false
-      - uses: actions/setup-go@v5
-        with:
-          go-version-file: go.work
-          cache-dependency-path: |
-            *.sum
-            **/*.sum
-      - uses: arduino/setup-task@v2
-        with:
-          version: 3.x
-      - name: Generate source files
-        run: task generate
-      - name: Fix linter errors
-        run: task lint:fix
-      - name: Lint all source code
-        run: task lint
+      - uses: jdx/mise-action@v2
+      - run: mise run ${{ matrix.task }}
       - name: Check for changes
         id: check-changed-files
         uses: tj-actions/verify-changed-files@v20
@@ -41,5 +31,5 @@ jobs:
         if: steps.check-changed-files.outputs.files_changed == 'true'
         run: |
           echo "Changed files: ${{ steps.check-changed-files.outputs.changed_files }}"
-          echo "Run task generate lint:fix to attempt to fix linter errors."
+          echo "Please fix linter errors before this PR can be accepted."
           exit 1
