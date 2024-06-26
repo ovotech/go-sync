@@ -46,7 +46,7 @@ As long as your adapters are compatible, you can synchronise anything.
 
 ```go
 // Initialise an adapter.
-destination, err := myAdapter.Init(map[gosync.ConfigKey]string{
+destination, err := myAdapter.Init(map[string]string{
 	myAdapter.Token:     "some-token",
 	myAdapter.Something: "some-value",
 })

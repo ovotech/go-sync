@@ -69,7 +69,7 @@ func WithExample(example struct{}) gosync.ConfigFn[*MyAdapter] {
 }
 
 // Init a new [myadapter.MyAdapter].
-func Init(_ context.Context, _ map[gosync.ConfigKey]string, _ ...gosync.ConfigFn[*MyAdapter]) (*MyAdapter, error) {
+func Init(_ context.Context, _ map[string]string, _ ...gosync.ConfigFn[*MyAdapter]) (*MyAdapter, error) {
 	return nil, fmt.Errorf("myadapter.init -> %w", gosync.ErrNotImplemented)
 }
 ```
