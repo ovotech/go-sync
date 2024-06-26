@@ -3,7 +3,7 @@ module github.com/ovotech/go-sync/adapters/terraformcloud
 go 1.22
 
 require (
-	github.com/hashicorp/go-tfe v1.55.0
+	github.com/hashicorp/go-tfe v1.57.0
 	github.com/ovotech/go-sync v0.14.0
 	github.com/stretchr/testify v1.9.0
 )
