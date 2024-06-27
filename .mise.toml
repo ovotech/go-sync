@@ -9,6 +9,7 @@ protoc-gen-go = "latest"
 protoc-gen-go-grpc = "latest"
 
 [settings]
+experimental = true
 jobs = 1
 
 [tasks."build:local"]
