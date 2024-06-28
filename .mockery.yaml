@@ -5,3 +5,6 @@ packages:
   github.com/ovotech/go-sync/pkg/types:
     interfaces:
       Adapter:
+  github.com/ovotech/go-sync/internal/proto:
+    interfaces:
+      AdapterClient:
