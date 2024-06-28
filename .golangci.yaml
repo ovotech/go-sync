@@ -14,7 +14,17 @@ issues:
     - linters:
         - nilnil
       path: _test\.go
-      text: " use a sentinel error instead"
+      text: "use a sentinel error instead"
+    # Dynamic errors in test files are fine.
+    - linters:
+        - err113
+      path: _test\.go
+      text: "use wrapped static errors instead"
+    # Sometimes tests are pretty similar to each other.
+    - linters:
+        - dupl
+      path: _test\.go
+      text: "duplicate"
 
 linters:
   enable-all: true
