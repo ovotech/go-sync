@@ -5,9 +5,8 @@ package proto
 import (
 	context "context"
 
-	grpc "google.golang.org/grpc"
-
 	mock "github.com/stretchr/testify/mock"
+	grpc "google.golang.org/grpc"
 
 	proto "github.com/ovotech/go-sync/internal/proto"
 )
