@@ -28,8 +28,8 @@ github.com/mattn/go-colorable v0.1.13 h1:fFA4WZxdEF4tXPZVKMLwD8oUnCTTo08duU7wxec
 github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovkB8vQcUbaXHg=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
-github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22 h1:0h+YoXSyipf6XQGyIaDg6z5jwRik1JSm+sQetnD7vGY=
-github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.22/go.mod h1:4OjcxgwdXzezqytxN534MooNmrxRD50geWZxTD7845s=
+github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23 h1:EFOD/cRfMeq+PCibHddoRTXu8CTN1m8Oj1Tk6eoz8Dw=
+github.com/opsgenie/opsgenie-go-sdk-v2 v1.2.23/go.mod h1:1BK0BG3Mz//zeujilvvu3GJ0jnyZwFdT9XjznoPv6kk=
 github.com/ovotech/go-sync v0.14.0 h1:u3HMaBDyJv/hHjkZtT9HteCp8B/RxIA1c1jo9szu7Vc=
 github.com/ovotech/go-sync v0.14.0/go.mod h1:XPOzxy51H6Vs+1yIOKlZqjijGl4xxzqTMi96qMZWg6k=
 github.com/ovotech/go-sync/adapters/github v0.13.2 h1:AoIF6z0azDznCGV2ATGO4Oz/MykgvosbYpM7JP4j6qQ=
