@@ -217,8 +217,8 @@ func TestInit(t *testing.T) {
 		require.NoError(t, err)
 		assert.IsType(t, &Group{}, adapter)
 		assert.Equal(t, "name", adapter.name)
-		assert.Equal(t, "", adapter.DeliverySettings)
-		assert.Equal(t, "", adapter.Role)
+		assert.Empty(t, adapter.DeliverySettings)
+		assert.Empty(t, adapter.Role)
 	})
 
 	t.Run("missing config", func(t *testing.T) {

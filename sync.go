@@ -183,7 +183,7 @@ func (s *Sync) SyncWith(ctx context.Context, adapter Adapter) error {
 
 	s.Logger.Printf("Running in %s operating mode", s.OperatingMode)
 
-	operations := make([]func() error, 0, 2) //nolint:gomnd,mnd
+	operations := make([]func() error, 0, 2) //nolint:mnd
 
 	switch s.OperatingMode {
 	case AddOnly:

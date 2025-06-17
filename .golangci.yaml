@@ -1,27 +1,7 @@
-issues:
-  exclude-rules:
-    # Test functions tend to be quite long due to the large amount of fixtures & test data etc.
-    - linters:
-        - funlen
-      path: _test\.go
-      text: "is too long"
-    # There's no need to wrap errors in a test.
-    - linters:
-        - wrapcheck
-      path: _test\.go
-      text: "error returned from external package is unwrapped"
-    # Commonly used in tests, and using sentinel errors for this is overkill.
-    - linters:
-        - nilnil
-      path: _test\.go
-      text: " use a sentinel error instead"
-
+version: "2"
 linters:
-  enable-all: true
+  default: all
   disable:
-    # tmpfix - currently breaking things
-    - musttag
-
     - depguard
     - exhaustruct
     - forcetypeassert
@@ -29,37 +9,66 @@ linters:
     - gomoddirectives
     - gomodguard
     - ireturn
-
-    # deprecated
-    - testableexamples
-
-    # disabled because of generics
+    - musttag
     - rowserrcheck
+    - testableexamples
     - wastedassign
-
-linters-settings:
-  gomoddirectives:
-    replace-local: true
-
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/ovotech)
-      - blank
-      - dot
-    skip-generated: true
-    custom-order: true
-
-  revive:
-    confidence: 0.1
-    severity: warning
+  settings:
+    gomoddirectives:
+      replace-local: true
+    revive:
+      confidence: 0.1
+      severity: warning
+      rules:
+        - name: exported
+          arguments:
+            - checkPrivateReceivers
+          severity: error
+          disabled: false
+    funcorder:
+      struct-method: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: exported
-        severity: error
-        disabled: false
-        arguments:
-          - checkPrivateReceivers
-
-run:
-  timeout: "5m"
+      - linters:
+          - funlen
+        path: _test\.go
+        text: is too long
+      - linters:
+          - wrapcheck
+        path: _test\.go
+        text: error returned from external package is unwrapped
+      - linters:
+          - nilnil
+        path: _test\.go
+        text: ' use a sentinel error instead'
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gci
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/ovotech)
+        - blank
+        - dot
+      custom-order: true
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

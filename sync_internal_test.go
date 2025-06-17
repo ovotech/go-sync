@@ -56,7 +56,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 
-			testErr := errors.New("foo") //nolint:goerr113
+			testErr := errors.New("foo") //nolint:err113
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{}, nil)
@@ -78,7 +78,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 			syncService := New(source)
 			syncService.cache = map[string]bool{}
 
-			testErr := errors.New("foo") //nolint:goerr113
+			testErr := errors.New("foo") //nolint:err113
 
 			source.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{}, testErr)
@@ -118,7 +118,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 
-			testErr := errors.New("foo") //nolint:goerr113
+			testErr := errors.New("foo") //nolint:err113
 
 			source.EXPECT().Get(ctx).Once().Return([]string{}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
@@ -139,7 +139,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 
-			testErr := errors.New("foo") //nolint:goerr113
+			testErr := errors.New("foo") //nolint:err113
 
 			source.EXPECT().Get(ctx).Once().Return([]string{}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{}, testErr)
@@ -157,7 +157,7 @@ func TestSync_SyncWith(t *testing.T) { //nolint:maintidx
 
 			syncService := New(source)
 
-			testErr := errors.New("foo") //nolint:goerr113
+			testErr := errors.New("foo") //nolint:err113
 
 			source.EXPECT().Get(ctx).Once().Return([]string{}, nil)
 			destination.EXPECT().Get(ctx).Once().Return([]string{"foo", "bar"}, nil)
