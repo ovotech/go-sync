@@ -21,7 +21,7 @@ func (_m *mockIClient) EXPECT() *mockIClient_Expecter {
 	return &mockIClient_Expecter{mock: &_m.Mock}
 }
 
-// GetAdapter provides a mock function with given fields:
+// GetAdapter provides a mock function with no fields
 func (_m *mockIClient) GetAdapter() abstractions.RequestAdapter {
 	ret := _m.Called()
 
@@ -68,7 +68,7 @@ func (_c *mockIClient_GetAdapter_Call) RunAndReturn(run func() abstractions.Requ
 	return _c
 }
 
-// Users provides a mock function with given fields:
+// Users provides a mock function with no fields
 func (_m *mockIClient) Users() *users.UsersRequestBuilder {
 	ret := _m.Called()
 

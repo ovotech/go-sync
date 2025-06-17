@@ -46,7 +46,7 @@ func (_c *MockConfigFn_Execute_Call[T]) Return() *MockConfigFn_Execute_Call[T] {
 }
 
 func (_c *MockConfigFn_Execute_Call[T]) RunAndReturn(run func(T)) *MockConfigFn_Execute_Call[T] {
-	_c.Call.Return(run)
+	_c.Run(run)
 	return _c
 }
 

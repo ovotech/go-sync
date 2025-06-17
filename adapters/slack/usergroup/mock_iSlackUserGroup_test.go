@@ -81,9 +81,16 @@ func (_c *mockISlackUserGroup_GetUserByEmailContext_Call) RunAndReturn(run func(
 	return _c
 }
 
-// GetUserGroupMembersContext provides a mock function with given fields: ctx, userGroup
-func (_m *mockISlackUserGroup) GetUserGroupMembersContext(ctx context.Context, userGroup string) ([]string, error) {
-	ret := _m.Called(ctx, userGroup)
+// GetUserGroupMembersContext provides a mock function with given fields: ctx, userGroup, options
+func (_m *mockISlackUserGroup) GetUserGroupMembersContext(ctx context.Context, userGroup string, options ...slack.GetUserGroupMembersOption) ([]string, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, userGroup)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUserGroupMembersContext")
@@ -91,19 +98,19 @@ func (_m *mockISlackUserGroup) GetUserGroupMembersContext(ctx context.Context, u
 
 	var r0 []string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]string, error)); ok {
-		return rf(ctx, userGroup)
+	if rf, ok := ret.Get(0).(func(context.Context, string, ...slack.GetUserGroupMembersOption) ([]string, error)); ok {
+		return rf(ctx, userGroup, options...)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []string); ok {
-		r0 = rf(ctx, userGroup)
+	if rf, ok := ret.Get(0).(func(context.Context, string, ...slack.GetUserGroupMembersOption) []string); ok {
+		r0 = rf(ctx, userGroup, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]string)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, userGroup)
+	if rf, ok := ret.Get(1).(func(context.Context, string, ...slack.GetUserGroupMembersOption) error); ok {
+		r1 = rf(ctx, userGroup, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -119,13 +126,21 @@ type mockISlackUserGroup_GetUserGroupMembersContext_Call struct {
 // GetUserGroupMembersContext is a helper method to define mock.On call
 //   - ctx context.Context
 //   - userGroup string
-func (_e *mockISlackUserGroup_Expecter) GetUserGroupMembersContext(ctx interface{}, userGroup interface{}) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
-	return &mockISlackUserGroup_GetUserGroupMembersContext_Call{Call: _e.mock.On("GetUserGroupMembersContext", ctx, userGroup)}
+//   - options ...slack.GetUserGroupMembersOption
+func (_e *mockISlackUserGroup_Expecter) GetUserGroupMembersContext(ctx interface{}, userGroup interface{}, options ...interface{}) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
+	return &mockISlackUserGroup_GetUserGroupMembersContext_Call{Call: _e.mock.On("GetUserGroupMembersContext",
+		append([]interface{}{ctx, userGroup}, options...)...)}
 }
 
-func (_c *mockISlackUserGroup_GetUserGroupMembersContext_Call) Run(run func(ctx context.Context, userGroup string)) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
+func (_c *mockISlackUserGroup_GetUserGroupMembersContext_Call) Run(run func(ctx context.Context, userGroup string, options ...slack.GetUserGroupMembersOption)) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string))
+		variadicArgs := make([]slack.GetUserGroupMembersOption, len(args)-2)
+		for i, a := range args[2:] {
+			if a != nil {
+				variadicArgs[i] = a.(slack.GetUserGroupMembersOption)
+			}
+		}
+		run(args[0].(context.Context), args[1].(string), variadicArgs...)
 	})
 	return _c
 }
@@ -135,7 +150,7 @@ func (_c *mockISlackUserGroup_GetUserGroupMembersContext_Call) Return(_a0 []stri
 	return _c
 }
 
-func (_c *mockISlackUserGroup_GetUserGroupMembersContext_Call) RunAndReturn(run func(context.Context, string) ([]string, error)) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
+func (_c *mockISlackUserGroup_GetUserGroupMembersContext_Call) RunAndReturn(run func(context.Context, string, ...slack.GetUserGroupMembersOption) ([]string, error)) *mockISlackUserGroup_GetUserGroupMembersContext_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -213,9 +228,16 @@ func (_c *mockISlackUserGroup_GetUsersInfoContext_Call) RunAndReturn(run func(co
 	return _c
 }
 
-// UpdateUserGroupMembersContext provides a mock function with given fields: ctx, userGroup, members
-func (_m *mockISlackUserGroup) UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string) (slack.UserGroup, error) {
-	ret := _m.Called(ctx, userGroup, members)
+// UpdateUserGroupMembersContext provides a mock function with given fields: ctx, userGroup, members, options
+func (_m *mockISlackUserGroup) UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string, options ...slack.UpdateUserGroupMembersOption) (slack.UserGroup, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, ctx, userGroup, members)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateUserGroupMembersContext")
@@ -223,17 +245,17 @@ func (_m *mockISlackUserGroup) UpdateUserGroupMembersContext(ctx context.Context
 
 	var r0 slack.UserGroup
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (slack.UserGroup, error)); ok {
-		return rf(ctx, userGroup, members)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...slack.UpdateUserGroupMembersOption) (slack.UserGroup, error)); ok {
+		return rf(ctx, userGroup, members, options...)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) slack.UserGroup); ok {
-		r0 = rf(ctx, userGroup, members)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, ...slack.UpdateUserGroupMembersOption) slack.UserGroup); ok {
+		r0 = rf(ctx, userGroup, members, options...)
 	} else {
 		r0 = ret.Get(0).(slack.UserGroup)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, userGroup, members)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, ...slack.UpdateUserGroupMembersOption) error); ok {
+		r1 = rf(ctx, userGroup, members, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -250,13 +272,21 @@ type mockISlackUserGroup_UpdateUserGroupMembersContext_Call struct {
 //   - ctx context.Context
 //   - userGroup string
 //   - members string
-func (_e *mockISlackUserGroup_Expecter) UpdateUserGroupMembersContext(ctx interface{}, userGroup interface{}, members interface{}) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
-	return &mockISlackUserGroup_UpdateUserGroupMembersContext_Call{Call: _e.mock.On("UpdateUserGroupMembersContext", ctx, userGroup, members)}
+//   - options ...slack.UpdateUserGroupMembersOption
+func (_e *mockISlackUserGroup_Expecter) UpdateUserGroupMembersContext(ctx interface{}, userGroup interface{}, members interface{}, options ...interface{}) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
+	return &mockISlackUserGroup_UpdateUserGroupMembersContext_Call{Call: _e.mock.On("UpdateUserGroupMembersContext",
+		append([]interface{}{ctx, userGroup, members}, options...)...)}
 }
 
-func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) Run(run func(ctx context.Context, userGroup string, members string)) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
+func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) Run(run func(ctx context.Context, userGroup string, members string, options ...slack.UpdateUserGroupMembersOption)) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(string), args[2].(string))
+		variadicArgs := make([]slack.UpdateUserGroupMembersOption, len(args)-3)
+		for i, a := range args[3:] {
+			if a != nil {
+				variadicArgs[i] = a.(slack.UpdateUserGroupMembersOption)
+			}
+		}
+		run(args[0].(context.Context), args[1].(string), args[2].(string), variadicArgs...)
 	})
 	return _c
 }
@@ -266,7 +296,7 @@ func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) Return(_a0 sla
 	return _c
 }
 
-func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) RunAndReturn(run func(context.Context, string, string) (slack.UserGroup, error)) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
+func (_c *mockISlackUserGroup_UpdateUserGroupMembersContext_Call) RunAndReturn(run func(context.Context, string, string, ...slack.UpdateUserGroupMembersOption) (slack.UserGroup, error)) *mockISlackUserGroup_UpdateUserGroupMembersContext_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -44,7 +44,9 @@ func (_m *MockInitFn[T]) Execute(_a0 context.Context, _a1 map[string]string, _a2
 	if rf, ok := ret.Get(0).(func(context.Context, map[string]string, ...ConfigFn[T]) T); ok {
 		r0 = rf(_a0, _a1, _a2...)
 	} else {
-		r0 = ret.Get(0).(T)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(T)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, map[string]string, ...ConfigFn[T]) error); ok {
