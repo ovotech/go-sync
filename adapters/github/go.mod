@@ -1,6 +1,6 @@
 module github.com/ovotech/go-sync/adapters/github
 
-go 1.23
+go 1.23.0
 
 require (
 	github.com/google/go-github/v47 v47.1.0
@@ -17,6 +17,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shurcooL/graphql v0.0.0-20230722043721-ed46e5a46466 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
