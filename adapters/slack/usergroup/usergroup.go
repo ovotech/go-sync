@@ -73,10 +73,10 @@ var (
 
 // iSlackUserGroup is a subset of the Slack Client, and used to build mocks for easy testing.
 type iSlackUserGroup interface {
-	GetUserGroupMembersContext(ctx context.Context, userGroup string) ([]string, error)
+	GetUserGroupMembersContext(ctx context.Context, userGroup string, options ...slack.GetUserGroupMembersOption) ([]string, error)
 	GetUsersInfoContext(ctx context.Context, users ...string) (*[]slack.User, error)
 	GetUserByEmailContext(ctx context.Context, email string) (*slack.User, error)
-	UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string) (slack.UserGroup, error)
+	UpdateUserGroupMembersContext(ctx context.Context, userGroup string, members string, options ...slack.UpdateUserGroupMembersOption) (slack.UserGroup, error)
 }
 
 type UserGroup struct {
