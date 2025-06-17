@@ -130,7 +130,11 @@ func TestUserGroup_Add(t *testing.T) {
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "buzz@email").Return(&slack.User{ID: "buzz"}, nil)
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx,
 			"test", mock.Anything,
-		).Run(func(ctx context.Context, userGroup, members string, _ ...slack.UpdateUserGroupMembersOption) { //nolint:contextcheck
+		).Run(func( //nolint:contextcheck
+			_ context.Context,
+			userGroup, members string,
+			_ ...slack.UpdateUserGroupMembersOption,
+		) {
 			assert.Equal(t, "test", userGroup)
 			assert.ElementsMatch(t, strings.Split(members, ","), []string{"foo", "bar", "fizz", "buzz"})
 		}).Return(slack.UserGroup{DateDelete: 0}, nil)
@@ -214,7 +218,7 @@ func TestUserGroup_Remove(t *testing.T) {
 		t.Parallel()
 
 		// Mock the error returned from the Slack API.
-		errInvalidArguments := errors.New("invalid_arguments") //nolint:goerr113
+		errInvalidArguments := errors.New("invalid_arguments") //nolint:err113
 
 		slackClient := newMockISlackUserGroup(t)
 

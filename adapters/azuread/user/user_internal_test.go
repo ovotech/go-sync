@@ -96,11 +96,9 @@ func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.Seria
 func (r *MockRequestAdapter) EnableBackingStore(_ store.BackingStoreFactory) {
 }
 
-//nolint:stylecheck
 func (r *MockRequestAdapter) SetBaseUrl(_ string) {
 }
 
-//nolint:stylecheck
 func (r *MockRequestAdapter) GetBaseUrl() string {
 	return ""
 }
@@ -234,7 +232,7 @@ func TestInit(t *testing.T) {
 			adapter, err := Init(ctx, map[gosync.ConfigKey]string{})
 
 			require.NoError(t, err)
-			assert.Equal(t, "", adapter.filter)
+			assert.Empty(t, adapter.filter)
 		})
 	})
 }

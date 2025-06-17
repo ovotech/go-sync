@@ -464,11 +464,9 @@ func (r *MockRequestAdapter) GetSerializationWriterFactory() serialization.Seria
 func (r *MockRequestAdapter) EnableBackingStore(_ store.BackingStoreFactory) {
 }
 
-//nolint:stylecheck
 func (r *MockRequestAdapter) SetBaseUrl(_ string) {
 }
 
-//nolint:stylecheck
 func (r *MockRequestAdapter) GetBaseUrl() string {
 	return ""
 }

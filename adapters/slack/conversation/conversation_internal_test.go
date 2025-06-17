@@ -168,7 +168,7 @@ func TestConversation_Remove(t *testing.T) {
 	t.Run("Restricted kick from public conversation", func(t *testing.T) {
 		t.Parallel()
 
-		restrictedAction := errors.New("restricted_action") //nolint:goerr113
+		restrictedAction := errors.New("restricted_action") //nolint:err113
 
 		slackClient := newMockISlackConversation(t)
 		adapter := &Conversation{

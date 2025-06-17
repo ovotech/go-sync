@@ -84,7 +84,7 @@ func testBuildScheduleGetResult(numRotations int, emails ...string) *schedule.Ge
 			StartDate:       nil,
 			EndDate:         nil,
 			Type:            og.Weekly,
-			Length:          uint32(len(participants)),
+			Length:          uint32(len(participants)), //nolint:gosec
 			Participants:    participants,
 			TimeRestriction: nil,
 		}

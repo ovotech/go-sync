@@ -25,11 +25,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/opsgenie/opsgenie-go-sdk-v2/client"
 	"github.com/opsgenie/opsgenie-go-sdk-v2/og"
 	ogSchedule "github.com/opsgenie/opsgenie-go-sdk-v2/schedule"
-	"golang.org/x/exp/slices"
 
 	gosync "github.com/ovotech/go-sync"
 )
