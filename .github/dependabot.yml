@@ -1,34 +1,116 @@
 version: 2
+
 updates:
   - package-ecosystem: github-actions
-    directory: /
+    directory: '/'
     schedule:
-      interval: daily
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Go Sync]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /adapters/azuread
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Azure AD]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
   - package-ecosystem: gomod
     directory: /adapters/github
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[GitHub]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /adapters/google
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Google]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /adapters/opsgenie
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Opsgenie]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /adapters/slack
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Slack]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
+
   - package-ecosystem: gomod
     directory: /adapters/terraformcloud
     schedule:
-      interval: daily
+      interval: weekly
+    commit-message:
+      prefix: '[Terraform Cloud]'
+    groups:
+      golang:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    open-pull-requests-limit: 1
