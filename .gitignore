@@ -10,6 +10,9 @@
 # IntelliJ folder
 /.idea/
 
+# VSCode settings.
+/.vscode/settings.json
+
 # Output from test:report
 /report.xml
 
