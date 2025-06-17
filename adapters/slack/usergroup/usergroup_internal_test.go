@@ -130,7 +130,7 @@ func TestUserGroup_Add(t *testing.T) {
 		slackClient.EXPECT().GetUserByEmailContext(ctx, "buzz@email").Return(&slack.User{ID: "buzz"}, nil)
 		slackClient.EXPECT().UpdateUserGroupMembersContext(ctx,
 			"test", mock.Anything,
-		).Run(func(_ context.Context, userGroup string, members string) { //nolint:contextcheck
+		).Run(func(ctx context.Context, userGroup, members string, _ ...slack.UpdateUserGroupMembersOption) { //nolint:contextcheck
 			assert.Equal(t, "test", userGroup)
 			assert.ElementsMatch(t, strings.Split(members, ","), []string{"foo", "bar", "fizz", "buzz"})
 		}).Return(slack.UserGroup{DateDelete: 0}, nil)
