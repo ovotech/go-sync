@@ -3,8 +3,8 @@ module github.com/ovotech/go-sync/adapters/terraformcloud
 go 1.23.0
 
 require (
-	github.com/hashicorp/go-tfe v1.82.0
-	github.com/ovotech/go-sync v0.14.0
+	github.com/hashicorp/go-tfe v1.84.0
+	github.com/ovotech/go-sync v0.15.0
 	github.com/stretchr/testify v1.10.0
 )
 
@@ -16,9 +16,9 @@ require (
 	github.com/hashicorp/go-slug v0.16.4 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/jsonapi v1.5.0 // indirect
-	github.com/ovotech/go-sync/adapters/github v0.13.2 // indirect
-	github.com/ovotech/go-sync/adapters/slack v0.13.2 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
