@@ -1,6 +1,3 @@
-| **⚠️ Go Sync is under active development and subject to breaking changes.** |
-|-----------------------------------------------------------------------------|
-
 # Go Sync (all the things)
 
 <div align="center">
